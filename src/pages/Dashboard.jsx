@@ -48,7 +48,7 @@ export default function Dashboard() {
   };
 
   const { data: d, loading, error, reload } = useLive(async () => {
-    const [subjects, chapters, lessons, assignments, questions, submissions, activity] = await Promise.all([
+    let [subjects, chapters, lessons, assignments, questions, submissions, activity] = await Promise.all([
       data.list('subjects'),
       data.list('chapters'),
       data.list('lessons'),
@@ -57,6 +57,21 @@ export default function Dashboard() {
       data.list('submissions'),
       data.list('activity', { order: 'created_at', asc: false, limit: 30 }),
     ]);
+
+    // Tự động nạp giáo trình Lịch Sử nếu hệ thống chưa có môn học
+    if (subjects.length === 0) {
+      await seedHistoryCurriculum(data);
+      [subjects, chapters, lessons, assignments, questions, submissions, activity] = await Promise.all([
+        data.list('subjects'),
+        data.list('chapters'),
+        data.list('lessons'),
+        data.list('assignments'),
+        data.list('questions'),
+        data.list('submissions'),
+        data.list('activity', { order: 'created_at', asc: false, limit: 30 }),
+      ]);
+    }
+
     return { subjects, chapters, lessons, assignments, questions, submissions, activity };
   }, []);
 
@@ -86,7 +101,13 @@ export default function Dashboard() {
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
   const sat = nextSaturday(20);
-  const daysToSat = Math.ceil((sat - now) / 86400000);
+
+  // Tính chính xác số ngày lịch tới Thứ 7
+  const satMidnight = new Date(sat);
+  satMidnight.setHours(0, 0, 0, 0);
+  const nowMidnight = new Date(now);
+  nowMidnight.setHours(0, 0, 0, 0);
+  const daysDiff = Math.max(0, Math.round((satMidnight - nowMidnight) / 86400000));
 
   const todayFullDate = new Intl.DateTimeFormat('vi-VN', {
     weekday: 'long',
@@ -95,14 +116,13 @@ export default function Dashboard() {
     year: 'numeric',
   }).format(now);
 
-  // Tạo dải 7 ngày trong tuần từ Thứ 2 đến Chủ Nhật
+  // Tạo dải 7 ngày trong tuần từ Thứ 2 đến Chủ Nhật (1 hàng duy nhất chuẩn Apple)
   const currentDay = now.getDay();
   const mondayOffset = (currentDay + 6) % 7;
   const monday = new Date(now);
   monday.setDate(now.getDate() - mondayOffset);
   monday.setHours(0, 0, 0, 0);
 
-  const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const shortNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -114,7 +134,6 @@ export default function Dashboard() {
       date: dt,
       dayNum: dt.getDate(),
       monthNum: dt.getMonth() + 1,
-      dayName: dayNames[dt.getDay()],
       shortName: shortNames[dt.getDay()],
       isToday,
       isSaturday,
@@ -169,82 +188,54 @@ export default function Dashboard() {
     <div className="page">
       {/* SINGLE UNIFIED FOLIO SHEET (Rose Milk Editorial Folio) */}
       <div className="folio-sheet">
-        {/* Folio Header */}
-        <header className="folio-header">
-          <div className="folio-breadcrumbs">
-            <span>Không gian học tập</span>
-            <span className="sep">/</span>
-            <span style={{ color: '#E11D48', fontWeight: 700 }}>Lịch trình & Kế hoạch tuần</span>
-          </div>
-
-          <div className="folio-title-row">
+        {/* 1. LỊCH TRÌNH NGÀY HỌC LIỀN KHỐI CHUẨN APPLE (SINGLE SEAMLESS SURFACE) */}
+        <header className="folio-schedule-clean">
+          <div className="schedule-header-row">
             <div>
-              <h1 className="folio-title">
-                {isTeacher ? 'Kế hoạch giảng dạy & Theo dõi' : 'Tổng quan & Lịch trình học tập'}
-              </h1>
-              <p className="muted" style={{ margin: '6px 0 0', fontSize: '1rem' }}>
+              <div className="today-meta-lead">
+                <span className="today-chip">
+                  <span className="today-chip-dot" />
+                  <span>Hôm nay</span>
+                </span>
+                <span className="small muted">Không gian học tập · Kế hoạch tuần</span>
+              </div>
+              <h1 className="schedule-title">{todayFullDate}</h1>
+              <p className="schedule-subtitle">
                 {isTeacher
-                  ? `Đang đồng hành cùng ${partner?.display_name || 'học viên'} · Kiểm tra tiến độ bài học & nộp bài tuần này`
+                  ? `Đang đồng hành cùng ${partner?.display_name || 'học viên'} · Kiểm tra tiến độ và nộp bài`
                   : `Chào ${user.display_name} · Kế hoạch học tập tuần, nhật ký hôm nay và bài tập trọng tâm`}
               </p>
             </div>
+
+            {/* Apple Countdown Pill */}
+            <div className="apple-countdown-pill">
+              <span className="countdown-main">
+                {daysDiff === 0 ? 'Hôm nay' : daysDiff === 1 ? 'Ngày mai' : `${daysDiff} ngày nữa`}
+              </span>
+              <div className="countdown-text">
+                <div style={{ color: '#BE123C', fontWeight: 700 }}>Buổi học Thứ 7 · 20:00</div>
+                <div className="small muted" style={{ fontSize: '0.74rem' }}>{fmtDate(sat.toISOString(), false)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dải lịch 7 ngày trong tuần tinh gọn 1 hàng duy nhất */}
+          <div className="apple-week-strip">
+            {weekDays.map((dItem, idx) => (
+              <div
+                key={idx}
+                className={`apple-day-col ${dItem.isToday ? 'active-today' : ''} ${
+                  dItem.isSaturday ? 'study-day' : ''
+                }`}
+              >
+                <span className="day-txt">{dItem.shortName}</span>
+                <span className="date-txt">{dItem.dayNum}</span>
+                {dItem.isToday && <span className="today-indicator">Hôm nay</span>}
+                {dItem.isSaturday && !dItem.isToday && <span className="study-badge">Học 20h</span>}
+              </div>
+            ))}
           </div>
         </header>
-
-        {/* 1. KHỐI NGÀY HỌC NGAY ĐẦU: NGÀY HÔM NAY, ĐẾM NGƯỢC, VÀ DẢI LỊCH TUẦN 7 NGÀY */}
-        <section className="folio-schedule-hub">
-          <div className="schedule-hero-row">
-            <div>
-              <div className="today-badge-pill">
-                <span className="today-badge-dot" />
-                <span>Tiến trình ngày học</span>
-              </div>
-              <h2 className="today-headline">{todayFullDate}</h2>
-              <div className="small muted">
-                Tuần học tập trọng tâm · Buổi kiểm tra định kỳ lúc 20:00 Thứ 7 hàng tuần
-              </div>
-            </div>
-
-            <div className="countdown-box">
-              <div className="countdown-num">
-                {daysToSat === 0 ? 'Hôm nay!' : `${daysToSat} ngày nữa`}
-              </div>
-              <div className="small" style={{ color: '#BE123C', fontWeight: 700, marginTop: '2px' }}>
-                Buổi học Thứ 7 ({fmtDate(sat.toISOString(), false)} - 20:00)
-              </div>
-              <div className="small muted" style={{ fontSize: '0.78rem', marginTop: '2px' }}>
-                {daysToSat === 0
-                  ? 'Hôm nay là ngày học tổng kết tuần'
-                  : daysToSat === 1
-                  ? 'Ngày mai kiểm tra, hãy hoàn thành bài tập'
-                  : 'Tiếp tục hoàn thiện các nhiệm vụ tuần này'}
-              </div>
-            </div>
-          </div>
-
-          {/* Dải lịch 7 ngày trong tuần */}
-          <div className="week-strip-container">
-            <div className="week-strip-label">
-              <span>Lịch trình 7 ngày trong tuần</span>
-              <span className="small muted">Thứ 2 → Chủ Nhật</span>
-            </div>
-            <div className="week-strip-grid">
-              {weekDays.map((dItem, idx) => (
-                <div
-                  key={idx}
-                  className={`week-day-pill ${dItem.isToday ? 'is-today' : ''} ${
-                    dItem.isSaturday ? 'is-study-day' : ''
-                  }`}
-                >
-                  <span className="day-name">{dItem.dayName}</span>
-                  <span className="day-date">{`${dItem.dayNum}/${dItem.monthNum}`}</span>
-                  {dItem.isToday && <span className="day-tag" style={{ color: '#FDA4AF' }}>Hôm nay</span>}
-                  {dItem.isSaturday && !dItem.isToday && <span className="day-tag">Buổi học 20h</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* 2. DẢI CHỈ SỐ LIỀN KHỐI (FOLIO METRIC STRIP) */}
         <div className="folio-metric-strip">
