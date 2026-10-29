@@ -52,14 +52,14 @@ export default function Layout({ children }) {
 
       {!IS_CLOUD && (
         <div className="banner warn">
-          🧪 <b>Chế độ DEMO</b>: dữ liệu chỉ lưu trên trình duyệt này, chưa đồng bộ 2 máy. Làm theo README để bật
+          <b>Chế độ DEMO</b>: Dữ liệu chỉ lưu trên trình duyệt này, chưa đồng bộ 2 máy. Làm theo README để bật
           Supabase (miễn phí) trước khi dùng thật.
         </div>
       )}
       {IS_CLOUD && dbVersion !== null && dbVersion < APP_SCHEMA_VERSION && (
         <div className="banner danger">
-          ⚠️ Database đang ở phiên bản {dbVersion}, web cần phiên bản {APP_SCHEMA_VERSION}. Hãy chạy các file migration
-          mới trong <code>supabase/migrations</code> (xem README mục "Cập nhật thứ 7").
+          <b>Thông báo hệ thống:</b> Database đang ở phiên bản {dbVersion}, web cần phiên bản {APP_SCHEMA_VERSION}. Hãy chạy các file migration
+          mới trong <code>supabase/migrations</code>.
         </div>
       )}
 

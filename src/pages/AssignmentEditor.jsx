@@ -156,173 +156,187 @@ export default function AssignmentEditor() {
 
   return (
     <div className="page">
-      <Crumbs items={[{ label: orig.title, to: `/bt/${id}` }, { label: 'Sửa' }]} />
-      <h1>✏️ Soạn bài tập</h1>
+      <div className="folio-sheet">
+        <header className="folio-header">
+          <div className="folio-breadcrumbs">
+            <span style={{ cursor: 'pointer' }} onClick={() => nav(`/bt/${id}`)}>{orig.title}</span>
+            <span className="sep">/</span>
+            <span style={{ color: '#E11D48', fontWeight: 700 }}>Soạn & Chỉnh sửa</span>
+          </div>
 
-      <section className="card form">
-        <label className="field">
-          <span>Tên bài tập</span>
-          <input value={form.title} onChange={(e) => set({ title: e.target.value })} />
-        </label>
+          <div className="folio-title-row">
+            <h1 className="folio-title">Soạn thảo bài tập</h1>
+          </div>
+        </header>
 
-        <div className="field">
-          <span>Loại bài</span>
-          <div className="seg">
-            {[
-              ['upload', '📸 Nộp ảnh', 'Em làm ra giấy, chụp ảnh nộp'],
-              ['quiz', '📝 Làm online', 'Trắc nghiệm + tự luận, không giới hạn giờ'],
-              ['exam', '⏱️ Bài thi', 'Có đồng hồ đếm ngược, chỉ làm 1 lần'],
-            ].map(([k, label, hint]) => (
-              <button key={k} type="button" className={form.kind === k ? 'on' : ''} onClick={() => set({ kind: k })}>
-                <b>{label}</b>
-                <small>{hint}</small>
+        <section className="form" style={{ marginTop: '20px' }}>
+          <label className="field">
+            <span>Tên bài tập</span>
+            <input value={form.title} onChange={(e) => set({ title: e.target.value })} />
+          </label>
+
+          <div className="field">
+            <span>Hình thức bài tập</span>
+            <div className="seg">
+              {[
+                ['upload', 'Nộp ảnh bài làm', 'Làm ra giấy, chụp ảnh nộp'],
+                ['quiz', 'Trắc nghiệm online', 'Trắc nghiệm và tự luận trực tuyến'],
+                ['exam', 'Bài thi bấm giờ', 'Có đồng hồ đếm ngược, làm 1 lần'],
+              ].map(([k, label, hint]) => (
+                <button key={k} type="button" className={form.kind === k ? 'on' : ''} onClick={() => set({ kind: k })}>
+                  <b>{label}</b>
+                  <small>{hint}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <label className="field">
+            <span>Đề bài / Hướng dẫn chi tiết</span>
+            <textarea rows={5} value={form.instructions} onChange={(e) => set({ instructions: e.target.value })}
+              placeholder="Nhập nội dung đề bài hoặc hướng dẫn làm bài..." />
+          </label>
+
+          <div className="field">
+            <span>Tư liệu ảnh đề bài (tuỳ chọn)</span>
+            <Gallery
+              items={(form.attachments || []).map((p) => ({ path: p }))}
+              onDelete={(it) => set({ attachments: form.attachments.filter((p) => p !== it.path) })}
+              empty="Chưa có ảnh đề."
+            />
+            <div className="mt-sm">
+              <Uploader folder={`assignments/${id}`} label="+ Thêm ảnh đề bài" small
+                onUploaded={(paths) => set({ attachments: [...(form.attachments || []), ...paths] })} />
+            </div>
+          </div>
+
+          <div className="grid3">
+            {form.kind === 'upload' ? (
+              <label className="field">
+                <span>Thang điểm tối đa</span>
+                <input type="number" min="1" value={form.max_score} onChange={(e) => set({ max_score: e.target.value })} />
+              </label>
+            ) : (
+              <div className="field">
+                <span>Tổng điểm</span>
+                <div className="big-num">{total}</div>
+              </div>
+            )}
+            {form.kind === 'exam' && (
+              <label className="field">
+                <span>Thời gian làm (phút)</span>
+                <input type="number" min="1" value={form.time_limit_minutes || ''}
+                  onChange={(e) => set({ time_limit_minutes: e.target.value })} />
+              </label>
+            )}
+            <label className="field">
+              <span>Thứ tự</span>
+              <input type="number" value={form.position} onChange={(e) => set({ position: e.target.value })} />
+            </label>
+          </div>
+
+          <div className="grid2">
+            <label className="field">
+              <span>Hạn nộp</span>
+              <input type="datetime-local" value={form.due_local} onChange={(e) => set({ due_local: e.target.value })} />
+              <button type="button" className="link small" onClick={() => set({ due_local: toLocalInput(nextSaturday(20).toISOString()) })}>
+                → 20:00 Thứ 7 tuần này
               </button>
-            ))}
-          </div>
-        </div>
-
-        <label className="field">
-          <span>Đề bài / hướng dẫn</span>
-          <textarea rows={5} value={form.instructions} onChange={(e) => set({ instructions: e.target.value })}
-            placeholder="VD: Làm bài 1, 2, 3 trang 15 SGK. Trình bày rõ ràng nha!" />
-        </label>
-
-        <div className="field">
-          <span>Ảnh đề bài (tuỳ chọn)</span>
-          <Gallery
-            items={(form.attachments || []).map((p) => ({ path: p }))}
-            onDelete={(it) => set({ attachments: form.attachments.filter((p) => p !== it.path) })}
-            empty="Chưa có ảnh đề."
-          />
-          <div className="mt-sm">
-            <Uploader folder={`assignments/${id}`} label="📎 Thêm ảnh đề" small
-              onUploaded={(paths) => set({ attachments: [...(form.attachments || []), ...paths] })} />
-          </div>
-        </div>
-
-        <div className="grid3">
-          {form.kind === 'upload' ? (
-            <label className="field">
-              <span>Thang điểm</span>
-              <input type="number" min="1" value={form.max_score} onChange={(e) => set({ max_score: e.target.value })} />
             </label>
-          ) : (
-            <div className="field">
-              <span>Tổng điểm</span>
-              <div className="big-num">{total}</div>
-            </div>
-          )}
-          {form.kind === 'exam' && (
             <label className="field">
-              <span>Thời gian làm (phút)</span>
-              <input type="number" min="1" value={form.time_limit_minutes || ''}
-                onChange={(e) => set({ time_limit_minutes: e.target.value })} />
+              <span>Tự động phát hành vào lúc (để trống = phát hành ngay)</span>
+              <input type="datetime-local" value={form.publish_local} onChange={(e) => set({ publish_local: e.target.value })} />
+              <button type="button" className="link small" onClick={() => set({ publish_local: toLocalInput(nextSaturday(8).toISOString()) })}>
+                → 8:00 sáng Thứ 7
+              </button>
             </label>
-          )}
-          <label className="field">
-            <span>Thứ tự</span>
-            <input type="number" value={form.position} onChange={(e) => set({ position: e.target.value })} />
-          </label>
-        </div>
-
-        <div className="grid2">
-          <label className="field">
-            <span>Hạn nộp</span>
-            <input type="datetime-local" value={form.due_local} onChange={(e) => set({ due_local: e.target.value })} />
-            <button type="button" className="link small" onClick={() => set({ due_local: toLocalInput(nextSaturday(20).toISOString()) })}>
-              → 20:00 thứ 7 tới
-            </button>
-          </label>
-          <label className="field">
-            <span>Tự động mở cho em lúc (để trống = mở ngay khi giao)</span>
-            <input type="datetime-local" value={form.publish_local} onChange={(e) => set({ publish_local: e.target.value })} />
-            <button type="button" className="link small" onClick={() => set({ publish_local: toLocalInput(nextSaturday(8).toISOString()) })}>
-              → 8:00 sáng thứ 7 tới
-            </button>
-          </label>
-        </div>
-      </section>
-
-      {needsQuestions && (
-        <section className="card">
-          <div className="row between">
-            <h2>❓ Câu hỏi ({qs.length})</h2>
-            <button className="btn ghost sm" onClick={() => setBulk(true)}>⚡ Nhập nhanh từ văn bản</button>
-          </div>
-          {qs.length === 0 && <Empty>Chưa có câu hỏi nào.</Empty>}
-          {qs.map((q, i) => (
-            <div key={q.id} className="qedit">
-              <div className="row between">
-                <b>Câu {i + 1} · {q.type === 'mcq' ? 'Trắc nghiệm' : 'Tự luận'}</b>
-                <div className="row">
-                  <label className="inline-field">
-                    Điểm <input type="number" step="0.25" min="0" value={q.points} onChange={(e) => setQ(i, { points: e.target.value })} />
-                  </label>
-                  <button className="btn ghost sm" onClick={() => moveQ(i, -1)} title="Lên">↑</button>
-                  <button className="btn ghost sm" onClick={() => moveQ(i, 1)} title="Xuống">↓</button>
-                  <button className="btn ghost sm danger" onClick={() => removeQ(i)} title="Xoá">🗑</button>
-                </div>
-              </div>
-              <textarea rows={2} placeholder="Nội dung câu hỏi…" value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} />
-              <div className="row">
-                {q.image_path ? (
-                  <Gallery items={[{ path: q.image_path }]} onDelete={() => setQ(i, { image_path: null })} />
-                ) : (
-                  <Uploader folder={`questions/${id}`} multiple={false} accept="image/*" small label="🖼️ Ảnh câu hỏi"
-                    onUploaded={([p]) => setQ(i, { image_path: p })} />
-                )}
-              </div>
-              {q.type === 'mcq' && (
-                <div className="opts">
-                  {q.options.map((o, k) => (
-                    <div key={k} className={`opt-edit ${q.correct === k ? 'correct' : ''}`}>
-                      <label title="Đáp án đúng">
-                        <input type="radio" name={`c-${q.id}`} checked={q.correct === k} onChange={() => setQ(i, { correct: k })} />
-                        <b>{LETTERS[k]}</b>
-                      </label>
-                      <input value={o} placeholder={`Đáp án ${LETTERS[k]}`}
-                        onChange={(e) => setQ(i, { options: q.options.map((x, m) => (m === k ? e.target.value : x)) })} />
-                      {q.options.length > 2 && (
-                        <button className="btn ghost sm" onClick={() =>
-                          setQ(i, {
-                            options: q.options.filter((_, m) => m !== k),
-                            correct: q.correct === k ? null : q.correct > k ? q.correct - 1 : q.correct,
-                          })}>✕</button>
-                      )}
-                    </div>
-                  ))}
-                  {q.options.length < LETTERS.length && (
-                    <button className="link small" onClick={() => setQ(i, { options: [...q.options, ''] })}>+ thêm đáp án</button>
-                  )}
-                </div>
-              )}
-              <input className="mt-sm" placeholder={q.type === 'mcq' ? 'Giải thích (em xem sau khi chấm) — tuỳ chọn' : 'Đáp án gợi ý / ghi chú chấm (chỉ anh thấy trước khi chấm)'}
-                value={q.explanation} onChange={(e) => setQ(i, { explanation: e.target.value })} />
-            </div>
-          ))}
-          <div className="row mt">
-            <button className="btn" onClick={() => addQ('mcq')}>+ Trắc nghiệm</button>
-            <button className="btn" onClick={() => addQ('essay')}>+ Tự luận</button>
           </div>
         </section>
-      )}
 
-      {err && <div className="error">{err}</div>}
-      <div className="row between sticky-actions">
-        <button className="btn danger ghost" onClick={del}>Xoá bài tập</button>
-        <div className="row">
-          <button className="btn ghost" onClick={() => nav(`/bt/${id}`)}>Huỷ</button>
-          {form.is_published ? (
-            <>
-              <button className="btn" disabled={busy} onClick={() => save(false)}>Thu hồi về nháp</button>
-              <button className="btn primary" disabled={busy} onClick={() => save(true)}>{busy ? 'Đang lưu…' : '💾 Lưu'}</button>
-            </>
-          ) : (
-            <>
-              <button className="btn" disabled={busy} onClick={() => save(false)}>{busy ? 'Đang lưu…' : '💾 Lưu nháp'}</button>
-              <button className="btn primary" disabled={busy} onClick={() => save(true)}>🚀 Giao cho em</button>
-            </>
-          )}
+        {needsQuestions && (
+          <section style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>
+            <div className="row between" style={{ marginBottom: '16px' }}>
+              <div className="row">
+                <span className="idx-badge">{qs.length}</span>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>Danh sách câu hỏi</h3>
+              </div>
+              <button className="ios-btn sm ios-btn-secondary" onClick={() => setBulk(true)}>+ Nhập nhanh văn bản</button>
+            </div>
+            {qs.length === 0 && <Empty>Chưa có câu hỏi nào.</Empty>}
+            {qs.map((q, i) => (
+              <div key={q.id} className="qedit">
+                <div className="row between">
+                  <b>Câu {i + 1} · {q.type === 'mcq' ? 'Trắc nghiệm' : 'Tự luận'}</b>
+                  <div className="row">
+                    <label className="inline-field">
+                      Điểm <input type="number" step="0.25" min="0" value={q.points} onChange={(e) => setQ(i, { points: e.target.value })} />
+                    </label>
+                    <button className="btn ghost sm" onClick={() => moveQ(i, -1)} title="Lên">↑</button>
+                    <button className="btn ghost sm" onClick={() => moveQ(i, 1)} title="Xuống">↓</button>
+                    <button className="btn ghost sm danger" onClick={() => removeQ(i)} title="Xoá">Xoá</button>
+                  </div>
+                </div>
+                <textarea rows={2} placeholder="Nội dung câu hỏi…" value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} />
+                <div className="row">
+                  {q.image_path ? (
+                    <Gallery items={[{ path: q.image_path }]} onDelete={() => setQ(i, { image_path: null })} />
+                  ) : (
+                    <Uploader folder={`questions/${id}`} multiple={false} accept="image/*" small label="+ Thêm ảnh câu hỏi"
+                      onUploaded={([p]) => setQ(i, { image_path: p })} />
+                  )}
+                </div>
+                {q.type === 'mcq' && (
+                  <div className="opts">
+                    {q.options.map((o, k) => (
+                      <div key={k} className={`opt-edit ${q.correct === k ? 'correct' : ''}`}>
+                        <label title="Đáp án đúng">
+                          <input type="radio" name={`c-${q.id}`} checked={q.correct === k} onChange={() => setQ(i, { correct: k })} />
+                          <b>{LETTERS[k]}</b>
+                        </label>
+                        <input value={o} placeholder={`Đáp án ${LETTERS[k]}`}
+                          onChange={(e) => setQ(i, { options: q.options.map((x, m) => (m === k ? e.target.value : x)) })} />
+                        {q.options.length > 2 && (
+                          <button className="btn ghost sm" onClick={() =>
+                            setQ(i, {
+                              options: q.options.filter((_, m) => m !== k),
+                              correct: q.correct === k ? null : q.correct > k ? q.correct - 1 : q.correct,
+                            })}>✕</button>
+                        )}
+                      </div>
+                    ))}
+                    {q.options.length < LETTERS.length && (
+                      <button className="link small" onClick={() => setQ(i, { options: [...q.options, ''] })}>+ Thêm đáp án</button>
+                    )}
+                  </div>
+                )}
+                <input className="mt-sm" placeholder={q.type === 'mcq' ? 'Giải thích đáp án (học viên xem sau khi chấm) — tuỳ chọn' : 'Gợi ý đáp án / ghi chú chấm bài'}
+                  value={q.explanation} onChange={(e) => setQ(i, { explanation: e.target.value })} />
+              </div>
+            ))}
+            <div className="row mt">
+              <button className="ios-btn sm ios-btn-secondary" onClick={() => addQ('mcq')}>+ Thêm trắc nghiệm</button>
+              <button className="ios-btn sm ios-btn-secondary" onClick={() => addQ('essay')}>+ Thêm tự luận</button>
+            </div>
+          </section>
+        )}
+
+        {err && <div className="error">{err}</div>}
+        <div className="row between sticky-actions" style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>
+          <button className="btn danger ghost" onClick={del}>Xoá bài tập</button>
+          <div className="row">
+            <button className="ios-btn sm ios-btn-secondary" onClick={() => nav(`/bt/${id}`)}>Huỷ bỏ</button>
+            {form.is_published ? (
+              <>
+                <button className="ios-btn sm ios-btn-secondary" disabled={busy} onClick={() => save(false)}>Thu hồi về nháp</button>
+                <button className="ios-btn sm ios-btn-primary" disabled={busy} onClick={() => save(true)}>{busy ? 'Đang lưu…' : 'Lưu thay đổi'}</button>
+              </>
+            ) : (
+              <>
+                <button className="ios-btn sm ios-btn-secondary" disabled={busy} onClick={() => save(false)}>{busy ? 'Đang lưu…' : 'Lưu bản nháp'}</button>
+                <button className="ios-btn sm ios-btn-primary" disabled={busy} onClick={() => save(true)}>Giao bài cho học viên</button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -363,7 +377,7 @@ function BulkImport({ onClose, onApply }) {
   const [text, setText] = useState('');
   const parsed = text.trim() ? parseBulk(text) : [];
   return (
-    <Modal title="⚡ Nhập nhanh câu hỏi" onClose={onClose} wide>
+    <Modal title="Nhập nhanh câu hỏi từ văn bản" onClose={onClose} wide>
       <p className="small muted">
         Mỗi câu cách nhau 1 dòng trống. Đáp án bắt đầu bằng <code>A.</code> <code>B.</code>… Thêm dấu <code>*</code> trước đáp án đúng.
         Câu không có đáp án = tự luận. Có thể ghi điểm bằng dòng <code>(2đ)</code>.

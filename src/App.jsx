@@ -15,7 +15,7 @@ import Settings from './pages/Settings';
 export default function App() {
   const { user } = useAuth();
 
-  if (user === undefined) return <div className="splash">📚 Đang tải…</div>;
+  if (user === undefined) return <div className="splash">Đang tải…</div>;
   if (!user) return <Login />;
   if (user.missingProfile) {
     return (

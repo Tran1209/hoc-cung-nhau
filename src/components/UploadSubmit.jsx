@@ -44,23 +44,25 @@ export default function UploadSubmit({ assignment }) {
 
   return (
     <div>
-      <h2>📸 Nộp bài</h2>
-      <p className="small muted">Chụp rõ từng trang nhé. Có thể chọn nhiều ảnh cùng lúc.</p>
+      <h2 style={{ fontSize: '1.25rem', color: '#380718' }}>Nộp bài làm</h2>
+      <p className="small muted">Chụp rõ từng trang bài làm. Có thể chọn nhiều ảnh cùng lúc.</p>
       <Gallery
         items={files.map((p) => ({ path: p }))}
         onDelete={(it) => setFiles(files.filter((p) => p !== it.path))}
         empty="Chưa có ảnh nào."
       />
       <div className="mt-sm">
-        <Uploader folder={`submissions/${assignment.id}`} label="📷 Chụp / chọn ảnh bài làm"
+        <Uploader folder={`submissions/${assignment.id}`} label="+ Chọn tệp ảnh bài làm"
           onUploaded={(paths) => setFiles((f) => [...f, ...paths])} />
       </div>
       <label className="field mt">
-        <span>Lời nhắn cho anh (tuỳ chọn)</span>
-        <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Câu 3 em chưa chắc lắm…" />
+        <span>Ghi chú bài nộp (tuỳ chọn)</span>
+        <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Nhập ghi chú cho bài tập này..." />
       </label>
       {err && <div className="error">{err}</div>}
-      <button className="btn primary big" disabled={busy} onClick={submit}>{busy ? 'Đang nộp…' : '🚀 Nộp bài'}</button>
+      <button className="ios-btn ios-btn-primary" style={{ marginTop: '16px', padding: '12px 24px' }} disabled={busy} onClick={submit}>
+        {busy ? 'Đang nộp…' : 'Xác nhận nộp bài'}
+      </button>
     </div>
   );
 }

@@ -102,14 +102,14 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
     };
     return (
       <div className="exam-intro">
-        <h2>⏱️ Bài thi</h2>
+        <h2>Bài thi định kỳ</h2>
         <p>
           Thời gian: <b>{assignment.time_limit_minutes} phút</b> · {questions.length} câu.
-          <br />Đồng hồ chạy ngay khi bấm bắt đầu, kể cả khi em thoát ra. Hết giờ bài sẽ tự nộp.
+          <br />Đồng hồ tính giờ bắt đầu ngay khi nhấn làm bài. Hết thời gian hệ thống sẽ tự động nộp bài.
         </p>
         {err && <div className="error">{err}</div>}
-        <button className="btn primary big" disabled={starting} onClick={start}>
-          {starting ? 'Đang chuẩn bị…' : 'Bắt đầu làm bài 💪'}
+        <button className="ios-btn ios-btn-primary big" disabled={starting} onClick={start}>
+          {starting ? 'Đang chuẩn bị…' : 'Bắt đầu làm bài'}
         </button>
       </div>
     );
@@ -122,7 +122,7 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
   return (
     <div className="quiz">
       <div className="quiz-head">
-        <h2>{isExam ? '⏱️ Đang thi' : '📝 Làm bài'}</h2>
+        <h2>{isExam ? 'Đang thực hiện bài thi' : 'Làm bài tập'}</h2>
         <div className="row">
           <span className="small muted">Đã làm {done}/{questions.length}</span>
           {remaining !== null && (
@@ -164,7 +164,7 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
 
       {hasEssay && (
         <div className="qcard">
-          <b>📎 Ảnh bài làm tự luận (nếu em làm ra giấy)</b>
+          <b style={{ color: '#380718' }}>Ảnh bài làm tự luận kèm theo (tuỳ chọn)</b>
           <Gallery items={files.map((p) => ({ path: p }))} onDelete={(it) => setFiles(files.filter((p) => p !== it.path))} empty="Không bắt buộc." />
           <div className="mt-sm">
             <Uploader folder={`submissions/${assignment.id}`} small onUploaded={(p) => setFiles((f) => [...f, ...p])} />
@@ -173,12 +173,12 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
       )}
 
       <label className="field">
-        <span>Lời nhắn cho anh (tuỳ chọn)</span>
+        <span>Ghi chú bài nộp (tuỳ chọn)</span>
         <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
       </label>
       {err && <div className="error">{err}</div>}
-      <button className="btn primary big" disabled={busy} onClick={() => submit(false)}>
-        {busy ? 'Đang nộp…' : '🚀 Nộp bài'}
+      <button className="ios-btn ios-btn-primary" style={{ padding: '12px 24px' }} disabled={busy} onClick={() => submit(false)}>
+        {busy ? 'Đang nộp…' : 'Xác nhận nộp bài'}
       </button>
 
       {lightbox[0] && (

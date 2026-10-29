@@ -5,7 +5,7 @@ import { data } from '../data';
  * Nút chọn/chụp ảnh và tải lên. Gọi onUploaded(paths[]) khi xong.
  * Trên điện thoại sẽ cho chọn "Chụp ảnh" hoặc "Thư viện".
  */
-export default function Uploader({ folder, onUploaded, label = '📷 Thêm ảnh', multiple = true, accept = 'image/*,application/pdf', small }) {
+export default function Uploader({ folder, onUploaded, label = '+ Thêm tư liệu ảnh', multiple = true, accept = 'image/*,application/pdf', small }) {
   const ref = useRef();
   const [progress, setProgress] = useState(null);
   const [err, setErr] = useState('');

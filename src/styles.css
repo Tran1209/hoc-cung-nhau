@@ -1040,11 +1040,79 @@ a.stat:hover {
   border-radius: 9999px;
 }
 
-/* Lists */
-.list, .feed, .alist, .lessons {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Dải chỉ số liền khối bên trong Folio (Apple HIG Metric Strip) */
+.folio-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #FFFDFE;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.05);
+}
+
+.folio-metric-cell {
+  padding: 22px 18px;
+  text-align: center;
+  border-right: 1.5px solid rgba(253, 164, 175, 0.35);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.folio-metric-cell:last-child {
+  border-right: none;
+}
+
+a.folio-metric-cell:hover {
+  background: #FFF8FA;
+  text-decoration: none;
+}
+
+.folio-metric-val {
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  font-weight: 850;
+  color: var(--text-main);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.folio-metric-lbl {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+/* Thẻ môn học chuẩn Editorial (Không dùng icon trẻ con) */
+.subject-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #FFF0F3;
+  color: #BE123C;
+  border: 1px solid #FECDD6;
+  margin-bottom: 10px;
+}
+
+/* Section divider inside Folio */
+.folio-divider {
+  border: 0;
+  height: 1.5px;
+  background: rgba(253, 164, 175, 0.35);
+  margin: 36px 0;
 }
 .list li, .feed li {
   padding: 12px 0;

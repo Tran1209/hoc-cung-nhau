@@ -39,7 +39,7 @@ export default function AssignmentList({ assignments, latest, chapterId, lessonI
                     <div className="badges">
                       <KindBadge kind={a.kind} />
                       {isTeacher && !a.is_published && <span className="badge draft">Nháp</span>}
-                      {isTeacher && scheduled && <span className="badge due">🗓️ mở {fmtDate(a.publish_at)}</span>}
+                      {isTeacher && scheduled && <span className="badge due">Mở ngày {fmtDate(a.publish_at)}</span>}
                       {s?.status !== 'graded' && <DueBadge due={a.due_at} />}
                     </div>
                   </div>

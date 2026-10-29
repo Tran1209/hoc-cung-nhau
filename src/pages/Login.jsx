@@ -14,20 +14,22 @@ export default function Login() {
   if (!IS_CLOUD) {
     return (
       <div className="login-wrap">
-        <div className="card login">
-          <div className="login-logo">📚💕</div>
-          <h1>Học cùng nhau</h1>
-          <p className="muted">Chế độ DEMO — chọn vai để xem thử</p>
-          <div className="stack">
-            <button className="btn primary big" onClick={() => data.auth.signInDemo('teacher')}>
-              👨‍🏫 Vào với vai <b>Anh</b> (quản lý)
+        <div className="folio-sheet login" style={{ maxWidth: '420px', padding: '36px 32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            <span className="brand-dot" style={{ width: '14px', height: '14px' }} />
+          </div>
+          <h1 style={{ fontSize: '1.6rem', marginBottom: '6px' }}>Học Cùng Nhau</h1>
+          <p className="muted" style={{ marginBottom: '24px' }}>Không gian học tập chuẩn Rose Milk Editorial Folio</p>
+          <div className="stack" style={{ gap: '12px' }}>
+            <button className="ios-btn ios-btn-primary big" onClick={() => data.auth.signInDemo('teacher')}>
+              Vào với vai trò <b>Anh</b> (Quản lý)
             </button>
-            <button className="btn big" onClick={() => data.auth.signInDemo('student')}>
-              👩‍🎓 Vào với vai <b>Em</b> (học viên)
+            <button className="ios-btn ios-btn-secondary big" onClick={() => data.auth.signInDemo('student')}>
+              Vào với vai trò <b>Em</b> (Học viên)
             </button>
           </div>
-          <p className="small muted">
-            Muốn đồng bộ 2 máy & không mất dữ liệu: cấu hình Supabase theo README rồi khởi động lại web.
+          <p className="small muted" style={{ marginTop: '20px' }}>
+            Chế độ DEMO cục bộ. Cấu hình Supabase theo tài liệu khi cần đồng bộ dữ liệu giữa 2 thiết bị.
           </p>
         </div>
       </div>
@@ -55,9 +57,11 @@ export default function Login() {
 
   return (
     <div className="login-wrap">
-      <form className="card login" onSubmit={submit}>
-        <div className="login-logo">📚💕</div>
-        <h1>Học cùng nhau</h1>
+      <form className="folio-sheet login" onSubmit={submit} style={{ maxWidth: '420px', padding: '36px 32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <span className="brand-dot" style={{ width: '14px', height: '14px' }} />
+        </div>
+        <h1 style={{ fontSize: '1.6rem', marginBottom: '6px' }}>Học Cùng Nhau</h1>
         <div className="tabs">
           <button type="button" className={tab === 'in' ? 'on' : ''} onClick={() => setTab('in')}>Đăng nhập</button>
           <button type="button" className={tab === 'up' ? 'on' : ''} onClick={() => setTab('up')}>Tạo tài khoản</button>
@@ -91,8 +95,8 @@ export default function Login() {
         </label>
         {err && <div className="error">{err}</div>}
         {msg && <div className="ok">{msg}</div>}
-        <button className="btn primary big" disabled={busy}>
-          {busy ? 'Đợi xíu…' : tab === 'in' ? 'Vào học thôi 💪' : 'Tạo tài khoản'}
+        <button className="ios-btn ios-btn-primary" style={{ width: '100%', padding: '12px' }} disabled={busy}>
+          {busy ? 'Đang xử lý…' : tab === 'in' ? 'Đăng nhập vào học' : 'Tạo tài khoản'}
         </button>
       </form>
     </div>

@@ -15,7 +15,7 @@ export default function Settings() {
     setErr('');
     try {
       await data.updateProfile({ display_name: name.trim() });
-      setMsg('Đã lưu tên ✔');
+      setMsg('Đã cập nhật tên hiển thị thành công');
     } catch (e) {
       setErr(e.message);
     }
@@ -32,7 +32,7 @@ export default function Settings() {
       a.download = `hoc-cung-nhau-backup-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       localStorage.setItem('hcn-last-backup', new Date().toISOString());
-      setMsg('Đã tải file sao lưu ✔ — cất vào Google Drive cho chắc nhé.');
+      setMsg('Đã tải xuống tệp sao lưu dữ liệu an toàn');
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -48,7 +48,7 @@ export default function Settings() {
     setBusy(true);
     try {
       await data.importAll(JSON.parse(await f.text()));
-      setMsg('Đã khôi phục dữ liệu ✔');
+      setMsg('Đã khôi phục dữ liệu từ tệp sao lưu');
     } catch (e2) {
       setErr(e2.message);
     } finally {
@@ -60,53 +60,109 @@ export default function Settings() {
 
   return (
     <div className="page">
-      <h1>⚙️ Cài đặt</h1>
-
-      <section className="card form">
-        <h2>👤 Hồ sơ</h2>
-        <p className="small muted">
-          Vai trò: <b>{isTeacher ? 'Người quản lý (anh)' : 'Học viên (em)'}</b>
-          {partner && <> · Người kia: <b>{partner.display_name}</b></>}
-          {user.email && <> · {user.email}</>}
-        </p>
-        <label className="field">
-          <span>Tên hiển thị</span>
-          <div className="row">
-            <input value={name} onChange={(e) => setName(e.target.value)} />
-            <button className="btn primary" onClick={saveName}>Lưu</button>
+      <div className="folio-sheet">
+        <header className="folio-header">
+          <div className="folio-breadcrumbs">
+            <span>Hệ thống</span>
+            <span className="sep">/</span>
+            <span style={{ color: '#E11D48', fontWeight: 700 }}>Thiết lập ứng dụng</span>
           </div>
-        </label>
-      </section>
+          <div className="folio-title-row">
+            <div>
+              <h1 className="folio-title">Thiết lập & Sao lưu dữ liệu</h1>
+              <p className="muted" style={{ margin: '6px 0 0' }}>Cấu hình hồ sơ cá nhân và quản lý dữ liệu an toàn</p>
+            </div>
+          </div>
+          <div className="folio-progress-bar">
+            <div className="folio-progress-fill" style={{ width: '100%' }} />
+          </div>
+        </header>
 
-      <section className="card">
-        <h2>💾 Sao lưu dữ liệu</h2>
-        <p className="small">
-          {IS_CLOUD
-            ? 'Dữ liệu đang được lưu an toàn trên Supabase. Nên tải thêm 1 bản sao lưu mỗi thứ 7 trước khi cập nhật web.'
-            : 'Chế độ demo: dữ liệu nằm trong trình duyệt này. Xoá lịch sử duyệt web có thể làm mất dữ liệu!'}
-        </p>
-        <p className="small muted">Lần sao lưu gần nhất trên máy này: {last ? new Date(last).toLocaleString('vi-VN') : 'chưa có'}</p>
-        <div className="row">
-          <button className="btn primary" disabled={busy} onClick={doExport}>⬇️ Tải file sao lưu (.json)</button>
-          {!IS_CLOUD && (
-            <>
-              <input ref={fileRef} type="file" accept="application/json" hidden onChange={doImport} />
-              <button className="btn" disabled={busy} onClick={() => fileRef.current.click()}>⬆️ Khôi phục từ file</button>
-            </>
-          )}
-        </div>
-      </section>
+        {/* Section 1: Hồ sơ */}
+        <section style={{ marginBottom: '32px' }}>
+          <div className="row" style={{ marginBottom: '16px', gap: '10px' }}>
+            <span className="idx-badge">1</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>Hồ sơ tài khoản</h3>
+              <div className="small muted">
+                Vai trò: <b>{isTeacher ? 'Người quản lý (Anh)' : 'Học viên (Em)'}</b>
+                {partner && <> · Người đồng hành: <b>{partner.display_name}</b></>}
+                {user.email && <> · {user.email}</>}
+              </div>
+            </div>
+          </div>
 
-      <section className="card">
-        <h2>ℹ️ Thông tin</h2>
-        <ul className="small">
-          <li>Chế độ: <b>{IS_CLOUD ? 'Cloud (Supabase) — đồng bộ 2 máy' : 'Demo (trình duyệt)'}</b></li>
-          <li>Phiên bản web: <b>{APP_VERSION}</b> · Database cần: <b>v{APP_SCHEMA_VERSION}</b></li>
-        </ul>
-      </section>
+          <label className="field" style={{ maxWidth: '480px' }}>
+            <span className="small muted">Tên hiển thị trên hệ thống</span>
+            <div className="row" style={{ marginTop: '4px' }}>
+              <input value={name} onChange={(e) => setName(e.target.value)} />
+              <button className="ios-btn ios-btn-primary" onClick={saveName}>Lưu thay đổi</button>
+            </div>
+          </label>
+        </section>
 
-      {msg && <div className="ok">{msg}</div>}
-      {err && <div className="error">{err}</div>}
+        <hr className="folio-divider" />
+
+        {/* Section 2: Sao lưu */}
+        <section style={{ marginBottom: '32px' }}>
+          <div className="row" style={{ marginBottom: '16px', gap: '10px' }}>
+            <span className="idx-badge">2</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>Sao lưu dữ liệu học tập</h3>
+              <div className="small muted">
+                {IS_CLOUD
+                  ? 'Dữ liệu được lưu trữ an toàn trên máy chủ đám mây Supabase.'
+                  : 'Chế độ Demo: Dữ liệu đang được lưu trữ an toàn trong trình duyệt.'}
+              </div>
+            </div>
+          </div>
+
+          <p className="small muted">
+            Lần sao lưu gần nhất trên thiết bị này: {last ? new Date(last).toLocaleString('vi-VN') : 'Chưa có bản sao lưu nào'}
+          </p>
+
+          <div className="row" style={{ marginTop: '14px' }}>
+            <button className="ios-btn ios-btn-primary" disabled={busy} onClick={doExport}>
+              Tải tệp sao lưu (.json)
+            </button>
+            {!IS_CLOUD && (
+              <>
+                <input ref={fileRef} type="file" accept="application/json" hidden onChange={doImport} />
+                <button className="ios-btn ios-btn-secondary" disabled={busy} onClick={() => fileRef.current.click()}>
+                  Khôi phục từ tệp
+                </button>
+              </>
+            )}
+          </div>
+        </section>
+
+        <hr className="folio-divider" />
+
+        {/* Section 3: Thông tin */}
+        <section>
+          <div className="row" style={{ marginBottom: '16px', gap: '10px' }}>
+            <span className="idx-badge">3</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>Thông số hệ thống</h3>
+              <div className="small muted">Phiên bản nền tảng và cơ sở dữ liệu</div>
+            </div>
+          </div>
+
+          <div style={{ background: '#FFFDFE', border: '1.5px solid rgba(253, 164, 175, 0.4)', borderRadius: '16px', padding: '16px 20px', maxWidth: '480px' }}>
+            <div className="row between" style={{ padding: '6px 0', borderBottom: '1px solid rgba(253, 164, 175, 0.3)' }}>
+              <span className="small muted">Chế độ vận hành:</span>
+              <span className="small font-bold">{IS_CLOUD ? 'Cloud (Supabase)' : 'Demo (IndexedDB Local)'}</span>
+            </div>
+            <div className="row between" style={{ padding: '6px 0' }}>
+              <span className="small muted">Phiên bản ứng dụng:</span>
+              <span className="small font-bold">{APP_VERSION} (Schema v{APP_SCHEMA_VERSION})</span>
+            </div>
+          </div>
+        </section>
+
+        {msg && <div className="ok" style={{ marginTop: '20px' }}>{msg}</div>}
+        {err && <div className="error" style={{ marginTop: '20px' }}>{err}</div>}
+      </div>
     </div>
   );
 }

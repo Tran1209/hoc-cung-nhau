@@ -27,16 +27,16 @@ export function KindBadge({ kind }) {
 export function DueBadge({ due }) {
   if (!due) return null;
   const late = new Date(due) < new Date();
-  return <span className={`badge ${late ? 'late' : 'due'}`}>⏰ {dueText(due)}</span>;
+  return <span className={`badge ${late ? 'late' : 'due'}`}>{dueText(due)}</span>;
 }
 
 export function Loading() {
-  return <div className="empty">Đang tải…</div>;
+  return <div className="empty">Đang tải dữ liệu…</div>;
 }
 
 export function ErrorBox({ error }) {
   if (!error) return null;
-  return <div className="error">⚠️ {error}</div>;
+  return <div className="error">{error}</div>;
 }
 
 export function Empty({ children }) {
@@ -45,5 +45,5 @@ export function Empty({ children }) {
 
 export function Hearts({ n }) {
   if (!n) return null;
-  return <span className="hearts">{'❤️'.repeat(Math.min(n, 10))}{n > 10 ? ` ×${n}` : ''}</span>;
+  return <span className="badge" style={{ background: '#FFE4E8', color: '#BE123C', borderColor: '#FECDD6' }}>+{n} điểm thưởng</span>;
 }

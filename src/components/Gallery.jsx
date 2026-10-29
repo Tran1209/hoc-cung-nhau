@@ -14,7 +14,7 @@ export function FileThumb({ path, onOpen, className = '' }) {
   if (isPdf(path)) {
     return (
       <a className={`thumb pdf ${className}`} href={url || undefined} target="_blank" rel="noreferrer">
-        📄 PDF
+        PDF
       </a>
     );
   }
@@ -45,7 +45,7 @@ export function Gallery({ items, onDelete, empty = 'Chưa có ảnh nào.' }) {
               </figcaption>
             )}
             {onDelete && it.canDelete !== false && (
-              <button className="gdel" title="Xoá ảnh" onClick={() => onDelete(it)}>🗑</button>
+              <button className="gdel" title="Xoá tư liệu" onClick={() => onDelete(it)}>Xoá</button>
             )}
           </figure>
         ))}

@@ -12,7 +12,7 @@ const getSu12 = (num, fallbackTitle) => {
 export const HISTORY_CURRICULUM = [
   {
     title: 'Lịch Sử 10',
-    icon: '🏛️',
+    icon: '',
     color: '#3b82f6',
     description: 'Bộ Kết nối tri thức với cuộc sống — Khái quát Sử học và các nền văn minh thế giới, Đông Nam Á, Việt Nam',
     chapters: [
@@ -76,7 +76,7 @@ export const HISTORY_CURRICULUM = [
   },
   {
     title: 'Lịch Sử 11',
-    icon: '⚔️',
+    icon: '',
     color: '#8b5cf6',
     description: 'Bộ Kết nối tri thức với cuộc sống — Cách mạng tư sản, CNXH, Độc lập ĐNÁ, Chiến tranh bảo vệ Tổ quốc, Cải cách và Biển Đông',
     chapters: [
@@ -133,7 +133,7 @@ export const HISTORY_CURRICULUM = [
   },
   {
     title: 'Lịch Sử 12',
-    icon: '🎖️',
+    icon: '',
     color: '#ec4899',
     description: 'Bộ Kết nối tri thức với cuộc sống — Trật tự thế giới, ASEAN, Kháng chiến 1945-nay, Đổi mới 1986, Đối ngoại và Hồ Chí Minh',
     chapters: [

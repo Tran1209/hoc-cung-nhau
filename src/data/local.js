@@ -219,7 +219,7 @@ const DEFAULTS = {
     is_published: false, publish_at: null, due_at: null, position: 0, lesson_id: null,
   }),
   questions: () => ({ type: 'mcq', prompt: '', image_path: null, options: [], points: 1, position: 0 }),
-  subjects: () => ({ description: '', icon: '📘', color: '#ff7aa2', position: 0 }),
+  subjects: () => ({ description: '', icon: '', color: '#e11d48', position: 0 }),
   chapters: () => ({ description: '', position: 0 }),
   lessons: () => ({ content: '', position: 0 }),
 };

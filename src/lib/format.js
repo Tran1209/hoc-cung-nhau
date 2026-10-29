@@ -67,9 +67,9 @@ export function scoreText(score, max) {
 }
 
 export const KIND_LABEL = {
-  upload: '📸 Nộp ảnh',
-  quiz: '📝 Làm online',
-  exam: '⏱️ Bài thi',
+  upload: 'Nộp ảnh bài làm',
+  quiz: 'Trắc nghiệm online',
+  exam: 'Bài thi định kỳ',
 };
 
 export const STATUS_LABEL = {

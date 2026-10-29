@@ -9,7 +9,7 @@ import { sortByPos } from '../lib/format';
 import { latestByAssignment } from '../lib/progress';
 
 const CHAPTER_FIELDS = [
-  { name: 'title', label: 'Tên chương', required: true, autoFocus: true, placeholder: 'VD: Chương 1 — Hàm số' },
+  { name: 'title', label: 'Tên chương', required: true, autoFocus: true, placeholder: 'VD: Chủ đề 1 — Thế giới trong và sau Chiến tranh lạnh' },
   { name: 'description', label: 'Mô tả', type: 'textarea', rows: 3 },
   { name: 'position', label: 'Thứ tự', type: 'number' },
 ];
@@ -48,7 +48,7 @@ export default function SubjectPage() {
   };
 
   const delSubject = async () => {
-    if (!confirm(`Xoá môn "${subject.title}" và TOÀN BỘ chương, bài, bài tập bên trong? Không thể hoàn tác!`)) return;
+    if (!confirm(`Xoá môn "${subject.title}" cùng toàn bộ chương bài bên trong? Không thể hoàn tác!`)) return;
     if (prompt('Gõ XOA để xác nhận') !== 'XOA') return;
     await data.remove('subjects', id);
     nav('/');
@@ -56,57 +56,74 @@ export default function SubjectPage() {
 
   return (
     <div className="page">
-      <Crumbs items={[{ label: subject.title }]} />
-      <div className="row between">
-        <h1>{subject.icon} {subject.title}</h1>
-        {isTeacher && (
-          <div className="row">
-            <button className="btn primary" onClick={() => setDialog({})}>+ Thêm chương</button>
-            <button className="btn danger ghost" onClick={delSubject}>Xoá môn</button>
+      <div className="folio-sheet">
+        <header className="folio-header">
+          <Crumbs items={[{ label: subject.title }]} />
+          <div className="folio-title-row" style={{ marginTop: '12px' }}>
+            <div>
+              <div className="subject-pill-tag">{subject.title.toUpperCase()}</div>
+              <h1 className="folio-title">{subject.title}</h1>
+              {subject.description && <p className="muted" style={{ margin: '6px 0 0' }}>{subject.description}</p>}
+            </div>
+            {isTeacher && (
+              <div className="row">
+                <button className="ios-btn sm ios-btn-primary" onClick={() => setDialog({})}>+ Thêm chương</button>
+                <button className="ios-btn sm" style={{ color: '#E11D48', borderColor: '#FDA4AF' }} onClick={delSubject}>Xoá môn</button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      {subject.description && <p className="muted pre">{subject.description}</p>}
+          <div className="folio-progress-bar">
+            <div className="folio-progress-fill" style={{ width: '100%' }} />
+          </div>
+        </header>
 
-      {chapters.length === 0 ? (
-        <Empty>Chưa có chương nào.</Empty>
-      ) : (
-        <div className="stack">
-          {sortByPos(chapters).map((c) => {
-            const ls = sortByPos(lessons.filter((l) => l.chapter_id === c.id));
-            const as = assignments.filter((a) => a.chapter_id === c.id);
-            const done = as.filter((a) => latest[a.id]?.status === 'graded').length;
-            return (
-              <div key={c.id} className="card chapter">
-                <div className="row between">
-                  <Link to={`/chuong/${c.id}`}><h2>{c.title}</h2></Link>
-                  <div className="row">
-                    <span className="small muted">{done}/{as.length} bài tập đã chấm</span>
-                    {isTeacher && <button className="btn ghost sm" onClick={() => setDialog({ existing: c })}>✏️</button>}
+        {chapters.length === 0 ? (
+          <Empty>Chưa có chương nào trong môn học này.</Empty>
+        ) : (
+          <div className="stack" style={{ gap: '18px' }}>
+            {sortByPos(chapters).map((c, idx) => {
+              const ls = sortByPos(lessons.filter((l) => l.chapter_id === c.id));
+              const as = assignments.filter((a) => a.chapter_id === c.id);
+              const done = as.filter((a) => latest[a.id]?.status === 'graded').length;
+              return (
+                <div key={c.id} style={{ background: '#FFFDFE', border: '1.5px solid rgba(253, 164, 175, 0.45)', borderRadius: '20px', padding: '22px 26px', boxShadow: '0 4px 14px rgba(244, 63, 94, 0.05)' }}>
+                  <div className="row between">
+                    <div className="row" style={{ gap: '12px' }}>
+                      <span className="idx-badge">{idx + 1}</span>
+                      <Link to={`/chuong/${c.id}`}>
+                        <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#380718' }}>{c.title}</h2>
+                      </Link>
+                    </div>
+                    <div className="row">
+                      <span className="small muted">{done}/{as.length} bài tập đã chấm</span>
+                      {isTeacher && <button className="ios-btn sm ios-btn-secondary" onClick={() => setDialog({ existing: c })}>Sửa</button>}
+                    </div>
+                  </div>
+                  {c.description && <p className="small muted pre" style={{ margin: '10px 0 14px 42px' }}>{c.description}</p>}
+                  <div className="chips" style={{ marginLeft: '42px', marginTop: '12px' }}>
+                    {ls.map((l) => (
+                      <Link key={l.id} to={`/bai/${l.id}`} className="chip">
+                        {l.title}
+                      </Link>
+                    ))}
+                    {ls.length === 0 && <span className="small muted">Chưa có bài học trong chương này.</span>}
                   </div>
                 </div>
-                {c.description && <p className="small muted pre">{c.description}</p>}
-                <div className="chips">
-                  {ls.map((l) => (
-                    <Link key={l.id} to={`/bai/${l.id}`} className="chip">{l.title}</Link>
-                  ))}
-                  <Link to={`/chuong/${c.id}`} className="chip accent">Xem chương →</Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
 
-      {dialog && (
-        <FormDialog
-          title={dialog.existing ? 'Sửa chương' : 'Thêm chương'}
-          fields={CHAPTER_FIELDS}
-          initial={dialog.existing || { title: `Chương ${chapters.length + 1}: `, position: chapters.length + 1 }}
-          onSubmit={(v) => save(v, dialog.existing)}
-          onClose={() => setDialog(null)}
-        />
-      )}
+        {dialog && (
+          <FormDialog
+            title={dialog.existing ? 'Sửa chương học' : 'Thêm chương học'}
+            fields={CHAPTER_FIELDS}
+            initial={dialog.existing || { position: chapters.length + 1 }}
+            onSubmit={(v) => save(v, dialog.existing)}
+            onClose={() => setDialog(null)}
+          />
+        )}
+      </div>
     </div>
   );
 }
