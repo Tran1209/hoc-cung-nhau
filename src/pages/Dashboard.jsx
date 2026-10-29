@@ -588,74 +588,49 @@ export default function Dashboard() {
 
         <hr className="folio-divider" />
 
-        {/* 5. PHÂN MỤC GIÁO TRÌNH TOÀN DIỆN (LỊCH SỬ 10, 11, 12) */}
-        <section>
-          <div className="row between" style={{ marginBottom: '18px' }}>
-            <div className="row" style={{ gap: '10px' }}>
+        {/* 4. ĐIỀU HƯỚNG TỚI TAB MÔN HỌC */}
+        <section style={{ marginTop: '36px' }}>
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #FFFDFE 0%, #FFF5F7 100%)',
+              border: '1.5px solid rgba(253, 164, 175, 0.45)',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px',
+            }}
+          >
+            <div className="row" style={{ gap: '12px' }}>
               <span className="idx-badge">4</span>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>Chương trình môn học</h3>
-                <div className="small muted">Giáo trình và các chuyên đề trọng tâm</div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>
+                  Chương trình & Danh mục môn học
+                </h3>
+                <div className="small muted">
+                  Đang có {subjects.length} môn học trong hệ thống (Lịch Sử 10, Lịch Sử 11, Lịch Sử 12)
+                </div>
               </div>
             </div>
 
-            {isTeacher && (
-              <div className="row">
-                <button
+            <div className="row" style={{ gap: '10px' }}>
+              {sortByPos(subjects).map((s) => (
+                <Link
+                  key={s.id}
+                  to={`/mon/${s.id}`}
                   className="ios-btn sm ios-btn-secondary"
-                  onClick={handleSeedHistory}
-                  disabled={seeding}
+                  style={{ textDecoration: 'none' }}
                 >
-                  {seeding ? 'Đang nạp...' : 'Nạp giáo trình Lịch Sử'}
-                </button>
-                <button className="ios-btn sm ios-btn-primary" onClick={() => setDialog({})}>
-                  + Thêm môn học
-                </button>
-              </div>
-            )}
-          </div>
-
-          {subjects.length === 0 ? (
-            <Empty>Chưa có môn học nào. Hãy bấm "Nạp giáo trình Lịch Sử" để bắt đầu.</Empty>
-          ) : (
-            <div className="cards">
-              {sortByPos(subjects).map((s) => {
-                const chs = chapters.filter((c) => c.subject_id === s.id);
-                const chIds = new Set(chs.map((c) => c.id));
-                const as = openAssignments.filter((a) => chIds.has(a.chapter_id));
-                const done = as.filter((a) => latest[a.id]?.status === 'graded').length;
-                const pct = as.length ? Math.round((done / as.length) * 100) : 0;
-                return (
-                  <div
-                    key={s.id}
-                    className="subject"
-                    style={{ '--c': s.color }}
-                    onClick={() => nav(`/mon/${s.id}`)}
-                  >
-                    <div className="subject-pill-tag">{s.title.toUpperCase()}</div>
-                    <h3 style={{ margin: '2px 0 6px', fontSize: '1.18rem' }}>{s.title}</h3>
-                    {s.description && <p className="small muted clamp">{s.description}</p>}
-                    <div className="small muted" style={{ marginTop: 'auto', paddingTop: '10px' }}>
-                      {chs.length} chương · {as.length} bài tập
-                    </div>
-                    <div className="bar">
-                      <div style={{ width: `${pct}%` }} />
-                    </div>
-                    <div className="small" style={{ color: '#BE123C', fontWeight: 700 }}>
-                      Hoàn thành {pct}%
-                    </div>
-                    {isTeacher && (
-                      <div className="corner" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn ghost sm" onClick={() => setDialog({ existing: s })}>
-                          Sửa
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  {s.title}
+                </Link>
+              ))}
+              <Link to="/mon-hoc" className="ios-btn sm ios-btn-primary">
+                Xem tất cả trong tab Môn học →
+              </Link>
             </div>
-          )}
+          </div>
         </section>
 
         {dialog && (

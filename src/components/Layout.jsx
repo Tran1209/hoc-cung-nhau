@@ -35,6 +35,7 @@ export default function Layout({ children }) {
         </NavLink>
         <nav className="nav">
           <NavLink to="/" end>Tổng quan</NavLink>
+          <NavLink to="/mon-hoc">Môn học</NavLink>
           {isTeacher && (
             <NavLink to="/cham">
               Chấm bài

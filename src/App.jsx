@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import SubjectsPage from './pages/SubjectsPage';
 import SubjectPage from './pages/SubjectPage';
 import ChapterPage from './pages/ChapterPage';
 import LessonPage from './pages/LessonPage';
@@ -35,6 +36,8 @@ export default function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/mon-hoc" element={<SubjectsPage />} />
+        <Route path="/mon" element={<Navigate to="/mon-hoc" replace />} />
         <Route path="/mon/:id" element={<SubjectPage />} />
         <Route path="/chuong/:id" element={<ChapterPage />} />
         <Route path="/bai/:id" element={<LessonPage />} />
