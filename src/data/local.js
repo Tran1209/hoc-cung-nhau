@@ -51,50 +51,91 @@ function tx(store, mode, fn) {
 
 const reqP = (r) => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 
-let isSeeding = false;
+let seedPromise = null;
+
+async function cleanDuplicates() {
+  const allSubs = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('subjects'))).then((rs) => rs.map((r) => r.data));
+  const seenTitles = new Set();
+  const keepSubs = new Set();
+  for (const sub of allSubs) {
+    if (seenTitles.has(sub.title)) {
+      await delRow('subjects', sub.id);
+    } else {
+      seenTitles.add(sub.title);
+      keepSubs.add(sub.id);
+    }
+  }
+
+  const allChs = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('chapters'))).then((rs) => rs.map((r) => r.data));
+  const seenChs = new Set();
+  const keepChs = new Set();
+  for (const ch of allChs) {
+    const key = `${ch.subject_id}:${ch.title}`;
+    if (!keepSubs.has(ch.subject_id) || seenChs.has(key)) {
+      await delRow('chapters', ch.id);
+    } else {
+      seenChs.add(key);
+      keepChs.add(ch.id);
+    }
+  }
+
+  const allLs = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('lessons'))).then((rs) => rs.map((r) => r.data));
+  const seenLs = new Set();
+  for (const l of allLs) {
+    const key = `${l.chapter_id}:${l.title}`;
+    if (!keepChs.has(l.chapter_id) || seenLs.has(key)) {
+      await delRow('lessons', l.id);
+    } else {
+      seenLs.add(key);
+    }
+  }
+}
+
 async function seedDefaultIfEmpty() {
-  if (isSeeding) return;
-  const existing = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('subjects')));
-  if (existing.length === 0) {
-    isSeeding = true;
-    for (let sIdx = 0; sIdx < HISTORY_CURRICULUM.length; sIdx++) {
-      const s = HISTORY_CURRICULUM[sIdx];
-      const subId = uid();
-      await putRow('subjects', {
-        id: subId,
-        title: s.title,
-        icon: s.icon,
-        color: s.color,
-        description: s.description,
-        position: sIdx + 1,
-        created_at: new Date().toISOString(),
-      });
-      for (let cIdx = 0; cIdx < s.chapters.length; cIdx++) {
-        const c = s.chapters[cIdx];
-        const chId = uid();
-        await putRow('chapters', {
-          id: chId,
-          subject_id: subId,
-          title: c.title,
-          description: c.description,
-          position: cIdx + 1,
+  if (seedPromise) return seedPromise;
+  seedPromise = (async () => {
+    await cleanDuplicates();
+    const existing = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('subjects'))).then((rs) => rs.map((r) => r.data));
+    if (existing.length === 0) {
+      for (let sIdx = 0; sIdx < HISTORY_CURRICULUM.length; sIdx++) {
+        const s = HISTORY_CURRICULUM[sIdx];
+        const subId = uid();
+        await putRow('subjects', {
+          id: subId,
+          title: s.title,
+          icon: s.icon,
+          color: s.color,
+          description: s.description,
+          position: sIdx + 1,
           created_at: new Date().toISOString(),
         });
-        for (let lIdx = 0; lIdx < c.lessons.length; lIdx++) {
-          const l = c.lessons[lIdx];
-          await putRow('lessons', {
-            id: uid(),
-            chapter_id: chId,
-            title: l,
-            content: '',
-            position: lIdx + 1,
+        for (let cIdx = 0; cIdx < s.chapters.length; cIdx++) {
+          const c = s.chapters[cIdx];
+          const chId = uid();
+          await putRow('chapters', {
+            id: chId,
+            subject_id: subId,
+            title: c.title,
+            description: c.description,
+            position: cIdx + 1,
             created_at: new Date().toISOString(),
           });
+          for (let lIdx = 0; lIdx < c.lessons.length; lIdx++) {
+            const l = c.lessons[lIdx];
+            await putRow('lessons', {
+              id: uid(),
+              chapter_id: chId,
+              title: l,
+              content: '',
+              position: lIdx + 1,
+              created_at: new Date().toISOString(),
+            });
+          }
         }
       }
     }
-    isSeeding = false;
-  }
+  })();
+  return seedPromise;
 }
 
 async function allRows(table) {
