@@ -4855,3 +4855,494 @@ a.folio-metric-cell:hover {
   gap: 14px;
   padding: 4px 0;
 }
+
+/* ==========================================================================
+   COMPARISON DIAGRAM & LESSONS HUB (LÕI 5 - BƯỚC 6)
+   ========================================================================== */
+.comparison-hub-container {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Top Switcher */
+.cmp-top-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+
+.cmp-topic-pill-tabs {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 240, 243, 0.85);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  gap: 4px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.cmp-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #881337;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.cmp-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: #BE123C;
+}
+
+.cmp-tab-btn.active {
+  background: #380718;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(56, 7, 24, 0.25);
+}
+
+.cmp-tab-icon {
+  font-size: 0.85rem;
+}
+
+.cmp-control-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 2. Bàn Cân Đối Chiếu */
+.cmp-main-scale-card {
+  background: #FFF9FA;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.05);
+}
+
+.cmp-table-head-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid rgba(253, 164, 175, 0.3);
+}
+
+.cmp-table-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0 0 4px 0;
+}
+
+.cmp-table-sub {
+  font-size: 0.82rem;
+  color: #4B5563;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.cmp-table-responsive-box {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  background: #FFFFFF;
+}
+
+.cmp-interactive-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.cmp-interactive-table th {
+  background: #FFE4E8;
+  color: #881337;
+  padding: 12px 14px;
+  font-size: 0.84rem;
+  font-weight: 850;
+  border-bottom: 1.5px solid #FDA4AF;
+}
+
+.cmp-interactive-table th.th-criteria {
+  background: #FFF0F3;
+  border-right: 1.5px solid rgba(253, 164, 175, 0.45);
+}
+
+.th-col-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.th-col-content .col-name {
+  font-size: 0.88rem;
+  font-weight: 850;
+  color: #380718;
+}
+
+.th-col-content .col-sub {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #9F1239;
+}
+
+.cmp-interactive-table td {
+  padding: 12px 14px;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(253, 164, 175, 0.25);
+}
+
+.td-criteria {
+  background: #FFFDFE;
+  border-right: 1.5px solid rgba(253, 164, 175, 0.35);
+}
+
+.criteria-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.criteria-name {
+  font-size: 0.86rem;
+  font-weight: 850;
+  color: #380718;
+  line-height: 1.35;
+}
+
+.row-toggle-btn {
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.row-toggle-btn.btn-merged {
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #86EFAC;
+}
+
+.row-toggle-btn.btn-merged:hover {
+  background: #BBF7D0;
+}
+
+.row-toggle-btn.btn-diff {
+  background: #FFF1F2;
+  color: #BE123C;
+  border: 1px solid #FECDD6;
+}
+
+.row-toggle-btn.btn-diff:hover {
+  background: #FFE4E8;
+}
+
+/* Ô Gộp Xanh (Tương Đồng) */
+.td-merged-cell {
+  background: #F0FDF4;
+}
+
+.merged-highlight-box {
+  background: #FFFFFF;
+  border: 1.5px solid #86EFAC;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 8px rgba(22, 101, 52, 0.05);
+}
+
+.merged-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 850;
+  background: #DCFCE7;
+  color: #15803D;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+.merged-text {
+  font-size: 0.85rem;
+  color: #166534;
+  line-height: 1.6;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Các Ô Tách Cột (Khác Biệt) */
+.td-diff-cell {
+  background: #FFFFFF;
+  border-right: 1px solid rgba(253, 164, 175, 0.2);
+}
+
+.td-diff-cell:last-child {
+  border-right: none;
+}
+
+.diff-cell-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diff-col-indicator {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #BE123C;
+  text-transform: uppercase;
+}
+
+.diff-cell-text {
+  font-size: 0.84rem;
+  color: #374151;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* 3. Khung Rút Ra Bài Học Kinh Nghiệm */
+.cmp-lessons-section {
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+  border: 1.5px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lessons-section-head {
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid #E2E8F0;
+}
+
+.lesson-badge-icon {
+  font-size: 1.3rem;
+  background: #FEF3C7;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid #FDE68A;
+}
+
+.lessons-head-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 850;
+  color: #1E293B;
+  margin: 0 0 2px 0;
+}
+
+.lessons-head-sub {
+  font-size: 0.82rem;
+  color: #64748B;
+  margin: 0;
+}
+
+.lessons-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lesson-bridge-card {
+  display: grid;
+  grid-template-columns: 1fr auto 1.3fr;
+  align-items: center;
+  gap: 14px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+@media (max-width: 860px) {
+  .lesson-bridge-card {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .bridge-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+.bridge-part {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bridge-tag {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 850;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+.tag-history {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+.tag-current {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.bridge-arrow {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #3B82F6;
+}
+
+.bridge-content {
+  font-size: 0.85rem;
+  color: #1E293B;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* 4. Thẻ Từ Khóa Thời Chiến Bị Loại Trừ (Blacklist) */
+.cmp-blacklist-container {
+  background: #FFF1F2;
+  border: 1.5px solid #FECDD3;
+  border-radius: 18px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.blacklist-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.blacklist-ban-icon {
+  font-size: 1.3rem;
+}
+
+.blacklist-head-title {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 850;
+  color: #9F1239;
+  margin: 0 0 2px 0;
+}
+
+.blacklist-head-sub {
+  font-size: 0.82rem;
+  color: #BE123C;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.blacklist-chips-display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.blacklist-word-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid #FDA4AF;
+  color: #BE123C;
+  font-weight: 800;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(190, 18, 60, 0.08);
+}
+
+.bl-x {
+  color: #E11D48;
+  font-weight: 900;
+}
+
+.bl-remove-btn {
+  border: none;
+  background: transparent;
+  color: #FDA4AF;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.bl-remove-btn:hover {
+  color: #BE123C;
+}
+
+.bl-inline-add-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bl-inline-input {
+  border: 1.5px dashed #FDA4AF;
+  background: #FFFFFF;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  color: #380718;
+  outline: none;
+}
+
+.bl-inline-input:focus {
+  border-color: #BE123C;
+}
+
+.bl-inline-submit-btn {
+  border: 1px solid #BE123C;
+  background: #BE123C;
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Modal Form Styles */
+.cmp-form-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0;
+}

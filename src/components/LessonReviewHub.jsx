@@ -4,6 +4,7 @@ import LessonFlashcards from './LessonFlashcards';
 import MilestoneDiagram from './MilestoneDiagram';
 import AxesDiagram from './AxesDiagram';
 import CauseEffectDiagram, { DEFAULT_CAUSE_EFFECT_LIST } from './CauseEffectDiagram';
+import ComparisonDiagram, { DEFAULT_COMPARISONS_LIST } from './ComparisonDiagram';
 
 // Dữ liệu mẫu chuẩn hoá của Bài 1: Liên hợp quốc & ASEAN (Bộ GD&ĐT 2026)
 export const DEFAULT_BAI1_REVIEW_DATA = {
@@ -150,36 +151,7 @@ export const DEFAULT_BAI1_REVIEW_DATA = {
     },
   ],
   causeEffects: DEFAULT_CAUSE_EFFECT_LIST,
-  comparisons: [
-    {
-      id: 'cmp-1',
-      title: 'Đối chiếu Liên hợp quốc (1945) vs ASEAN (1967)',
-      eventA: {
-        name: 'Liên hợp quốc (1945)',
-        context: 'Sau CTTG II (1945), nhân loại cần một tổ chức toàn cầu duy trì trật tự thế giới mới.',
-        target: 'Duy trì hoà bình, an ninh quốc tế và hợp tác đa phương toàn cầu.',
-        mechanism: 'Nguyên tắc nhất trí giữa 5 nước uỷ viên thường trực Hội đồng Bảo an (veto).',
-        scope: 'Tổ chức toàn cầu lớn nhất hành tinh (hiện có 193 quốc gia thành viên).',
-      },
-      eventB: {
-        name: 'ASEAN (1967)',
-        context: 'Trong Chiến tranh lạnh (1967), các nước ĐNA cần hợp tác để ổn định và phát triển.',
-        target: 'Thúc đẩy tăng trưởng kinh tế, tiến bộ xã hội và hoà bình, ổn định khu vực.',
-        mechanism: 'Nguyên tắc đồng thuận (consensus) giữa tất cả các nước thành viên.',
-        scope: 'Tổ chức hợp tác liên chính phủ cấp khu vực Đông Nam Á (hiện có 10 thành viên).',
-      },
-      similarities: [
-        'Đều là tổ chức liên chính phủ nhằm duy trì hoà bình, an ninh và hợp tác phát triển.',
-        'Đều tôn trọng độc lập, chủ quyền, giải quyết tranh chấp bằng biện pháp hoà bình, không can thiệp nội bộ.',
-      ],
-      differences: [
-        'Phạm vi hoạt động: Liên hợp quốc mang tính toàn cầu; ASEAN mang tính khu vực.',
-        'Cơ chế biểu quyết: HĐBA LHQ áp dụng quyền phủ quyết của 5 nước lớn; ASEAN áp dụng cơ chế đồng thuận.',
-      ],
-      lessons: 'Thực hiện đường lối đối ngoại độc lập, tự chủ, đa phương hoá, đa dạng hoá; chủ động hội nhập quốc tế.',
-      blacklist: ['liên minh phòng thủ quân sự', 'đối đầu khối quân sự', 'bao cấp kinh tế'],
-    },
-  ],
+  comparisons: DEFAULT_COMPARISONS_LIST,
 };
 
 export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', flashcards = [], onCountChange }) {
@@ -442,91 +414,25 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           <div className="review-core-pane">
             <div className="core-lead-row">
               <div>
-                <h3 className="core-lead-title">Lõi 5: Bàn cân Đối chiếu & Bài học vượt thời gian</h3>
+                <h3 className="core-lead-title">Lõi 5: Bàn Cân Đối Chiếu Đa Chiều & Bài Học Kinh Nghiệm</h3>
                 <p className="small muted">
-                  Bảng đối chiếu 4 tiêu chí cố định (Bối cảnh, Mục tiêu, Cơ chế, Quy mô) và danh sách Từ khoá thời chiến BỊ LOẠI TRỪ.
+                  Bảng so sánh 2–3 cột với tính năng <b>Gộp ô xanh tương đồng</b> và <b>Tách cột tô sáng khác biệt</b>. Cầu nối bài học bảo vệ Tổ quốc hôm nay & <b>Từ khoá thời chiến bị loại trừ ⛔</b>.
                 </p>
               </div>
               <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C' }}>
-                {studyData.comparisons?.length || 0} bảng đối chiếu
+                {(studyData.comparisons?.length || DEFAULT_COMPARISONS_LIST.length)} bảng đối chiếu
               </span>
             </div>
 
-            {(studyData.comparisons || []).map((cmp) => (
-              <div key={cmp.id} className="comparison-card">
-                <h4 className="cmp-title">{cmp.title}</h4>
-
-                {/* Bảng so sánh 4 tiêu chí */}
-                <table className="cmp-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '25%' }}>Tiêu chí đối chiếu</th>
-                      <th style={{ width: '37.5%' }}>{cmp.eventA?.name}</th>
-                      <th style={{ width: '37.5%' }}>{cmp.eventB?.name}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="cmp-criteria">1. Bối cảnh lịch sử</td>
-                      <td>{cmp.eventA?.context}</td>
-                      <td className="cmp-diff">{cmp.eventB?.context}</td>
-                    </tr>
-                    <tr>
-                      <td className="cmp-criteria">2. Mục tiêu trọng tâm</td>
-                      <td>{cmp.eventA?.target}</td>
-                      <td>{cmp.eventB?.target}</td>
-                    </tr>
-                    <tr>
-                      <td className="cmp-criteria">3. Cơ chế biểu quyết</td>
-                      <td>{cmp.eventA?.mechanism}</td>
-                      <td className="cmp-diff">{cmp.eventB?.mechanism}</td>
-                    </tr>
-                    <tr>
-                      <td className="cmp-criteria">4. Quy mô & Phạm vi</td>
-                      <td>{cmp.eventA?.scope}</td>
-                      <td className="cmp-diff">{cmp.eventB?.scope}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {/* Điểm tương đồng & Khác biệt */}
-                <div className="cmp-summary-row">
-                  <div className="cmp-summary-col">
-                    <span className="summary-title" style={{ color: '#059669' }}>✓ Điểm tương đồng:</span>
-                    <ul>
-                      {cmp.similarities?.map((s, i) => (
-                        <li key={i}>{s}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="cmp-summary-col">
-                    <span className="summary-title" style={{ color: '#BE123C' }}>★ Điểm khác biệt / Điểm mới:</span>
-                    <ul>
-                      {cmp.differences?.map((d, i) => (
-                        <li key={i}>{d}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Bài học hiện nay & Blacklist */}
-                <div className="cmp-lesson-footer">
-                  <div className="lesson-box">
-                    <b>★ Bài học cho hiện nay:</b> {cmp.lessons}
-                  </div>
-                  {cmp.blacklist?.length > 0 && (
-                    <div className="blacklist-box">
-                      <b>⛔ Từ khoá thời chiến bị loại trừ (Không chọn cho hiện nay):</b>
-                      <div className="bl-chips">
-                        {cmp.blacklist.map((w, wi) => (
-                          <span key={wi} className="bl-chip">✕ "{w}"</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+            <ComparisonDiagram
+              comparisons={studyData.comparisons?.length > 0 ? studyData.comparisons : DEFAULT_COMPARISONS_LIST}
+              onSaveComparisons={(newComparisons) => {
+                saveStudyData({
+                  ...studyData,
+                  comparisons: newComparisons,
+                });
+              }}
+            />
           </div>
         )}
 
