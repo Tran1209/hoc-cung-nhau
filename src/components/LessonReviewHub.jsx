@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { FormDialog } from './Modal';
 import LessonFlashcards from './LessonFlashcards';
 import MilestoneDiagram from './MilestoneDiagram';
+import AxesDiagram from './AxesDiagram';
 
 // Dữ liệu mẫu chuẩn hoá của Bài 1: Liên hợp quốc & ASEAN (Bộ GD&ĐT 2026)
 export const DEFAULT_BAI1_REVIEW_DATA = {
@@ -407,9 +408,9 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           <div className="review-core-pane">
             <div className="core-lead-row">
               <div>
-                <h3 className="core-lead-title">Lõi 2 & 4: Bảng Chia trục Chủ thể & Giai đoạn thời gian</h3>
+                <h3 className="core-lead-title">Lõi 2 & 4: Chia Trục Chủ Thể, Giai Đoạn & Bản Chất</h3>
                 <p className="small muted">
-                  Rèn luyện phản xạ bắt động từ chuẩn 3 mảnh ghép: <b>[Tiến độ]</b> + <b>[Động từ hành động]</b> + <b>[Mục tiêu / Đối tượng]</b>.
+                  Tự do chia trục theo 3 kiểu mẫu: <b>Chặng Thời Gian</b>, <b>Ma Trận Chủ Thể</b> và <b>Chia Đôi Bản Chất: Bất Biến vs Vận Động</b>.
                 </p>
               </div>
               <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C' }}>
@@ -417,22 +418,15 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
               </span>
             </div>
 
-            <div className="axes-cards-grid">
-              {(studyData.axes || []).map((ax) => (
-                <div key={ax.id} className="axis-item-card">
-                  <div className="axis-card-header">
-                    <span className="subject-pill">{ax.subject}</span>
-                    <span className="period-pill">{ax.period}</span>
-                  </div>
-
-                  <div className="axis-formula-box">
-                    <span className="badge-progress">{ax.progressBadge}</span>
-                    <b className="verb-text">{ax.verb}</b>
-                    <span className="content-text">{ax.content}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <AxesDiagram
+              axes={studyData.axes || []}
+              onSaveAxes={(newAxes) => {
+                saveStudyData({
+                  ...studyData,
+                  axes: newAxes,
+                });
+              }}
+            />
           </div>
         )}
 
