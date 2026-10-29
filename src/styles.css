@@ -2480,3 +2480,154 @@ a.folio-metric-cell:hover {
     padding: 10px 14px;
   }
 }
+
+
+/* =========================================================================
+   8. EDITORIAL POPOVER MENU (Trọng tâm dạ quang nâng cấp - Đẩy chữ sang Sơ đồ)
+   ========================================================================= */
+
+.editorial-popover-menu {
+  position: absolute;
+  z-index: 100;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(253, 164, 175, 0.55);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(56, 7, 24, 0.18);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 330px;
+  max-width: 92vw;
+  transform: translate(-50%, -100%);
+  margin-top: -12px;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translate(-50%, -90%); }
+  to { opacity: 1; transform: translate(-50%, -100%); }
+}
+
+.editorial-popover-menu::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: #FFFFFF;
+  border-right: 1.5px solid rgba(253, 164, 175, 0.55);
+  border-bottom: 1.5px solid rgba(253, 164, 175, 0.55);
+}
+
+.popover-main-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(253, 164, 175, 0.3);
+}
+
+.popover-action-btn {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.popover-tag-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.popover-tag-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #BE123C;
+  letter-spacing: 0.04em;
+}
+
+.popover-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.popover-tag-chip {
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(253, 164, 175, 0.5);
+  background: #FFFDFE;
+  color: #380718;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.popover-tag-chip:hover {
+  transform: translateY(-1px);
+}
+
+.popover-tag-chip.active {
+  background: #380718 !important;
+  color: #FFFFFF !important;
+  border-color: #380718 !important;
+}
+
+.popover-extract-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(253, 164, 175, 0.35);
+}
+
+.popover-extract-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  background: #FFF5F7;
+  border: 1px solid rgba(253, 164, 175, 0.45);
+  color: #881337;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.popover-extract-btn:hover {
+  background: #FFE4E8;
+  border-color: #FDA4AF;
+  color: #BE123C;
+  transform: translateY(-1px);
+}
+
+/* Highlight Margin / Inline Pill Tag */
+.highlight-pill-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.02em;
+}
+
+.tag-mốc-thực-thể { background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
+.tag-hoạt-động-chủ-trương { background: #F3E8FF; color: #7E22CE; border: 1px solid #E9D5FF; }
+.tag-nguyên-nhân { background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
+.tag-ý-nghĩa { background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
+.tag-bản-chất { background: #FFE4E8; color: #BE123C; border: 1px solid #FECDD6; }

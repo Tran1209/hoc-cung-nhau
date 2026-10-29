@@ -175,7 +175,45 @@ const CORE_HISTORY_TERMS = [
   'Không can thiệp vào công việc nội bộ',
 ];
 
-function applyEditorialHighlights(html, userHighlights = [], autoHighlight = true) {
+// Trích xuất tự động thông tin lịch sử từ đoạn văn bản vừa bôi đen
+function extractHistoricalInfo(snippet) {
+  if (!snippet) return { time: '', entity: '', verb: '', content: '' };
+  let time = '';
+  const dateMatch =
+    snippet.match(/(?:ngày\s*)?(\d{1,2}\s*[-/.]\s*\d{1,2}\s*[-/.]\s*\d{2,4})/i) ||
+    snippet.match(/(?:tháng\s*)?(\d{1,2}\s*[-/.]\s*\d{4})/i) ||
+    snippet.match(/(?:năm\s*)?(\b(18|19|20)\d{2}\b)/i) ||
+    snippet.match(/(?:thế\s*kỷ\s*)([IVXLCDM]+|\d+)/i);
+  if (dateMatch) {
+    time = dateMatch[0].trim();
+  }
+
+  const commonVerbs = [
+    'thành lập', 'ký kết', 'kí kết', 'soạn thảo', 'khẳng định', 'lãnh đạo',
+    'phát động', 'tiêu diệt', 'đề ra', 'xây dựng', 'thông qua', 'chủ trì',
+    'gia nhập', 'khởi xướng', 'tuyên bố', 'bình thường hoá', 'chuyển hướng',
+    'đánh dấu', 'quyết định', 'triển khai', 'mở rộng', 'đàm phán'
+  ];
+  let verb = '';
+  const lowerSnippet = snippet.toLowerCase();
+  for (const v of commonVerbs) {
+    if (lowerSnippet.includes(v)) {
+      verb = v.charAt(0).toUpperCase() + v.slice(1);
+      break;
+    }
+  }
+  if (!verb) verb = 'Thực hiện';
+
+  let content = snippet;
+  if (time) {
+    content = content.replace(time, '').replace(/^[:\s,.-]+|[:\s,.-]+$/g, '').trim();
+  }
+  if (!content) content = snippet;
+
+  return { time, entity: content, verb, content };
+}
+
+function applyEditorialHighlights(html, userHighlights = [], autoHighlight = true, highlightTags = {}) {
   if (!html) return '';
 
   const terms = [];
@@ -202,13 +240,17 @@ function applyEditorialHighlights(html, userHighlights = [], autoHighlight = tru
       let text = part;
       for (const term of sorted) {
         const isUser = userHighlights.includes(term);
+        const tag = highlightTags[term];
+        const tagClass = tag ? `tag-${tag.replace('#', '').toLowerCase()}` : '';
+        const tagHtml = tag ? `<span class="highlight-pill-tag ${tagClass}">${tag}</span>` : '';
+
         const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const reg = new RegExp(`(${escaped})`, 'gi');
         text = text.replace(
           reg,
           `<mark class="highlight-tape ${isUser ? 'user-highlight' : ''}" ${
-            isUser ? `data-user-term="${term.replace(/"/g, '&quot;')}" title="Nhấn vào đây để hoàn tác / bỏ tô đoạn này"` : ''
-          }>$1</mark>`,
+            isUser ? `data-user-term="${term.replace(/"/g, '&quot;')}" title="Nhấn vào đây để xem tuỳ chọn hoặc bỏ tô"` : ''
+          }>$1${tagHtml}</mark>`,
         );
       }
       return text;
@@ -247,6 +289,40 @@ export default function LessonPage() {
       return [];
     }
   });
+
+  // Nhãn gán cho từng đoạn văn bản đã tô (#Mốc-Thực-Thể, #Hoạt-Động-Chủ-Trương...)
+  const [highlightTags, setHighlightTags] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`lesson_highlight_tags_${id}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Hộp thoại thêm nhanh vào Tab Ôn tập (Lõi 1, Lõi 2&4, Lõi 3)
+  const [quickAddModal, setQuickAddModal] = useState(null); // 'milestone' | 'axis' | 'causeEffect' | null
+  const [extractedData, setExtractedData] = useState({ time: '', entity: '', verb: '', content: '' });
+
+  const saveHighlightTag = (snippet, tag) => {
+    setHighlightTags((prev) => {
+      const next = { ...prev, [snippet]: tag };
+      localStorage.setItem(`lesson_highlight_tags_${id}`, JSON.stringify(next));
+      return next;
+    });
+    if (!userHighlights.includes(snippet)) {
+      updateHighlightsWithHistory([...userHighlights, snippet], `Đã tô dạ quang và gắn nhãn ${tag}!`);
+    } else {
+      showToast(`Đã gắn nhãn ${tag} cho đoạn văn!`);
+    }
+  };
+
+  const handleOpenExtract = (targetType) => {
+    const ext = extractHistoricalInfo(selectedSnippet);
+    setExtractedData(ext);
+    setQuickAddModal(targetType);
+    setFloatingPos(null);
+  };
 
   // Lịch sử hoàn tác (Undo Stack) và Thông báo tương tác
   const [undoStack, setUndoStack] = useState([]);
@@ -415,11 +491,11 @@ export default function LessonPage() {
         .replace(/##\s*Luyện tập/g, '## Luyện tập');
 
       const html = marked.parse(clean);
-      return applyEditorialHighlights(html, userHighlights, autoHighlight);
+      return applyEditorialHighlights(html, userHighlights, autoHighlight, highlightTags);
     } catch {
       return d.lesson.content;
     }
-  }, [d?.lesson?.content, userHighlights, autoHighlight]);
+  }, [d?.lesson?.content, userHighlights, autoHighlight, highlightTags]);
 
   const cards = useMemo(() => {
     const title = d?.lesson?.title || '';
@@ -622,22 +698,301 @@ export default function LessonPage() {
               </div>
             )}
 
-            {/* Floating Highlighter Action Pill khi bôi đen văn bản */}
+            {/* Menu Popover nổi khi bôi đen / chạm vào đoạn văn bản */}
             {floatingPos && (
               <div
-                className="floating-highlighter-pill"
+                className="editorial-popover-menu"
                 style={{ top: floatingPos.top, left: floatingPos.left }}
+                onClick={(e) => e.stopPropagation()}
               >
-                {userHighlights.includes(selectedSnippet) ? (
-                  <button type="button" onClick={() => handleRemoveHighlight(selectedSnippet)}>
-                    Bỏ tô đoạn này ✕
+                {/* 1. Hành động chính: Tô dạ quang / Bỏ tô */}
+                <div className="popover-main-action">
+                  {userHighlights.includes(selectedSnippet) ? (
+                    <button
+                      type="button"
+                      className="popover-action-btn"
+                      style={{ background: '#FFF1F2', color: '#BE123C', borderColor: '#FECDD6' }}
+                      onClick={() => handleRemoveHighlight(selectedSnippet)}
+                    >
+                      Bỏ tô đoạn này ✕
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="popover-action-btn"
+                      style={{ background: '#FFE4E8', color: '#BE123C', borderColor: '#FDA4AF' }}
+                      onClick={handleAddHighlight}
+                    >
+                      Tô dạ quang hồng
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    style={{ background: 'transparent', border: 'none', color: '#9F1239', cursor: 'pointer', fontSize: '0.85rem' }}
+                    onClick={() => {
+                      setFloatingPos(null);
+                      setSelectedSnippet('');
+                    }}
+                  >
+                    ✕ Đóng
                   </button>
-                ) : (
-                  <button type="button" onClick={handleAddHighlight}>
-                    Tô dạ quang
+                </div>
+
+                {/* 2. Gắn nhanh 1 trong 5 Nhãn nhỏ */}
+                <div className="popover-tag-group">
+                  <span className="popover-tag-label">Gắn nhãn định vị:</span>
+                  <div className="popover-tag-chips">
+                    {[
+                      { tag: '#Mốc-Thực-Thể', color: '#0284C7', bg: '#E0F2FE' },
+                      { tag: '#Hoạt-Động-Chủ-Trương', color: '#7E22CE', bg: '#F3E8FF' },
+                      { tag: '#Nguyên-Nhân', color: '#B45309', bg: '#FEF3C7' },
+                      { tag: '#Ý-Nghĩa', color: '#15803D', bg: '#DCFCE7' },
+                      { tag: '#Bản-Chất', color: '#BE123C', bg: '#FFE4E8' },
+                    ].map((t) => {
+                      const isActive = highlightTags[selectedSnippet] === t.tag;
+                      return (
+                        <button
+                          key={t.tag}
+                          type="button"
+                          className={`popover-tag-chip ${isActive ? 'active' : ''}`}
+                          style={{
+                            borderColor: t.color,
+                            color: isActive ? '#FFFFFF' : t.color,
+                            background: isActive ? t.color : t.bg,
+                          }}
+                          onClick={() => saveHighlightTag(selectedSnippet, t.tag)}
+                        >
+                          {t.tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Đẩy chữ sang Sơ đồ (3 nút thao tác nhanh) */}
+                <div className="popover-extract-group">
+                  <span className="popover-tag-label" style={{ color: '#881337' }}>Đẩy chữ sang Sơ đồ (Tab Ôn tập):</span>
+                  <button
+                    type="button"
+                    className="popover-extract-btn"
+                    onClick={() => handleOpenExtract('milestone')}
+                  >
+                    <span>+ Đưa vào Sơ đồ Mốc</span>
+                    <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>Lõi 1 ➔</span>
                   </button>
-                )}
+
+                  <button
+                    type="button"
+                    className="popover-extract-btn"
+                    onClick={() => handleOpenExtract('axis')}
+                  >
+                    <span>+ Đưa vào Bảng Chia Trục</span>
+                    <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>Lõi 2 & 4 ➔</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="popover-extract-btn"
+                    onClick={() => handleOpenExtract('causeEffect')}
+                  >
+                    <span>+ Đưa vào Sơ đồ Nhân - Quả</span>
+                    <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>Lõi 3 ➔</span>
+                  </button>
+                </div>
               </div>
+            )}
+
+            {/* HỘP THOẠI THÊM NHANH VÀO TAB ÔN TẬP (TỰ TRÍCH XUẤT) */}
+            {quickAddModal && (
+              <FormDialog
+                title={
+                  quickAddModal === 'milestone'
+                    ? '⚡ Đưa vào Sơ đồ Mốc & Nhãn (Lõi 1)'
+                    : quickAddModal === 'axis'
+                    ? '⚡ Đưa vào Bảng Chia Trục (Lõi 2 & 4)'
+                    : '⚡ Đưa vào Sơ đồ Nhân - Quả (Lõi 3)'
+                }
+                onClose={() => setQuickAddModal(null)}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '6px 0' }}>
+                  <p className="small muted" style={{ margin: 0 }}>
+                    Hệ thống đã tự động bóc tách từ đoạn văn bản bạn vừa tô sáng. Kiểm tra lại và bấm xác nhận để đưa vào Tab Ôn tập:
+                  </p>
+
+                  {/* Form Sơ đồ Mốc (Lõi 1) */}
+                  {quickAddModal === 'milestone' && (
+                    <>
+                      <label className="field">
+                        <span>Mốc thời gian (Đã tự động nhận diện)</span>
+                        <input
+                          type="text"
+                          value={extractedData.time}
+                          placeholder="VD: 24-10-1945, năm 1967..."
+                          onChange={(e) => setExtractedData((d) => ({ ...d, time: e.target.value }))}
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Tên thực thể / Danh từ đích</span>
+                        <input
+                          type="text"
+                          value={extractedData.entity}
+                          placeholder="VD: Liên hợp quốc, Hiến chương, ASEAN..."
+                          onChange={(e) => setExtractedData((d) => ({ ...d, entity: e.target.value }))}
+                        />
+                      </label>
+
+                      <div className="row" style={{ gap: '8px' }}>
+                        <span className="badge" style={{ background: '#E0F2FE', color: '#0369A1' }}>#Văn_kiện</span>
+                        <span className="badge" style={{ background: '#FEF3C7', color: '#B45309' }}>#Châu_Mỹ</span>
+                        <span className="badge" style={{ background: '#F3E8FF', color: '#7E22CE' }}>#1919-1945</span>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Form Bảng Chia Trục (Lõi 2 & 4) */}
+                  {quickAddModal === 'axis' && (
+                    <>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <label className="field">
+                          <span>Chủ thể</span>
+                          <input
+                            type="text"
+                            value={extractedData.entity || 'Liên hợp quốc'}
+                            onChange={(e) => setExtractedData((d) => ({ ...d, entity: e.target.value }))}
+                          />
+                        </label>
+                        <label className="field">
+                          <span>Giai đoạn / Mốc</span>
+                          <input
+                            type="text"
+                            value={extractedData.time || '1945 - 1975'}
+                            onChange={(e) => setExtractedData((d) => ({ ...d, time: e.target.value }))}
+                          />
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: '10px' }}>
+                        <label className="field">
+                          <span>Tiến độ</span>
+                          <select defaultValue="Hoàn thành">
+                            <option value="Bước đầu">Bước đầu</option>
+                            <option value="Bắt đầu">Bắt đầu</option>
+                            <option value="Tiếp tục đẩy mạnh">Tiếp tục đẩy mạnh</option>
+                            <option value="Hoàn thành">Hoàn thành</option>
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span>Động từ chính</span>
+                          <input
+                            type="text"
+                            value={extractedData.verb}
+                            placeholder="VD: Soạn thảo, Ký kết..."
+                            onChange={(e) => setExtractedData((d) => ({ ...d, verb: e.target.value }))}
+                          />
+                        </label>
+                      </div>
+
+                      <label className="field">
+                        <span>Mục tiêu / Nội dung</span>
+                        <textarea
+                          rows={2}
+                          value={extractedData.content}
+                          onChange={(e) => setExtractedData((d) => ({ ...d, content: e.target.value }))}
+                        />
+                      </label>
+                    </>
+                  )}
+
+                  {/* Form Sơ đồ Nhân - Quả (Lõi 3) */}
+                  {quickAddModal === 'causeEffect' && (
+                    <>
+                      <label className="field">
+                        <span>Sự kiện trung tâm</span>
+                        <input
+                          type="text"
+                          value={lesson.title}
+                          disabled
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Phân loại nhân quả</span>
+                        <select defaultValue="yNghiaVietNam">
+                          <option value="khachQuan">Bối cảnh / Khách quan (bên ngoài)</option>
+                          <option value="chuQuan">Nguyên nhân Chủ quan (nội lực)</option>
+                          <option value="yNghiaVietNam">Ý nghĩa đối với Việt Nam</option>
+                          <option value="yNghiaQuocTe">Ý nghĩa Quốc tế</option>
+                        </select>
+                      </label>
+
+                      <label className="field">
+                        <span>Nội dung trích xuất</span>
+                        <textarea
+                          rows={3}
+                          value={extractedData.content}
+                          onChange={(e) => setExtractedData((d) => ({ ...d, content: e.target.value }))}
+                        />
+                      </label>
+                    </>
+                  )}
+
+                  <div className="row between" style={{ marginTop: '14px' }}>
+                    <button
+                      type="button"
+                      className="ios-btn sm ios-btn-secondary"
+                      onClick={() => setQuickAddModal(null)}
+                    >
+                      Huỷ bỏ
+                    </button>
+
+                    <button
+                      type="button"
+                      className="ios-btn sm ios-btn-primary"
+                      onClick={() => {
+                        try {
+                          const studyKey = `lesson_study_data_${id}`;
+                          const existing = JSON.parse(localStorage.getItem(studyKey) || '{"milestones":[],"axes":[],"causeEffects":[]}');
+                          if (quickAddModal === 'milestone') {
+                            existing.milestones.push({
+                              id: 'ms-' + Date.now(),
+                              time: extractedData.time || '1945',
+                              entityName: extractedData.entity || selectedSnippet,
+                              typeTag: highlightTags[selectedSnippet] || '#Văn_kiện',
+                              spaceTag: '#Việt_Nam',
+                              eraTag: '#1919-1945',
+                            });
+                          } else if (quickAddModal === 'axis') {
+                            existing.axes.push({
+                              id: 'ax-' + Date.now(),
+                              subject: extractedData.entity || 'Chủ thể',
+                              period: extractedData.time || 'Giai đoạn',
+                              progressBadge: 'Hoàn thành',
+                              verb: extractedData.verb || 'Thực hiện',
+                              content: extractedData.content || selectedSnippet,
+                            });
+                          } else if (quickAddModal === 'causeEffect') {
+                            existing.causeEffects.push({
+                              id: 'ce-' + Date.now(),
+                              content: extractedData.content || selectedSnippet,
+                            });
+                          }
+                          localStorage.setItem(studyKey, JSON.stringify(existing));
+                        } catch (e) {
+                          console.error(e);
+                        }
+                        setQuickAddModal(null);
+                        setSelectedSnippet('');
+                        showToast('✓ Đã trích xuất và lưu vào Tab Ôn tập!');
+                        switchTab('review');
+                      }}
+                    >
+                      Lưu & Chuyển sang Tab Ôn tập ➔
+                    </button>
+                  </div>
+                </div>
+              </FormDialog>
             )}
 
             {/* Thanh chuyển tiếp tự nhiên ở chân bài đọc */}
