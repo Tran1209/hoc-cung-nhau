@@ -8,7 +8,6 @@ import { FormDialog } from '../components/Modal';
 import { Gallery } from '../components/Gallery';
 import Uploader from '../components/Uploader';
 import AssignmentList from '../components/AssignmentList';
-import LessonPracticeHub from '../components/LessonPracticeHub';
 import LessonFlashcards from '../components/LessonFlashcards';
 import LessonReviewHub from '../components/LessonReviewHub';
 import LessonNotesHub from '../components/LessonNotesHub';
@@ -1081,20 +1080,36 @@ export default function LessonPage() {
         )}
 
         {/* =========================================================================
-            TAB 2: BÀI TẬP (PHẦN I THEO 5 LÕI + PHẦN II CẮT VẾ BẰNG DẤU / + ĐỀ THI)
+            TAB 2: BÀI TẬP (HỆ THỐNG BÀI TẬP BT1, BT2, BT3 CHUẨN THPTQG 2026 & VẬN DỤNG)
             ========================================================================= */}
         {activeTab === 'exercises' && (
           <div className="tab-pane-content">
-            <LessonPracticeHub
-              lessonId={id}
-              assignments={assignments}
-              latest={latest}
-              id={lesson.chapter_id}
-              onSwitchTab={switchTab}
-            />
+            {/* 1. Hệ thống bài tập trọng tâm BT1, BT2, BT3,... */}
+            <div style={{ marginBottom: '32px' }}>
+              <div className="row" style={{ marginBottom: '16px' }}>
+                <span className="idx-badge">BT</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.18rem', color: '#380718' }}>
+                    Hệ thống bài tập trọng tâm (BT1, BT2, BT3, ...)
+                  </h3>
+                  <div className="small muted">
+                    Cấu trúc bám sát định dạng Đề thi Tốt nghiệp THPT Quốc Gia 2026 của Bộ GD&ĐT (Trắc nghiệm 4 lựa chọn & Đúng / Sai theo tư liệu)
+                  </div>
+                </div>
+              </div>
 
-            {/* Vùng soạn thảo / Tương tác câu hỏi vận dụng (Integrated Editor) */}
-            <section className="integrated-editor" style={{ marginTop: '36px' }}>
+              <AssignmentList
+                assignments={assignments}
+                latest={latest}
+                chapterId={lesson.chapter_id}
+                lessonId={id}
+                defaultTitle={`BT${assignments.length + 1}: Bài tập ${lesson.title}`}
+                emptyText="Chưa có bài tập nào cho bài học này."
+              />
+            </div>
+
+            {/* 2. Vùng soạn thảo / Tương tác câu hỏi vận dụng (Integrated Editor) */}
+            <section className="integrated-editor">
               <div className="editor-head">
                 <div className="row" style={{ gap: '10px' }}>
                   <span className="idx-badge">Vận dụng</span>
