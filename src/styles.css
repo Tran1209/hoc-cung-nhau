@@ -1450,13 +1450,240 @@ a.folio-metric-cell:hover {
   margin-bottom: 4px;
 }
 
-@media (max-width: 600px) {
+/* 6. iOS Segmented Control & Mobile-Fit Architecture (Cố định trong 1 màn hình điện thoại) */
+.folio-segmented-tabs {
+  display: flex;
+  gap: 4px;
+  background: #FFF0F3;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  border-radius: 14px;
+  padding: 4px;
+  margin-top: 14px;
+}
+
+.segmented-tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 8px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.segmented-tab-btn.active {
+  background: #FFFFFF;
+  color: #E11D48;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.14);
+}
+
+.tab-badge {
+  background: #E11D48;
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 1px 6px;
+  line-height: 1.2;
+}
+
+/* Compact Action Rows (Các hàng hành động trọng tâm Sử 12 vừa khít màn hình) */
+.compact-action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.compact-action-row {
+  background: #FFFDFE;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+.compact-action-row:hover {
+  border-color: #FDA4AF;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.08);
+}
+
+.compact-action-main {
+  flex: 1;
+  min-width: 0;
+}
+.compact-action-title {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 750;
+  color: var(--text-main);
+  margin: 0 0 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.compact-action-meta {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Mobile-fit 100vh Layout Rules */
+@media (max-width: 768px) {
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+  .app {
+    min-height: 100dvh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .topbar {
+    padding: 8px 14px;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .topbar .brand-tag {
+    display: none;
+  }
+  .nav a {
+    padding: 6px 12px;
+    font-size: 0.86rem;
+  }
+  .me {
+    padding: 4px 10px;
+  }
+  .me button {
+    display: none;
+  }
+
+  .container {
+    padding: 10px 10px;
+    margin: 0;
+    max-width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .folio-sheet {
+    padding: 14px 14px;
+    border-radius: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(244, 63, 94, 0.08);
+  }
+
+  /* Compact header on mobile */
+  .folio-schedule-clean {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    flex-shrink: 0;
+  }
+  .schedule-title {
+    font-size: 1.25rem;
+  }
+  .schedule-subtitle {
+    display: none;
+  }
+  .apple-countdown-pill {
+    padding: 5px 10px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+  .countdown-main {
+    font-size: 1.05rem;
+  }
+  .countdown-text div:last-child {
+    display: none;
+  }
+
+  /* 7 days strip on mobile fits 1 row */
   .apple-week-strip {
-    overflow-x: auto;
-    gap: 4px;
-    padding: 6px 4px;
+    margin-top: 8px;
+    padding: 4px;
+    gap: 3px;
   }
   .apple-day-col {
-    min-width: 44px;
+    padding: 5px 1px;
+    border-radius: 9px;
+  }
+  .apple-day-col .day-txt {
+    font-size: 0.65rem;
+  }
+  .apple-day-col .date-txt {
+    font-size: 0.95rem;
+  }
+
+  /* 4 metrics on mobile */
+  .folio-metric-strip {
+    margin-top: 8px;
+    border-radius: 14px;
+    flex-shrink: 0;
+  }
+  .folio-metric-cell {
+    padding: 7px 2px;
+  }
+  .folio-metric-val {
+    font-size: 1.15rem;
+  }
+  .folio-metric-lbl {
+    font-size: 0.64rem;
+  }
+
+  /* Segmented tabs on mobile */
+  .folio-segmented-tabs {
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+  .segmented-tab-btn {
+    padding: 7px 4px;
+    font-size: 0.8rem;
+  }
+
+  /* Tab content fills remaining screen */
+  .tab-mobile-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 6px;
+  }
+
+  .compact-action-row {
+    padding: 10px 12px;
+  }
+  .compact-action-title {
+    font-size: 0.9rem;
+  }
+
+  /* Hide footer on mobile so page never scrolls */
+  .footer {
+    display: none !important;
   }
 }

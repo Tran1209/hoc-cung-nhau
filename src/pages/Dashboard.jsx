@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { data, logActivity } from '../data';
 import { useLive } from '../data/useLive';
@@ -8,13 +8,6 @@ import { DueBadge, ErrorBox, KindBadge, Loading, Empty } from '../components/ui'
 import { maxScoreOf, nextSaturday, sortByPos, timeAgo, fmtDate } from '../lib/format';
 import { avgScore, isTodo, latestByAssignment } from '../lib/progress';
 import { seedHistoryCurriculum } from '../data/historyCurriculum';
-
-const SUBJECT_FIELDS = [
-  { name: 'title', label: 'Tên môn', required: true, autoFocus: true, placeholder: 'VD: Lịch Sử 12' },
-  { name: 'description', label: 'Mô tả', type: 'textarea', rows: 2 },
-  { name: 'color', label: 'Màu nhận diện', type: 'color', default: '#e11d48' },
-  { name: 'position', label: 'Thứ tự', type: 'number' },
-];
 
 const QUICK_JOURNAL_CHIPS = [
   'Đã đọc xong lý thuyết Bài 1',
@@ -27,25 +20,12 @@ const QUICK_JOURNAL_CHIPS = [
 export default function Dashboard() {
   const { user, isTeacher, partner, nameOf } = useAuth();
   const nav = useNavigate();
-  const [dialog, setDialog] = useState(null);
-  const [seeding, setSeeding] = useState(false);
+  const [activeTab, setActiveTab] = useState('history'); // 'history' | 'todo' | 'journal'
 
   // State cho Nhật ký hôm nay
   const [journalText, setJournalText] = useState('');
   const [savingJournal, setSavingJournal] = useState(false);
   const [journalNotice, setJournalNotice] = useState(false);
-
-  const handleSeedHistory = async () => {
-    setSeeding(true);
-    try {
-      await seedHistoryCurriculum(data);
-      logActivity('curriculum', 'Nạp chương trình Lịch Sử 10, 11, 12');
-    } catch (e) {
-      alert('Lỗi nạp môn: ' + e.message);
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   const { data: d, loading, error, reload } = useLive(async () => {
     let [subjects, chapters, lessons, assignments, questions, submissions, activity] = await Promise.all([
@@ -97,12 +77,12 @@ export default function Dashboard() {
     .filter((s) => s.status === 'submitted')
     .sort((x, y) => String(x.submitted_at).localeCompare(String(y.submitted_at)));
 
-  // Tính toán thời gian thực: Ngày hôm nay, Đếm ngược Thứ 7, Lịch tuần 7 ngày
+  // Thời gian thực
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
   const sat = nextSaturday(20);
 
-  // Tính chính xác số ngày lịch tới Thứ 7
+  // Tính số ngày lịch tới Thứ 7
   const satMidnight = new Date(sat);
   satMidnight.setHours(0, 0, 0, 0);
   const nowMidnight = new Date(now);
@@ -116,7 +96,7 @@ export default function Dashboard() {
     year: 'numeric',
   }).format(now);
 
-  // Tạo dải 7 ngày trong tuần từ Thứ 2 đến Chủ Nhật (1 hàng duy nhất chuẩn Apple)
+  // Dải 7 ngày trong tuần
   const currentDay = now.getDay();
   const mondayOffset = (currentDay + 6) % 7;
   const monday = new Date(now);
@@ -176,19 +156,11 @@ export default function Dashboard() {
     }
   };
 
-  const saveSubject = async (vals, existing) => {
-    if (existing) await data.update('subjects', existing.id, vals);
-    else {
-      const s = await data.insert('subjects', { ...vals, position: vals.position || subjects.length });
-      logActivity('subject', `Thêm môn mới: ${s.title}`, `/mon/${s.id}`);
-    }
-  };
-
   return (
     <div className="page">
-      {/* SINGLE UNIFIED FOLIO SHEET (Rose Milk Editorial Folio) */}
+      {/* SINGLE UNIFIED FOLIO SHEET (Cố định 1 màn hình chuẩn điện thoại) */}
       <div className="folio-sheet">
-        {/* 1. LỊCH TRÌNH NGÀY HỌC LIỀN KHỐI CHUẨN APPLE (SINGLE SEAMLESS SURFACE) */}
+        {/* 1. LỊCH TRÌNH NGÀY HỌC LIỀN KHỐI (APPLE MINIMALIST HEADER) */}
         <header className="folio-schedule-clean">
           <div className="schedule-header-row">
             <div>
@@ -197,13 +169,13 @@ export default function Dashboard() {
                   <span className="today-chip-dot" />
                   <span>Hôm nay</span>
                 </span>
-                <span className="small muted">Không gian học tập · Kế hoạch tuần</span>
+                <span className="small muted">Không gian học tập</span>
               </div>
               <h1 className="schedule-title">{todayFullDate}</h1>
               <p className="schedule-subtitle">
                 {isTeacher
-                  ? `Đang đồng hành cùng ${partner?.display_name || 'học viên'} · Kiểm tra tiến độ và nộp bài`
-                  : `Chào ${user.display_name} · Kế hoạch học tập tuần, nhật ký hôm nay và bài tập trọng tâm`}
+                  ? `Đồng hành cùng ${partner?.display_name || 'học viên'} · Kiểm tra tiến độ bài học`
+                  : `Chào ${user.display_name} · Kế hoạch học tập và bài tập trọng tâm tuần này`}
               </p>
             </div>
 
@@ -219,7 +191,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Dải lịch 7 ngày trong tuần tinh gọn 1 hàng duy nhất */}
+          {/* Dải lịch 7 ngày trong tuần 1 hàng duy nhất */}
           <div className="apple-week-strip">
             {weekDays.map((dItem, idx) => (
               <div
@@ -243,396 +215,297 @@ export default function Dashboard() {
             <>
               <Link to="/cham" className="folio-metric-cell">
                 <div className="folio-metric-val">{toGrade.length}</div>
-                <div className="folio-metric-lbl">Bài chờ chấm</div>
+                <div className="folio-metric-lbl">Chờ chấm</div>
               </Link>
               <div className="folio-metric-cell">
                 <div className="folio-metric-val">{todo.length}</div>
-                <div className="folio-metric-lbl">Bài em chưa làm</div>
+                <div className="folio-metric-lbl">Chưa làm</div>
               </div>
               <div className="folio-metric-cell">
                 <div className="folio-metric-val">{historyAssignments.length}</div>
-                <div className="folio-metric-lbl">Bài tập Lịch Sử 12</div>
+                <div className="folio-metric-lbl">Bài Sử 12</div>
               </div>
               <div className="folio-metric-cell">
                 <div className="folio-metric-val">{hearts}</div>
-                <div className="folio-metric-lbl">Điểm thưởng đã trao</div>
+                <div className="folio-metric-lbl">Điểm thưởng</div>
               </div>
             </>
           ) : (
             <>
               <div className="folio-metric-cell">
                 <div className="folio-metric-val">{todo.length}</div>
-                <div className="folio-metric-lbl">Nhiệm vụ tuần này</div>
+                <div className="folio-metric-lbl">Cần làm</div>
               </div>
               <div className="folio-metric-cell">
                 <div className="folio-metric-val">{historyAssignments.length}</div>
-                <div className="folio-metric-lbl">Bài tập Lịch Sử 12</div>
+                <div className="folio-metric-lbl">Bài Sử 12</div>
               </div>
               <div className="folio-metric-cell">
                 <div className="folio-metric-val">{avg ?? '—'}</div>
-                <div className="folio-metric-lbl">Điểm trung bình</div>
+                <div className="folio-metric-lbl">Điểm TB</div>
               </div>
               <div className="folio-metric-cell">
                 <div className="folio-metric-val">{hearts}</div>
-                <div className="folio-metric-lbl">Điểm thưởng tích luỹ</div>
+                <div className="folio-metric-lbl">Điểm thưởng</div>
               </div>
             </>
           )}
         </div>
 
-        {/* 3. KHỐI TRỌNG TÂM LỊCH SỬ 12 (TRỎ TRỰC TIẾP VÀO CÁC BÀI TẬP VÀ BÀI HỌC) */}
-        <section style={{ marginTop: '32px' }}>
-          <div className="row between" style={{ marginBottom: '16px' }}>
-            <div className="row" style={{ gap: '10px' }}>
-              <span className="idx-badge">1</span>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.18rem', color: '#380718' }}>
-                  Trọng tâm Lịch Sử 12 · Bài 1: Liên Hợp Quốc
-                </h3>
-                <div className="small muted">
-                  Trỏ trực tiếp vào các bài tập trắc nghiệm, tự luận vận dụng và bài đọc SGK số
-                </div>
-              </div>
-            </div>
+        {/* 3. BỘ CHUYỂN TAB CỐ ĐỊNH CHUẨN ĐIỆN THOẠI (1 MÀN HÌNH KHÔNG CUỘN) */}
+        <div className="folio-segmented-tabs">
+          <button
+            type="button"
+            className={`segmented-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            Trọng tâm Sử 12
+          </button>
+          <button
+            type="button"
+            className={`segmented-tab-btn ${activeTab === 'todo' ? 'active' : ''}`}
+            onClick={() => setActiveTab('todo')}
+          >
+            Nhiệm vụ tuần {todo.length > 0 && <span className="tab-badge">{todo.length}</span>}
+          </button>
+          <button
+            type="button"
+            className={`segmented-tab-btn ${activeTab === 'journal' ? 'active' : ''}`}
+            onClick={() => setActiveTab('journal')}
+          >
+            Nhật ký {todayJournals.length > 0 && <span className="tab-badge">{todayJournals.length}</span>}
+          </button>
+        </div>
 
-            {historyLesson && (
-              <Link to={`/bai/${historyLesson.id}`} className="ios-btn sm ios-btn-secondary">
-                Mở bài học SGK số →
-              </Link>
-            )}
-          </div>
-
-          <div className="grid3">
-            {/* Thẻ 1: Bài tập trắc nghiệm & tự luận */}
-            <div className="history-hub-card">
-              <div>
-                <div className="row between" style={{ marginBottom: '8px' }}>
-                  <span className="subject-pill-tag">BÀI TẬP ĐÁNH GIÁ</span>
-                  {historySub ? (
-                    <span
-                      className={`badge ${historySub.status === 'graded' ? 'graded' : 'submitted'}`}
-                    >
-                      {historySub.status === 'graded' ? `Đã chấm: ${historySub.score}/10` : 'Đã nộp · Chờ chấm'}
-                    </span>
-                  ) : (
-                    <span className="badge in_progress">Chưa làm</span>
-                  )}
+        {/* 4. NỘI DUNG THEO TAB (VỪA VẶN MÀN HÌNH, KHÔNG BỊ TRÀN CUỘN) */}
+        <div className="tab-mobile-body">
+          {/* TAB 1: TRỌNG TÂM LỊCH SỬ 12 */}
+          {activeTab === 'history' && (
+            <div className="compact-action-list">
+              {/* Thẻ trắc nghiệm & tự luận */}
+              <div className="compact-action-row">
+                <div className="compact-action-main">
+                  <div className="row" style={{ gap: '6px', marginBottom: '2px' }}>
+                    <span className="subject-pill-tag">BÀI TẬP</span>
+                    {historySub ? (
+                      <span className={`badge ${historySub.status === 'graded' ? 'graded' : 'submitted'}`}>
+                        {historySub.status === 'graded' ? `${historySub.score}/10đ` : 'Chờ chấm'}
+                      </span>
+                    ) : (
+                      <span className="badge in_progress">Hạn Thứ 7</span>
+                    )}
+                  </div>
+                  <h4 className="compact-action-title">
+                    {mainHistoryAssignment?.title || 'Bài tập trọng tâm: Bài 1 - Liên hợp quốc'}
+                  </h4>
+                  <div className="compact-action-meta">
+                    <span>5 câu TN + 1 tự luận</span>
+                    <span>·</span>
+                    <span>Thang điểm 10</span>
+                  </div>
                 </div>
-                <h4 style={{ margin: '4px 0 6px', fontSize: '1.05rem', color: '#380718' }}>
-                  {mainHistoryAssignment?.title || 'Bài tập trọng tâm: Bài 1 - Liên hợp quốc'}
-                </h4>
-                <p className="small muted" style={{ margin: 0 }}>
-                  Kiểm tra trắc nghiệm khách quan và câu hỏi tự luận ngắn đánh giá mức độ thấu hiểu bài học.
-                </p>
-                <div className="small muted" style={{ marginTop: '10px' }}>
-                  Hạn nộp: 20:00 Thứ 7 · Thang điểm 10
-                </div>
-              </div>
 
-              <div style={{ marginTop: '16px' }}>
-                {mainHistoryAssignment ? (
-                  historySub ? (
-                    <Link
-                      to={`/nop/${historySub.id}`}
-                      className="ios-btn sm ios-btn-secondary"
-                      style={{ width: '100%', justifyContent: 'center' }}
-                    >
-                      Xem bài nộp & Kết quả
+                <div>
+                  {mainHistoryAssignment ? (
+                    historySub ? (
+                      <Link to={`/nop/${historySub.id}`} className="ios-btn sm ios-btn-secondary">
+                        Xem kết quả
+                      </Link>
+                    ) : (
+                      <Link to={`/bt/${mainHistoryAssignment.id}`} className="ios-btn sm ios-btn-primary">
+                        Làm bài ngay →
+                      </Link>
+                    )
+                  ) : historyLesson ? (
+                    <Link to={`/bai/${historyLesson.id}`} className="ios-btn sm ios-btn-primary">
+                      Vào bài →
                     </Link>
-                  ) : (
-                    <Link
-                      to={`/bt/${mainHistoryAssignment.id}`}
-                      className="ios-btn sm ios-btn-primary"
-                      style={{ width: '100%', justifyContent: 'center' }}
-                    >
-                      Làm bài tập ngay →
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Thẻ bài luận vận dụng */}
+              <div className="compact-action-row">
+                <div className="compact-action-main">
+                  <div className="row" style={{ gap: '6px', marginBottom: '2px' }}>
+                    <span className="subject-pill-tag">VẬN DỤNG</span>
+                    <span className="badge">150 – 200 từ</span>
+                  </div>
+                  <h4 className="compact-action-title">
+                    Hoạt động gìn giữ hoà bình của Việt Nam
+                  </h4>
+                  <div className="compact-action-meta">
+                    <span>Phái bộ Nam Xu-đăng & BV dã chiến 2</span>
+                  </div>
+                </div>
+
+                <div>
+                  {historyLesson ? (
+                    <Link to={`/bai/${historyLesson.id}`} className="ios-btn sm ios-btn-primary">
+                      Viết bài →
                     </Link>
-                  )
-                ) : historyLesson ? (
-                  <Link
-                    to={`/bai/${historyLesson.id}`}
-                    className="ios-btn sm ios-btn-primary"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    Xem bài tập trong bài học →
-                  </Link>
-                ) : null}
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Thẻ đọc SGK & Flashcards */}
+              <div className="compact-action-row">
+                <div className="compact-action-main">
+                  <div className="row" style={{ gap: '6px', marginBottom: '2px' }}>
+                    <span className="subject-pill-tag">SGK & THẺ NHỚ</span>
+                    <span className="badge">6 thẻ nhớ 3D</span>
+                  </div>
+                  <h4 className="compact-action-title">
+                    Toàn văn SGK KNTT & Thẻ ghi nhớ
+                  </h4>
+                  <div className="compact-action-meta">
+                    <span>Hội nghị I-an-ta · 5 nước HĐBA</span>
+                  </div>
+                </div>
+
+                <div>
+                  {historyLesson ? (
+                    <Link to={`/bai/${historyLesson.id}`} className="ios-btn sm ios-btn-secondary">
+                      Mở học →
+                    </Link>
+                  ) : null}
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Thẻ 2: Câu hỏi vận dụng thực tế */}
-            <div className="history-hub-card">
-              <div>
-                <div className="row between" style={{ marginBottom: '8px' }}>
-                  <span className="subject-pill-tag">VẬN DỤNG THỰC TẾ</span>
-                  <span className="badge">150 – 200 từ</span>
-                </div>
-                <h4 style={{ margin: '4px 0 6px', fontSize: '1.05rem', color: '#380718' }}>
-                  Hoạt động gìn giữ hoà bình của Việt Nam
-                </h4>
-                <p className="small muted" style={{ margin: 0 }}>
-                  Viết đoạn văn vận dụng ngắn về phái bộ Nam Xu-đăng, Abyei và bệnh viện dã chiến cấp 2.
-                </p>
-                <div className="small muted" style={{ marginTop: '10px' }}>
-                  Tích hợp bộ đếm độ dài từ thời gian thực trong trang bài
-                </div>
-              </div>
-
-              <div style={{ marginTop: '16px' }}>
-                {historyLesson ? (
-                  <Link
-                    to={`/bai/${historyLesson.id}`}
-                    className="ios-btn sm ios-btn-primary"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    Viết bài thu hoạch vận dụng →
-                  </Link>
+          {/* TAB 2: NHIỆM VỤ TUẦN */}
+          {activeTab === 'todo' && (
+            <div style={{ marginTop: '8px' }}>
+              {isTeacher ? (
+                toGrade.length === 0 ? (
+                  <Empty>Hiện tại không có bài tập nào đang chờ chấm.</Empty>
                 ) : (
-                  <button className="ios-btn sm ios-btn-secondary" disabled style={{ width: '100%' }}>
-                    Chưa kích hoạt bài học
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Thẻ 3: SGK số và Thẻ nhớ Flashcards */}
-            <div className="history-hub-card">
-              <div>
-                <div className="row between" style={{ marginBottom: '8px' }}>
-                  <span className="subject-pill-tag">SGK & THẺ NHỚ</span>
-                  <span className="badge">6 thẻ nhớ</span>
-                </div>
-                <h4 style={{ margin: '4px 0 6px', fontSize: '1.05rem', color: '#380718' }}>
-                  Sách giáo khoa số & Thẻ nhớ Active Recall
-                </h4>
-                <p className="small muted" style={{ margin: 0 }}>
-                  Đọc nội dung chuẩn NXB Kết Nối Tri Thức và luyện 6 thẻ nhớ trọng tâm lật 3D liền khối.
-                </p>
-                <div className="small muted" style={{ marginTop: '10px' }}>
-                  Thời lượng ôn tập: ~15 phút · Trực quan chuẩn Apple
-                </div>
-              </div>
-
-              <div style={{ marginTop: '16px' }}>
-                {historyLesson ? (
-                  <Link
-                    to={`/bai/${historyLesson.id}`}
-                    className="ios-btn sm ios-btn-secondary"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    Đọc SGK & Luyện thẻ nhớ →
-                  </Link>
-                ) : (
-                  <button className="ios-btn sm ios-btn-secondary" disabled style={{ width: '100%' }}>
-                    Chưa kích hoạt bài học
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. HAI PHÂN MỤC LIỀN KHỐI: NHIỆM VỤ TUẦN NÀY & NHẬT KÝ HỌC TẬP HÔM NAY */}
-        <div className="grid2" style={{ marginTop: '36px' }}>
-          {/* Cột trái: Nhiệm vụ tuần này */}
-          <div>
-            <div className="row" style={{ marginBottom: '14px', gap: '10px' }}>
-              <span className="idx-badge">2</span>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>
-                  {isTeacher ? 'Bài tập cần chấm điểm' : 'Nhiệm vụ học tập tuần này'}
-                </h3>
-                <div className="small muted">Nhiệm vụ theo hạn nộp Thứ 7 và mức độ ưu tiên</div>
-              </div>
-            </div>
-
-            {isTeacher ? (
-              toGrade.length === 0 ? (
-                <Empty>Hiện tại không có bài tập nào đang chờ chấm.</Empty>
+                  <ul className="list">
+                    {toGrade.map((s) => (
+                      <li key={s.id}>
+                        <Link to={`/nop/${s.id}`} className="aitem">
+                          <div>
+                            <b>{aById[s.assignment_id]?.title || 'Bài tập'}</b>
+                            <div className="small muted">Nộp lúc: {timeAgo(s.submitted_at)}</div>
+                          </div>
+                          <span className="badge submitted">Chờ chấm</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : todo.length === 0 ? (
+                <Empty>Đã hoàn thành toàn bộ bài tập tuần này.</Empty>
               ) : (
                 <ul className="list">
-                  {toGrade.slice(0, 6).map((s) => (
-                    <li key={s.id}>
-                      <Link to={`/nop/${s.id}`} className="aitem">
+                  {todo.map((a) => (
+                    <li key={a.id}>
+                      <Link to={`/bt/${a.id}`} className="aitem">
                         <div>
-                          <b>{aById[s.assignment_id]?.title || 'Bài tập'}</b>
-                          <div className="small muted">Nộp lúc: {timeAgo(s.submitted_at)}</div>
+                          <b>{a.title}</b>
+                          <div className="small muted">{chapterTitle[a.chapter_id]}</div>
                         </div>
-                        <span className="badge submitted">Chờ chấm</span>
+                        <div className="aright">
+                          <KindBadge kind={a.kind} />
+                          <DueBadge due={a.due_at} />
+                        </div>
                       </Link>
                     </li>
                   ))}
                 </ul>
-              )
-            ) : todo.length === 0 ? (
-              <Empty>Đã hoàn thành toàn bộ bài tập được giao trong tuần.</Empty>
-            ) : (
-              <ul className="list">
-                {todo.map((a) => (
-                  <li key={a.id}>
-                    <Link to={`/bt/${a.id}`} className="aitem">
-                      <div>
-                        <b>{a.title}</b>
-                        <div className="small muted">{chapterTitle[a.chapter_id]}</div>
-                      </div>
-                      <div className="aright">
-                        <KindBadge kind={a.kind} />
-                        <DueBadge due={a.due_at} />
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Cột phải: Nhật ký học tập hôm nay */}
-          <div>
-            <div className="row" style={{ marginBottom: '14px', gap: '10px' }}>
-              <span className="idx-badge">3</span>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>
-                  Nhật ký học tập hôm nay
-                </h3>
-                <div className="small muted">Ghi nhận tiến độ và trao đổi trong ngày {todayStr}</div>
-              </div>
-            </div>
-
-            {/* Ô ghi chú nhanh cho ngày hôm nay */}
-            <div className="journal-compose">
-              <div className="journal-chips">
-                {QUICK_JOURNAL_CHIPS.map((chip, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className="journal-chip-btn"
-                    onClick={() =>
-                      setJournalText((prev) => (prev ? `${prev} · ${chip}` : chip))
-                    }
-                  >
-                    + {chip}
-                  </button>
-                ))}
-              </div>
-
-              <form onSubmit={handleSaveJournal}>
-                <textarea
-                  rows={2}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(253, 164, 175, 0.45)',
-                    background: '#FFFDFE',
-                    fontSize: '0.92rem',
-                    color: '#380718',
-                    resize: 'none',
-                  }}
-                  placeholder={
-                    isTeacher
-                      ? 'Ghi chú dặn dò học tập hôm nay cho em...'
-                      : 'Hôm nay em đã đọc xong bài gì, làm bài nào...'
-                  }
-                  value={journalText}
-                  onChange={(e) => setJournalText(e.target.value)}
-                />
-
-                <div className="row between" style={{ marginTop: '8px' }}>
-                  <span className="small muted">
-                    {journalNotice ? 'Đã lưu nhật ký hôm nay!' : `Ngày: ${todayStr}`}
-                  </span>
-                  <button
-                    type="submit"
-                    className="ios-btn sm ios-btn-primary"
-                    disabled={!journalText.trim() || savingJournal}
-                  >
-                    {savingJournal ? 'Đang lưu...' : 'Lưu nhật ký ngày'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Dòng nhật ký hôm nay */}
-            <div className="journal-timeline">
-              {todayJournals.length === 0 ? (
-                <div className="small muted" style={{ padding: '8px 4px' }}>
-                  Chưa có ghi chép nhật ký nào cho ngày hôm nay. Hãy ghi nhanh một dòng tiến độ học tập nhé.
-                </div>
-              ) : (
-                todayJournals.map((item) => (
-                  <div key={item.id} className="journal-item">
-                    <div className="journal-item-top">
-                      <span className="who" style={{ color: '#BE123C', fontWeight: 700, fontSize: '0.88rem' }}>
-                        {nameOf(item.actor_id)}
-                      </span>
-                      <span className="small muted">{timeAgo(item.created_at)}</span>
-                    </div>
-                    <div style={{ fontSize: '0.92rem', color: '#380718', marginTop: '2px' }}>
-                      {item.message}
-                    </div>
-                  </div>
-                ))
               )}
             </div>
-          </div>
-        </div>
+          )}
 
-        <hr className="folio-divider" />
-
-        {/* 4. ĐIỀU HƯỚNG TỚI TAB MÔN HỌC */}
-        <section style={{ marginTop: '36px' }}>
-          <div
-            style={{
-              background: 'linear-gradient(135deg, #FFFDFE 0%, #FFF5F7 100%)',
-              border: '1.5px solid rgba(253, 164, 175, 0.45)',
-              borderRadius: '20px',
-              padding: '24px 28px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '16px',
-            }}
-          >
-            <div className="row" style={{ gap: '12px' }}>
-              <span className="idx-badge">4</span>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>
-                  Chương trình & Danh mục môn học
-                </h3>
-                <div className="small muted">
-                  Đang có {subjects.length} môn học trong hệ thống (Lịch Sử 10, Lịch Sử 11, Lịch Sử 12)
+          {/* TAB 3: NHẬT KÝ HÔM NAY */}
+          {activeTab === 'journal' && (
+            <div style={{ marginTop: '8px' }}>
+              <div className="journal-compose">
+                <div className="journal-chips">
+                  {QUICK_JOURNAL_CHIPS.map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className="journal-chip-btn"
+                      onClick={() =>
+                        setJournalText((prev) => (prev ? `${prev} · ${chip}` : chip))
+                      }
+                    >
+                      + {chip}
+                    </button>
+                  ))}
                 </div>
+
+                <form onSubmit={handleSaveJournal}>
+                  <textarea
+                    rows={2}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      border: '1px solid rgba(253, 164, 175, 0.45)',
+                      background: '#FFFDFE',
+                      fontSize: '0.88rem',
+                      color: '#380718',
+                      resize: 'none',
+                    }}
+                    placeholder={
+                      isTeacher
+                        ? 'Ghi chú dặn dò học tập hôm nay cho em...'
+                        : 'Hôm nay em đã đọc xong bài gì, làm bài nào...'
+                    }
+                    value={journalText}
+                    onChange={(e) => setJournalText(e.target.value)}
+                  />
+
+                  <div className="row between" style={{ marginTop: '6px' }}>
+                    <span className="small muted">
+                      {journalNotice ? 'Đã lưu nhật ký!' : todayStr}
+                    </span>
+                    <button
+                      type="submit"
+                      className="ios-btn sm ios-btn-primary"
+                      disabled={!journalText.trim() || savingJournal}
+                    >
+                      {savingJournal ? 'Đang lưu...' : 'Lưu nhật ký'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Dòng nhật ký hôm nay */}
+              <div className="journal-timeline">
+                {todayJournals.length === 0 ? (
+                  <div className="small muted" style={{ padding: '6px 4px' }}>
+                    Chưa có ghi chép nhật ký nào cho ngày hôm nay. Hãy ghi nhanh một dòng tiến độ học tập nhé.
+                  </div>
+                ) : (
+                  todayJournals.map((item) => (
+                    <div key={item.id} className="journal-item">
+                      <div className="journal-item-top">
+                        <span className="who" style={{ color: '#BE123C', fontWeight: 700, fontSize: '0.85rem' }}>
+                          {nameOf(item.actor_id)}
+                        </span>
+                        <span className="small muted">{timeAgo(item.created_at)}</span>
+                      </div>
+                      <div style={{ fontSize: '0.88rem', color: '#380718', marginTop: '1px' }}>
+                        {item.message}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
+          )}
+        </div>
 
-            <div className="row" style={{ gap: '10px' }}>
-              {sortByPos(subjects).map((s) => (
-                <Link
-                  key={s.id}
-                  to={`/mon/${s.id}`}
-                  className="ios-btn sm ios-btn-secondary"
-                  style={{ textDecoration: 'none' }}
-                >
-                  {s.title}
-                </Link>
-              ))}
-              <Link to="/mon-hoc" className="ios-btn sm ios-btn-primary">
-                Xem tất cả trong tab Môn học →
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {dialog && (
-          <FormDialog
-            title={dialog.existing ? 'Sửa môn học' : 'Thêm môn học'}
-            fields={SUBJECT_FIELDS}
-            initial={dialog.existing || { color: '#E11D48', position: subjects.length }}
-            onSubmit={(v) => saveSubject(v, dialog.existing)}
-            onClose={() => setDialog(null)}
-          />
-        )}
+        {/* Liên kết sang tab Môn học dạng 1 dòng gọn gàng */}
+        <div style={{ marginTop: 'auto', paddingTop: '10px', textAlign: 'center', flexShrink: 0 }}>
+          <Link to="/mon-hoc" className="small" style={{ color: '#BE123C', fontWeight: 700 }}>
+            Mở tab Môn học để chọn giáo trình các lớp →
+          </Link>
+        </div>
       </div>
     </div>
   );
