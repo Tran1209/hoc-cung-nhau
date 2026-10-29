@@ -43,6 +43,15 @@ export default function LessonPage() {
     return { lesson, chapter, subject, images, assignments, submissions };
   }, [id]);
 
+  const renderedContent = useMemo(() => {
+    if (!d?.lesson?.content) return '';
+    try {
+      return marked.parse(d.lesson.content);
+    } catch {
+      return d.lesson.content;
+    }
+  }, [d?.lesson?.content]);
+
   if (loading && !d) return <Loading />;
   if (error && !d) return <ErrorBox error={error} />;
   if (!d.lesson) return <Empty>Không tìm thấy bài học.</Empty>;
@@ -75,15 +84,6 @@ export default function LessonPage() {
     await data.remove('lessons', id);
     nav(`/chuong/${lesson.chapter_id}`);
   };
-
-  const renderedContent = useMemo(() => {
-    if (!lesson?.content) return '';
-    try {
-      return marked.parse(lesson.content);
-    } catch {
-      return lesson.content;
-    }
-  }, [lesson?.content]);
 
   return (
     <div className="page">
