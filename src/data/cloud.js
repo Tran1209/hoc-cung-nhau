@@ -2,14 +2,17 @@
 //  Backend CLOUD — Supabase (đồng bộ thời gian thực giữa 2 máy)
 // ============================================================
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY, BUCKET } from '../config';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, BUCKET, IS_CLOUD } from '../config';
 import { emitDataChange } from './events';
 import { compressImage, fileExt } from '../lib/image';
 import { uid } from '../lib/format';
 
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true },
-});
+const sb = IS_CLOUD
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    })
+  : null;
+
 
 const EXPORT_TABLES = [
   'profiles', 'subjects', 'chapters', 'lessons', 'lesson_images',
