@@ -302,23 +302,21 @@ export default function LessonPage() {
     }
   });
 
-  // Tổng số lượng mục ôn tập hiển thị trên badge của Tab Ôn tập (Đồng bộ với trục dùng chung)
+  // Tổng số lượng mục ôn tập hiển thị trên badge của Tab Ôn tập
   const getOverallReviewCount = () => {
     try {
-      const unifiedRaw = localStorage.getItem('unified_history_milestones_timeline');
-      const unifiedList = unifiedRaw ? JSON.parse(unifiedRaw) : [];
-      const userMilestones = Array.isArray(unifiedList)
-        ? unifiedList.filter((m) => m && !m.id?.match(/^ms-[0-6][b]?$/))
-        : [];
-
       const saved = localStorage.getItem(`lesson_study_data_${id}`);
-      const d = saved ? JSON.parse(saved) : {};
-      const axCount = d.axes?.length ?? 6;
-      const ceCount = d.causeEffects?.length ?? 1;
-      const cmpCount = d.comparisons?.length ?? 1;
-      return userMilestones.length + axCount + ceCount + cmpCount;
+      if (saved) {
+        const d = JSON.parse(saved);
+        const msCount = d.milestones?.length || 0;
+        const axCount = d.axes?.length ?? 6;
+        const ceCount = d.causeEffects?.length ?? 1;
+        const cmpCount = d.comparisons?.length ?? 1;
+        return msCount + axCount + ceCount + cmpCount;
+      }
+      return 14;
     } catch {
-      return 8;
+      return 14;
     }
   };
 
@@ -326,16 +324,6 @@ export default function LessonPage() {
 
   useEffect(() => {
     setReviewCount(getOverallReviewCount());
-  }, [id]);
-
-  useEffect(() => {
-    const handleSync = () => setReviewCount(getOverallReviewCount());
-    window.addEventListener('unified_milestones_updated', handleSync);
-    window.addEventListener('storage', handleSync);
-    return () => {
-      window.removeEventListener('unified_milestones_updated', handleSync);
-      window.removeEventListener('storage', handleSync);
-    };
   }, [id]);
 
   // Hộp thoại thêm nhanh vào Tab Ôn tập (Lõi 1, Lõi 2&4, Lõi 3)
@@ -990,12 +978,11 @@ export default function LessonPage() {
                       className="ios-btn sm ios-btn-primary"
                       onClick={() => {
                         try {
+                          const studyKey = `lesson_study_data_${id}`;
+                          const existing = JSON.parse(localStorage.getItem(studyKey) || '{"milestones":[],"axes":[],"causeEffects":[]}');
                           if (quickAddModal === 'milestone') {
-                            // Lưu vào Trục thời gian Lịch Sử dùng chung & đồng bộ xuyên suốt Lớp 10, 11, 12
-                            const unifiedKey = 'unified_history_milestones_timeline';
-                            const globalRaw = localStorage.getItem(unifiedKey);
-                            const globalMilestones = globalRaw ? JSON.parse(globalRaw) : [];
-                            const newMs = {
+                            existing.milestones = existing.milestones || [];
+                            existing.milestones.unshift({
                               id: 'ms-user-' + Date.now(),
                               time: extractedData.time || '1945',
                               entityName: extractedData.entity || selectedSnippet,
@@ -1003,32 +990,25 @@ export default function LessonPage() {
                               typeTag: highlightTags[selectedSnippet] || '#Văn_kiện',
                               spaceTag: '#Việt_Nam',
                               eraTag: '#1919-1945',
-                            };
-                            const nextGlobal = [newMs, ...globalMilestones];
-                            localStorage.setItem(unifiedKey, JSON.stringify(nextGlobal));
-                            window.dispatchEvent(new Event('unified_milestones_updated'));
-                          } else {
-                            const studyKey = `lesson_study_data_${id}`;
-                            const existing = JSON.parse(localStorage.getItem(studyKey) || '{"milestones":[],"axes":[],"causeEffects":[]}');
-                            if (quickAddModal === 'axis') {
-                              existing.axes = existing.axes || [];
-                              existing.axes.push({
-                                id: 'ax-' + Date.now(),
-                                subject: extractedData.entity || 'Chủ thể',
-                                period: extractedData.time || 'Giai đoạn',
-                                progressBadge: 'Hoàn thành',
-                                verb: extractedData.verb || 'Thực hiện',
-                                content: extractedData.content || selectedSnippet,
-                              });
-                            } else if (quickAddModal === 'causeEffect') {
-                              existing.causeEffects = existing.causeEffects || [];
-                              existing.causeEffects.push({
-                                id: 'ce-' + Date.now(),
-                                content: extractedData.content || selectedSnippet,
-                              });
-                            }
-                            localStorage.setItem(studyKey, JSON.stringify(existing));
+                            });
+                          } else if (quickAddModal === 'axis') {
+                            existing.axes = existing.axes || [];
+                            existing.axes.push({
+                              id: 'ax-' + Date.now(),
+                              subject: extractedData.entity || 'Chủ thể',
+                              period: extractedData.time || 'Giai đoạn',
+                              progressBadge: 'Hoàn thành',
+                              verb: extractedData.verb || 'Thực hiện',
+                              content: extractedData.content || selectedSnippet,
+                            });
+                          } else if (quickAddModal === 'causeEffect') {
+                            existing.causeEffects = existing.causeEffects || [];
+                            existing.causeEffects.push({
+                              id: 'ce-' + Date.now(),
+                              content: extractedData.content || selectedSnippet,
+                            });
                           }
+                          localStorage.setItem(studyKey, JSON.stringify(existing));
                         } catch (e) {
                           console.error(e);
                         }
@@ -1173,6 +1153,8 @@ export default function LessonPage() {
               key={id}
               lessonId={id}
               lessonTitle={lesson.title}
+              chapterTitle={chapter?.title || ''}
+              lessonContent={lesson.content || ''}
               flashcards={cards}
               onCountChange={setReviewCount}
             />

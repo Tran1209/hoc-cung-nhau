@@ -1,42 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
-import { FormDialog } from './Modal';
+import { Modal } from './Modal';
 import LessonFlashcards from './LessonFlashcards';
 import MilestoneDiagram from './MilestoneDiagram';
 import AxesDiagram from './AxesDiagram';
 import CauseEffectDiagram, { DEFAULT_CAUSE_EFFECT_LIST } from './CauseEffectDiagram';
 import ComparisonDiagram, { DEFAULT_COMPARISONS_LIST } from './ComparisonDiagram';
-
-// Dữ liệu mẫu chuẩn hoá của Bài 1: Liên hợp quốc & ASEAN (Bộ GD&ĐT 2026)
-// Kho lưu trữ duy nhất của Trục thời gian Lịch Sử dùng chung & đồng bộ xuyên suốt Lớp 10, 11, 12
-export const UNIFIED_TIMELINE_STORAGE_KEY = 'unified_history_milestones_timeline';
-
-export function getUnifiedMilestones() {
-  try {
-    const raw = localStorage.getItem(UNIFIED_TIMELINE_STORAGE_KEY);
-    if (!raw) return [];
-    const list = JSON.parse(raw);
-    if (Array.isArray(list)) {
-      // Dọn sạch hoàn toàn các mốc mẫu mặc định cũ (ms-0, ms-1, ms-2...) để người dùng tự do thêm mới
-      const userOnly = list.filter((m) => m && !m.id?.match(/^ms-[0-6][b]?$/));
-      if (userOnly.length !== list.length) {
-        localStorage.setItem(UNIFIED_TIMELINE_STORAGE_KEY, JSON.stringify(userOnly));
-      }
-      return userOnly;
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-export function saveUnifiedMilestones(list) {
-  try {
-    localStorage.setItem(UNIFIED_TIMELINE_STORAGE_KEY, JSON.stringify(list));
-    window.dispatchEvent(new Event('unified_milestones_updated'));
-  } catch (e) {
-    console.error('Lỗi khi lưu trục mốc dùng chung:', e);
-  }
-}
+import { getStandardMilestonesForLesson, getAllCurriculumMilestones } from '../data/curriculumMilestones';
 
 export const DEFAULT_BAI1_REVIEW_DATA = {
   milestones: [],
@@ -94,7 +63,14 @@ export const DEFAULT_BAI1_REVIEW_DATA = {
   comparisons: DEFAULT_COMPARISONS_LIST,
 };
 
-export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', flashcards = [], onCountChange }) {
+export default function LessonReviewHub({
+  lessonId,
+  lessonTitle = 'Bài học',
+  chapterTitle = '',
+  lessonContent = '',
+  flashcards = [],
+  onCountChange,
+}) {
   // 4 Chế độ sơ đồ (Sub-tabs)
   const [subTab, setSubTab] = useState('milestones'); // 'milestones' | 'axes' | 'causeEffects' | 'comparisons' | 'flashcards'
 
@@ -102,51 +78,61 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
   const [addModal, setAddModal] = useState(false);
   const [addType, setAddType] = useState('milestone'); // 'milestone' | 'axis' | 'causeEffect' | 'comparison'
 
-  // Trục mốc thời gian duy nhất dùng xuyên suốt và đồng bộ liên tục qua cả 3 lớp 10, 11, 12
-  const [unifiedMilestones, setUnifiedMilestones] = useState(() => getUnifiedMilestones());
+  // Cột mốc chuẩn CÓ SẴN theo bài học từ CSDL Lịch Sử 10, 11, 12
+  const standardMilestones = useMemo(() => {
+    return getStandardMilestonesForLesson(lessonTitle, chapterTitle, lessonContent);
+  }, [lessonTitle, chapterTitle, lessonContent]);
 
-  useEffect(() => {
-    const syncMilestones = () => {
-      setUnifiedMilestones(getUnifiedMilestones());
-    };
-    window.addEventListener('unified_milestones_updated', syncMilestones);
-    window.addEventListener('storage', syncMilestones);
-    return () => {
-      window.removeEventListener('unified_milestones_updated', syncMilestones);
-      window.removeEventListener('storage', syncMilestones);
-    };
+  // Toàn bộ niên biểu Lớp 10, 11, 12 xuyên suốt
+  const allMilestones = useMemo(() => {
+    return getAllCurriculumMilestones();
   }, []);
 
-  const handleSaveUnifiedMilestones = (newList) => {
-    setUnifiedMilestones(newList);
-    saveUnifiedMilestones(newList);
-  };
-
-  // Dữ liệu ôn tập riêng của từng bài học (Trục chủ thể, Nhân quả, Bàn cân đối chiếu)
+  // Dữ liệu ôn tập của bài học (Có sẵn mốc chuẩn theo bài học, cho phép người dùng tự do thêm/sửa/xoá)
   const storageKey = `lesson_study_data_${lessonId}`;
   const [studyData, setStudyData] = useState(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.axes?.length || parsed.causeEffects?.length || parsed.comparisons?.length) {
+        if (parsed.milestones?.length > 0) {
           return parsed;
         }
+        return {
+          ...parsed,
+          milestones: standardMilestones,
+        };
       }
-      return DEFAULT_BAI1_REVIEW_DATA;
+      return {
+        ...DEFAULT_BAI1_REVIEW_DATA,
+        milestones: standardMilestones,
+      };
     } catch {
-      return DEFAULT_BAI1_REVIEW_DATA;
+      return {
+        ...DEFAULT_BAI1_REVIEW_DATA,
+        milestones: standardMilestones,
+      };
     }
   });
 
-  // Tự động tính tổng số mục ôn tập (gồm trục mốc chung + các mục riêng của bài)
+  // Tự động gán mốc chuẩn có sẵn nếu bài học chưa có
+  useEffect(() => {
+    if ((!studyData.milestones || studyData.milestones.length === 0) && standardMilestones.length > 0) {
+      setStudyData((prev) => ({
+        ...prev,
+        milestones: standardMilestones,
+      }));
+    }
+  }, [standardMilestones, studyData.milestones]);
+
+  // Tự động tính tổng số mục ôn tập và đẩy lên Badge của Tab Ôn tập cha
   const totalCount = useMemo(() => {
-    const msCount = unifiedMilestones?.length || 0;
+    const msCount = studyData.milestones?.length || 0;
     const axCount = studyData.axes?.length || 0;
     const ceCount = studyData.causeEffects?.length || 0;
     const cmpCount = studyData.comparisons?.length || 0;
     return msCount + axCount + ceCount + cmpCount;
-  }, [unifiedMilestones, studyData]);
+  }, [studyData]);
 
   useEffect(() => {
     if (onCountChange) {
@@ -154,13 +140,13 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
     }
   }, [totalCount, onCountChange]);
 
-  // Lưu thay đổi các công cụ riêng của bài học vào localStorage
+  // Lưu thay đổi vào localStorage
   const saveStudyData = (nextData) => {
     setStudyData(nextData);
     localStorage.setItem(storageKey, JSON.stringify(nextData));
   };
 
-  // State form thêm Mốc mới vào trục dùng chung
+  // State form thêm Mốc mới
   const [mTime, setMTime] = useState('');
   const [mEntity, setMEntity] = useState('');
   const [mTypeTag, setMTypeTag] = useState('#Văn_kiện');
@@ -175,12 +161,15 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
       id: 'ms-user-' + Date.now(),
       time: mTime.trim(),
       entityName: mEntity.trim(),
-      note: mNote.trim() || `Mốc thời gian thêm từ: ${lessonTitle}`,
+      note: mNote.trim() || `Mốc sự kiện thêm vào sổ ôn tập ${lessonTitle}.`,
       typeTag: mTypeTag,
       spaceTag: mSpaceTag,
       eraTag: mEraTag,
     };
-    handleSaveUnifiedMilestones([newMs, ...unifiedMilestones]);
+    saveStudyData({
+      ...studyData,
+      milestones: [newMs, ...(studyData.milestones || [])],
+    });
     setAddModal(false);
     setMTime('');
     setMEntity('');
@@ -194,7 +183,7 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           ========================================================================= */}
       <div className="review-subtabs-bar">
         <div className="subtabs-pill-group">
-          {/* 1. Sơ đồ Mốc & Nhãn (Lõi 1) - Trục thời gian dùng chung & đồng bộ xuyên suốt */}
+          {/* 1. Sơ đồ Mốc & Nhãn (Lõi 1) */}
           <button
             type="button"
             className={`review-subtab-pill ${subTab === 'milestones' ? 'active' : ''}`}
@@ -202,7 +191,7 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           >
             <span className="pill-prefix">Lõi 1</span>
             <span>Sơ đồ Mốc & Nhãn</span>
-            <span className="pill-count">{unifiedMilestones?.length || 0}</span>
+            <span className="pill-count">{studyData.milestones?.length || 0}</span>
           </button>
 
           {/* 2. Chia trục Chủ thể & Giai đoạn (Lõi 2 & 4) */}
@@ -279,25 +268,38 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
       <div className="review-subtab-body">
         {/* ---------------------------------------------------------------------
             SUB-TAB 1: SƠ ĐỒ MỐC & NHÃN (LÕI 1 - ĐỊNH DANH)
-            Trục thời gian duy nhất dùng chung & đồng bộ liên tục Lớp 10 · 11 · 12
             --------------------------------------------------------------------- */}
         {subTab === 'milestones' && (
           <div className="review-core-pane">
             <div className="core-lead-row">
               <div>
-                <h3 className="core-lead-title">Lõi 1: Trục Thời Gian & Quản Lý Nhãn Xuyên Suốt (Lớp 10 – 11 – 12)</h3>
+                <h3 className="core-lead-title">Lõi 1: Trục Sơ đồ Mốc thời gian & Quản lý Nhãn đa chiều</h3>
                 <p className="small muted">
-                  Trục niên biểu duy nhất, đồng bộ liên tục giữa mọi bài học. Tự do thêm mốc, kéo thả định danh và đối chiếu bẫy đề thi.
+                  Có sẵn hệ thống mốc sự kiện chuẩn của bài học. Dễ dàng chèn thêm mốc mới, kéo thả định danh và đối chiếu bẫy đề thi.
                 </p>
               </div>
               <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C' }}>
-                {unifiedMilestones?.length || 0} mốc trên trục toàn diện
+                {studyData.milestones?.length || 0} mốc tri thức
               </span>
             </div>
 
             <MilestoneDiagram
-              milestones={unifiedMilestones || []}
-              onSaveMilestones={handleSaveUnifiedMilestones}
+              milestones={studyData.milestones || standardMilestones}
+              allCurriculumMilestones={allMilestones}
+              onSaveMilestones={(newMilestones) => {
+                saveStudyData({
+                  ...studyData,
+                  milestones: newMilestones,
+                });
+              }}
+              onResetToStandard={() => {
+                if (confirm(`Khôi phục lại toàn bộ cột mốc chuẩn có sẵn của bài "${lessonTitle}"?`)) {
+                  saveStudyData({
+                    ...studyData,
+                    milestones: standardMilestones,
+                  });
+                }
+              }}
               lessonTitle={lessonTitle}
             />
           </div>
@@ -404,7 +406,7 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           MODAL THÊM MỤC ÔN TẬP THỦ CÔNG
           ========================================================================= */}
       {addModal && (
-        <FormDialog
+        <Modal
           title="+ Thêm Mốc Tri Thức vào Tab Ôn tập"
           onClose={() => setAddModal(false)}
         >
@@ -487,7 +489,7 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
               </button>
             </div>
           </form>
-        </FormDialog>
+        </Modal>
       )}
     </div>
   );

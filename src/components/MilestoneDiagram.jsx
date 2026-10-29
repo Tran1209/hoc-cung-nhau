@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { FormDialog } from './Modal';
+import { Modal } from './Modal';
 
 // Danh mục nhãn gợi ý chuẩn thi THPTQG
 export const STANDARD_TAGS = {
@@ -37,7 +37,20 @@ const SMART_TRAP_RULES = {
   ]
 };
 
-export default function MilestoneDiagram({ milestones = [], onSaveMilestones, lessonTitle = '' }) {
+export default function MilestoneDiagram({
+  milestones = [],
+  allCurriculumMilestones = [],
+  onSaveMilestones,
+  onResetToStandard,
+  lessonTitle = '',
+}) {
+  // Phạm vi hiển thị: 'lesson' (Mốc bài này) | 'all' (Niên biểu toàn diện 10·11·12)
+  const [timelineScope, setTimelineScope] = useState('lesson');
+
+  const sourceMilestones = timelineScope === 'all' && allCurriculumMilestones.length > 0
+    ? allCurriculumMilestones
+    : milestones;
+
   // Chế độ hiển thị: 'timeline-vertical' | 'timeline-horizontal' | 'cluster'
   const [viewMode, setViewMode] = useState('timeline-vertical');
   // Hướng gom cụm khi ở Cluster View: 'type' | 'space' | 'era'
@@ -58,7 +71,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
   const [formEntity, setFormEntity] = useState('');
   const [formNote, setFormNote] = useState('');
   const [formTypeTag, setFormTypeTag] = useState('#Văn_kiện');
-  const [formSpaceTag, setFormSpaceTag] = useState('#Châu_Mỹ');
+  const [formSpaceTag, setFormSpaceTag] = useState('#Việt_Nam');
   const [formEraTag, setFormEraTag] = useState('#1919-1945');
   const [customTagInput, setCustomTagInput] = useState('');
 
@@ -72,7 +85,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
 
   // Lọc danh sách mốc
   const filteredMilestones = useMemo(() => {
-    return milestones.filter((m) => {
+    return sourceMilestones.filter((m) => {
       // 1. Lọc theo Tag
       if (activeFilterTag !== 'ALL') {
         const hasTag =
@@ -93,7 +106,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
       }
       return true;
     });
-  }, [milestones, activeFilterTag, searchQuery]);
+  }, [sourceMilestones, activeFilterTag, searchQuery]);
 
   // Gom cụm cho Cluster View
   const clusters = useMemo(() => {
@@ -230,6 +243,28 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
     <div className="milestone-hub-box">
       {/* 1. THANH ĐIỀU HƯỚNG CÔNG CỤ (TOOLBAR) */}
       <div className="milestone-toolbar">
+        {/* Bộ chuyển phạm vi: Mốc bài học này VS Niên biểu toàn diện Lớp 10·11·12 */}
+        {allCurriculumMilestones.length > 0 && (
+          <div className="view-mode-pill-bar" style={{ background: '#FFF0F3', border: '1px solid #FDA4AF' }}>
+            <button
+              type="button"
+              className={`view-pill-btn ${timelineScope === 'lesson' ? 'active' : ''}`}
+              onClick={() => setTimelineScope('lesson')}
+              title="Các mốc trọng tâm có sẵn của bài học này"
+            >
+              <span>📖 Mốc bài này ({milestones.length})</span>
+            </button>
+            <button
+              type="button"
+              className={`view-pill-btn ${timelineScope === 'all' ? 'active' : ''}`}
+              onClick={() => setTimelineScope('all')}
+              title="Trục niên biểu lịch sử toàn diện xuyên suốt Lớp 10 · 11 · 12"
+            >
+              <span>🌐 Niên biểu 10·11·12 ({allCurriculumMilestones.length})</span>
+            </button>
+          </div>
+        )}
+
         {/* Nhóm nút chọn kiểu nhìn View Mode */}
         <div className="view-mode-pill-bar">
           <button
@@ -238,7 +273,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
             onClick={() => setViewMode('timeline-vertical')}
             title="Sơ đồ trục thời gian dọc dạng nhánh rẽ"
           >
-            <span>Trục dọc (Nhánh rẽ)</span>
+            <span>Trục dọc</span>
           </button>
 
           <button
@@ -247,7 +282,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
             onClick={() => setViewMode('timeline-horizontal')}
             title="Sơ đồ trục thời gian ngang dòng chảy"
           >
-            <span>Trục ngang (Dòng chảy)</span>
+            <span>Trục ngang</span>
           </button>
 
           <button
@@ -256,7 +291,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
             onClick={() => setViewMode('cluster')}
             title="Sơ đồ Cụm Nhãn gom nhóm thực thể"
           >
-            <span>Cụm Nhãn (Cluster View)</span>
+            <span>Cụm Nhãn</span>
           </button>
         </div>
 
@@ -279,7 +314,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
 
         {/* Nút thao tác mốc */}
         <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
-          {milestones.length > 0 && (
+          {onResetToStandard && timelineScope === 'lesson' && (
             <button
               type="button"
               className="ios-btn sm"
@@ -289,14 +324,10 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
                 background: '#FFF0F3',
                 fontSize: '0.84rem',
               }}
-              title="Xoá toàn bộ mốc trên trục dùng chung này"
-              onClick={() => {
-                if (confirm('Bạn có chắc chắn muốn xoá toàn bộ mốc trên trục thời gian dùng chung này? Thao tác này sẽ làm sạch trục trên tất cả các bài học.')) {
-                  onSaveMilestones([]);
-                }
-              }}
+              title="Khôi phục lại toàn bộ mốc có sẵn chuẩn SGK của bài này"
+              onClick={onResetToStandard}
             >
-              🗑️ Xoá hết mốc
+              ⚡ Đặt lại mốc chuẩn
             </button>
           )}
 
@@ -727,7 +758,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
           MODAL THÊM / CHỈNH SỬA MỐC VÀ QUẢN LÝ NHÃN ĐA CHIỀU
           ========================================================================= */}
       {editModal && (
-        <FormDialog
+        <Modal
           title={editModal.mode === 'edit' ? 'Chỉnh sửa Mốc Lịch Sử' : editModal.parentId ? '+ Thêm Nhánh Sự Kiện Con' : '+ Thêm Mốc Lịch Sử Mới'}
           onClose={() => setEditModal(null)}
         >
@@ -823,7 +854,7 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones, le
               </button>
             </div>
           </form>
-        </FormDialog>
+        </Modal>
       )}
     </div>
   );

@@ -23,10 +23,20 @@ export function Modal({ title, onClose, children, wide }) {
  * Hộp thoại form đơn giản.
  * fields: [{ name, label, type: 'text'|'textarea'|'number'|'color', placeholder }]
  */
-export function FormDialog({ title, fields, initial = {}, onSubmit, onClose, submitText = 'Lưu' }) {
+export function FormDialog({ title, fields = [], initial = {}, onSubmit, onClose, submitText = 'Lưu', children, wide }) {
+  if (children) {
+    return (
+      <Modal title={title} onClose={onClose} wide={wide}>
+        {children}
+      </Modal>
+    );
+  }
+
   const [values, setValues] = useState(() => {
     const v = {};
-    fields.forEach((f) => (v[f.name] = initial[f.name] ?? f.default ?? ''));
+    if (Array.isArray(fields)) {
+      fields.forEach((f) => (v[f.name] = initial[f.name] ?? f.default ?? ''));
+    }
     return v;
   });
   const [busy, setBusy] = useState(false);
@@ -38,11 +48,13 @@ export function FormDialog({ title, fields, initial = {}, onSubmit, onClose, sub
     setErr('');
     try {
       const out = { ...values };
-      fields.forEach((f) => {
-        if (f.type === 'number') out[f.name] = out[f.name] === '' ? 0 : Number(out[f.name]);
-      });
-      await onSubmit(out);
-      onClose();
+      if (Array.isArray(fields)) {
+        fields.forEach((f) => {
+          if (f.type === 'number') out[f.name] = out[f.name] === '' ? 0 : Number(out[f.name]);
+        });
+      }
+      await onSubmit?.(out);
+      onClose?.();
     } catch (e2) {
       setErr(e2.message);
     } finally {
