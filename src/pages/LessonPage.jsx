@@ -205,7 +205,9 @@ function applyEditorialHighlights(html, userHighlights = [], autoHighlight = tru
         const reg = new RegExp(`(${escaped})`, 'gi');
         text = text.replace(
           reg,
-          `<mark class="highlight-tape ${isUser ? 'user-highlight' : ''}">$1</mark>`,
+          `<mark class="highlight-tape ${isUser ? 'user-highlight' : ''}" ${
+            isUser ? `data-user-term="${term.replace(/"/g, '&quot;')}" title="Nhấn vào đây để hoàn tác / bỏ tô đoạn này"` : ''
+          }>$1</mark>`,
         );
       }
       return text;
@@ -245,6 +247,68 @@ export default function LessonPage() {
     }
   });
 
+  // Lịch sử hoàn tác (Undo Stack) và Thông báo tương tác
+  const [undoStack, setUndoStack] = useState([]);
+  const [undoToast, setUndoToast] = useState('');
+
+  const showToast = (msg) => {
+    setUndoToast(msg);
+    setTimeout(() => setUndoToast(''), 2500);
+  };
+
+  // Cập nhật highlights kèm lưu vết lịch sử để hoàn tác
+  const updateHighlightsWithHistory = (nextList, actionMsg) => {
+    setUndoStack((prev) => [...prev, userHighlights]);
+    setUserHighlights(nextList);
+    localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(nextList));
+    if (actionMsg) showToast(actionMsg);
+  };
+
+  // Hoàn tác bước vừa thực hiện (Nút Hoàn tác hoặc Ctrl+Z)
+  const handleUndo = () => {
+    if (undoStack.length === 0) return;
+    const previous = undoStack[undoStack.length - 1];
+    setUndoStack((prev) => prev.slice(0, -1));
+    setUserHighlights(previous);
+    localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(previous));
+    showToast('Đã hoàn tác thao tác tô bút dạ quang ↺');
+  };
+
+  // Hỗ trợ phím tắt Ctrl+Z (Cmd+Z trên Mac) để hoàn tác nhanh khi đang đọc
+  useEffect(() => {
+    if (activeTab !== 'theory') return;
+    const onKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        e.preventDefault();
+        handleUndo();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeTab, undoStack, userHighlights]);
+
+  // Xoá 1 đoạn cụ thể đã tô
+  const handleRemoveHighlight = (term) => {
+    const next = userHighlights.filter((h) => h !== term);
+    updateHighlightsWithHistory(next, `Đã bỏ tô đoạn: "${term.slice(0, 20)}..." (Bấm Hoàn tác ↺ nếu muốn lấy lại)`);
+    window.getSelection()?.removeAllRanges();
+    setFloatingPos(null);
+    setSelectedSnippet('');
+  };
+
+  // Nhấn trực tiếp vào bất kỳ đoạn văn bản đã tô để bỏ tô
+  const handleArticleClick = (e) => {
+    const markEl = e.target.closest('mark.user-highlight');
+    if (markEl) {
+      const term = markEl.getAttribute('data-user-term') || markEl.textContent.trim();
+      if (term && userHighlights.includes(term)) {
+        handleRemoveHighlight(term);
+      }
+    }
+  };
+
   // Floating Highlighter Action Pill
   const articleRef = useRef(null);
   const [floatingPos, setFloatingPos] = useState(null);
@@ -283,8 +347,7 @@ export default function LessonPage() {
     if (!selectedSnippet) return;
     if (!userHighlights.includes(selectedSnippet)) {
       const next = [...userHighlights, selectedSnippet];
-      setUserHighlights(next);
-      localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(next));
+      updateHighlightsWithHistory(next, 'Đã tô dạ quang đoạn văn bản! (Bấm Hoàn tác ↺ để huỷ)');
     }
     window.getSelection()?.removeAllRanges();
     setFloatingPos(null);
@@ -292,9 +355,9 @@ export default function LessonPage() {
   };
 
   const handleClearHighlights = () => {
-    if (confirm('Xoá các đoạn bạn đã đánh dấu bút dạ quang trong bài này?')) {
-      setUserHighlights([]);
-      localStorage.removeItem(`lesson_user_highlights_${id}`);
+    if (!userHighlights.length) return;
+    if (confirm('Xoá tất cả các đoạn bạn đã đánh dấu bút dạ quang trong bài này? (Bạn vẫn có thể bấm nút Hoàn tác để lấy lại)')) {
+      updateHighlightsWithHistory([], 'Đã xoá toàn bộ đoạn tô màu! (Bấm Hoàn tác ↺ để phục hồi)');
     }
   };
 
@@ -471,11 +534,11 @@ export default function LessonPage() {
         </div>
 
         {/* =========================================================================
-            TAB 1: KIẾN THỨC (CHỈ GHI KIẾN THỨC BÀI ĐỌC, ĐƯỢC PHÉP DÙNG HIGHLIGHT)
+            TAB 1: KIẾN THỨC (CHỈ GHI KIẾN THỨC BÀI ĐỌC, ĐƯỢC PHÉP DÙNG HIGHLIGHT & HOÀN TÁC)
             ========================================================================= */}
         {activeTab === 'theory' && (
           <div className="tab-pane-content">
-            {/* Reading Toolbar (Bút dạ quang hồng & Chỉ báo đọc) */}
+            {/* Reading Toolbar (Bút dạ quang hồng, Hoàn tác & Chỉ báo đọc) */}
             <div className="editorial-reading-toolbar">
               <div className="reading-tool-group">
                 <span className="small muted" style={{ fontWeight: 700, color: '#380718' }}>
@@ -492,6 +555,21 @@ export default function LessonPage() {
               </div>
 
               <div className="reading-tool-group">
+                {/* Nút Hoàn tác (Undo) trực tiếp */}
+                <button
+                  type="button"
+                  onClick={handleUndo}
+                  disabled={undoStack.length === 0}
+                  className={`reading-tool-pill ${undoStack.length > 0 ? 'active' : ''}`}
+                  title="Hoàn tác đoạn vừa tô hoặc vừa xoá (phím tắt Ctrl+Z)"
+                  style={{
+                    opacity: undoStack.length === 0 ? 0.45 : 1,
+                    cursor: undoStack.length === 0 ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  Hoàn tác ↺ {undoStack.length > 0 && `(${undoStack.length})`}
+                </button>
+
                 {userHighlights.length > 0 && (
                   <>
                     <span className="small muted" style={{ fontSize: '0.78rem' }}>
@@ -502,13 +580,15 @@ export default function LessonPage() {
                       onClick={handleClearHighlights}
                       className="ios-btn sm"
                       style={{ padding: '3px 8px', fontSize: '0.74rem', color: '#BE123C' }}
+                      title="Xoá tất cả (bạn vẫn có thể bấm Hoàn tác)"
                     >
-                      Xoá tô màu
+                      Xoá tất cả
                     </button>
                   </>
                 )}
+
                 <span className="small muted" style={{ fontSize: '0.76rem', color: '#BE123C' }}>
-                  Bôi đen chữ để tô bút dạ quang
+                  Chạm đoạn tô để bỏ · Ctrl+Z để hoàn tác
                 </span>
               </div>
             </div>
@@ -521,6 +601,7 @@ export default function LessonPage() {
                 dangerouslySetInnerHTML={{ __html: renderedContent }}
                 onMouseUp={handleSelection}
                 onTouchEnd={handleSelection}
+                onClick={handleArticleClick}
               />
             ) : (
               <div className="empty-lesson-banner">
@@ -539,9 +620,15 @@ export default function LessonPage() {
                 className="floating-highlighter-pill"
                 style={{ top: floatingPos.top, left: floatingPos.left }}
               >
-                <button type="button" onClick={handleAddHighlight}>
-                  Tô dạ quang
-                </button>
+                {userHighlights.includes(selectedSnippet) ? (
+                  <button type="button" onClick={() => handleRemoveHighlight(selectedSnippet)}>
+                    Bỏ tô đoạn này ✕
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleAddHighlight}>
+                    Tô dạ quang
+                  </button>
+                )}
               </div>
             )}
 
@@ -714,6 +801,9 @@ export default function LessonPage() {
             </div>
           </div>
         )}
+
+        {/* Floating Toast thông báo hoàn tác dạ quang */}
+        {undoToast && <div className="highlight-undo-toast">{undoToast}</div>}
 
         {editing && (
           <FormDialog
