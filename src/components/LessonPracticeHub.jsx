@@ -166,7 +166,9 @@ export default function LessonPracticeHub({ lessonId, assignments = [], latest, 
     try {
       const saved = localStorage.getItem(`lesson_study_data_${lessonId}`);
       const data = saved ? JSON.parse(saved) : DEFAULT_BAI1_REVIEW_DATA;
-      const milestones = data.milestones || DEFAULT_BAI1_REVIEW_DATA.milestones;
+      const unifiedRaw = localStorage.getItem('unified_history_milestones_timeline');
+      const unifiedMilestones = unifiedRaw ? JSON.parse(unifiedRaw) : [];
+      const milestones = unifiedMilestones.length > 0 ? unifiedMilestones : (data.milestones || []);
       const axes = data.axes || DEFAULT_BAI1_REVIEW_DATA.axes;
 
       const generated = [];

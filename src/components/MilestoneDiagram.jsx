@@ -37,7 +37,7 @@ const SMART_TRAP_RULES = {
   ]
 };
 
-export default function MilestoneDiagram({ milestones = [], onSaveMilestones }) {
+export default function MilestoneDiagram({ milestones = [], onSaveMilestones, lessonTitle = '' }) {
   // Chế độ hiển thị: 'timeline-vertical' | 'timeline-horizontal' | 'cluster'
   const [viewMode, setViewMode] = useState('timeline-vertical');
   // Hướng gom cụm khi ở Cluster View: 'type' | 'space' | 'era'
@@ -277,14 +277,37 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones }) 
           )}
         </div>
 
-        {/* Nút thêm mốc */}
-        <button
-          type="button"
-          className="ios-btn sm ios-btn-primary"
-          onClick={() => handleOpenAdd()}
-        >
-          + Thêm Mốc Mới
-        </button>
+        {/* Nút thao tác mốc */}
+        <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
+          {milestones.length > 0 && (
+            <button
+              type="button"
+              className="ios-btn sm"
+              style={{
+                color: '#BE123C',
+                borderColor: '#FDA4AF',
+                background: '#FFF0F3',
+                fontSize: '0.84rem',
+              }}
+              title="Xoá toàn bộ mốc trên trục dùng chung này"
+              onClick={() => {
+                if (confirm('Bạn có chắc chắn muốn xoá toàn bộ mốc trên trục thời gian dùng chung này? Thao tác này sẽ làm sạch trục trên tất cả các bài học.')) {
+                  onSaveMilestones([]);
+                }
+              }}
+            >
+              🗑️ Xoá hết mốc
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="ios-btn sm ios-btn-primary"
+            onClick={() => handleOpenAdd()}
+          >
+            + Thêm Mốc Mới
+          </button>
+        </div>
       </div>
 
       {/* 2. THANH BỘ LỌC NHÃN ĐA CHIỀU (TAG FILTER BAR) */}
@@ -382,91 +405,151 @@ export default function MilestoneDiagram({ milestones = [], onSaveMilestones }) 
             </div>
           </div>
 
-          <div className="clusters-grid">
-            {clusters.map(({ tag, items }) => (
-              <div key={tag} className="cluster-box">
-                <div className="cluster-header">
-                  <div className="row" style={{ gap: '8px' }}>
-                    <span className="cluster-tag-badge">{tag}</span>
-                    <span className="cluster-count">{items.length} thực thể</span>
+          {milestones.length === 0 ? (
+            <div
+              className="empty-unified-timeline"
+              style={{
+                textAlign: 'center',
+                padding: '48px 24px',
+                background: '#FFF0F3',
+                borderRadius: '24px',
+                border: '2px dashed #FDA4AF',
+                margin: '28px auto',
+                maxWidth: '620px',
+              }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>⏱️</div>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#380718', margin: '0 0 8px 0' }}>
+                Trục thời gian Lịch Sử dùng chung (Lớp 10 · 11 · 12)
+              </h3>
+              <p style={{ color: '#4A1D2F', fontSize: '0.92rem', lineHeight: 1.6, margin: '0 0 20px 0' }}>
+                Trục dọc niên biểu này là <b>duy nhất</b> và <b>đồng bộ liên tục</b> xuyên suốt toàn bộ các bài học trong cả 3 khối lớp. Hiện tại chưa có mốc nào. Hãy bấm nút bên dưới hoặc dùng <b>Bút dạ quang</b> tô sáng câu từ trong bài đọc để thêm mốc của bạn vào đây!
+              </p>
+              <button
+                type="button"
+                className="ios-btn md ios-btn-primary"
+                onClick={() => handleOpenAdd()}
+                style={{ padding: '10px 24px', fontSize: '0.95rem' }}
+              >
+                + Thêm Cột Mốc Đầu Tiên Vào Trục
+              </button>
+            </div>
+          ) : (
+            <div className="clusters-grid">
+              {clusters.map(({ tag, items }) => (
+                <div key={tag} className="cluster-box">
+                  <div className="cluster-header">
+                    <div className="row" style={{ gap: '8px' }}>
+                      <span className="cluster-tag-badge">{tag}</span>
+                      <span className="cluster-count">{items.length} thực thể</span>
+                    </div>
+                  </div>
+
+                  <div className="cluster-cards-list">
+                    {items.map((m, idx) => {
+                      const traps = getTrapsForMilestone(m);
+                      const isTrapOpen = !!openTraps[m.id];
+                      return (
+                        <div key={m.id} className="cluster-item-node">
+                          <div className="node-top-bar">
+                            <span className="node-time-badge">{m.time}</span>
+                            <div className="node-action-icons">
+                              <button
+                                type="button"
+                                className="node-mini-btn"
+                                title="Sửa mốc"
+                                onClick={() => handleOpenEdit(m, idx)}
+                              >
+                                ✎
+                              </button>
+                              <button
+                                type="button"
+                                className="node-mini-btn delete"
+                                title="Xoá mốc"
+                                onClick={() => handleDeleteMilestone(m.id)}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+
+                          <h4 className="node-entity-title">{m.entityName}</h4>
+                          <p className="node-note-text">{m.note}</p>
+
+                          <div className="node-tags-row">
+                            <span className="tag-pill tag-type">{m.typeTag}</span>
+                            <span className="tag-pill tag-space">{m.spaceTag}</span>
+                            <span className="tag-pill tag-era">{m.eraTag}</span>
+                          </div>
+
+                          {/* Nút xem bẫy nhiễu */}
+                          <div className="node-trap-trigger-row">
+                            <button
+                              type="button"
+                              className={`trap-toggle-btn ${isTrapOpen ? 'is-active' : ''}`}
+                              onClick={() => toggleTrap(m.id)}
+                            >
+                              <span>⚠️ {isTrapOpen ? 'Ẩn bẫy nhiễu đề thi' : 'Xem bẫy nhiễu đề thi'}</span>
+                              <span className="trap-arrow">{isTrapOpen ? '▲' : '▼'}</span>
+                            </button>
+                          </div>
+
+                          {isTrapOpen && (
+                            <div className="node-trap-content">
+                              <b className="trap-content-head">🚩 Đề thi dễ bẫy nhầm với các thực thể:</b>
+                              <ul className="trap-list">
+                                {traps.map((tr, ti) => (
+                                  <li key={ti}>
+                                    <b>{tr.name}:</b> {tr.note}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-
-                <div className="cluster-cards-list">
-                  {items.map((m, idx) => {
-                    const traps = getTrapsForMilestone(m);
-                    const isTrapOpen = !!openTraps[m.id];
-                    return (
-                      <div key={m.id} className="cluster-item-node">
-                        <div className="node-top-bar">
-                          <span className="node-time-badge">{m.time}</span>
-                          <div className="node-action-icons">
-                            <button
-                              type="button"
-                              className="node-mini-btn"
-                              title="Sửa mốc"
-                              onClick={() => handleOpenEdit(m, idx)}
-                            >
-                              ✎
-                            </button>
-                            <button
-                              type="button"
-                              className="node-mini-btn delete"
-                              title="Xoá mốc"
-                              onClick={() => handleDeleteMilestone(m.id)}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-
-                        <h4 className="node-entity-title">{m.entityName}</h4>
-                        <p className="node-note-text">{m.note}</p>
-
-                        <div className="node-tags-row">
-                          <span className="tag-pill tag-type">{m.typeTag}</span>
-                          <span className="tag-pill tag-space">{m.spaceTag}</span>
-                          <span className="tag-pill tag-era">{m.eraTag}</span>
-                        </div>
-
-                        {/* Nút xem bẫy nhiễu */}
-                        <div className="node-trap-trigger-row">
-                          <button
-                            type="button"
-                            className={`trap-toggle-btn ${isTrapOpen ? 'is-active' : ''}`}
-                            onClick={() => toggleTrap(m.id)}
-                          >
-                            <span>⚠️ {isTrapOpen ? 'Ẩn bẫy nhiễu đề thi' : 'Xem bẫy nhiễu đề thi'}</span>
-                            <span className="trap-arrow">{isTrapOpen ? '▲' : '▼'}</span>
-                          </button>
-                        </div>
-
-                        {isTrapOpen && (
-                          <div className="node-trap-content">
-                            <b className="trap-content-head">🚩 Đề thi dễ bẫy nhầm với các thực thể:</b>
-                            <ul className="trap-list">
-                              {traps.map((tr, ti) => (
-                                <li key={ti}>
-                                  <b>{tr.name}:</b> {tr.note}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         /* =========================================================================
            CHẾ ĐỘ TRỤC THỜI GIAN NỐI TIẾP (DỌC HOẶC NGANG CÓ NHÁNH RẼ)
            ========================================================================= */
         <div className={`timeline-diagram-container ${viewMode === 'timeline-horizontal' ? 'is-horizontal' : 'is-vertical'}`}>
-          {filteredMilestones.length === 0 ? (
+          {milestones.length === 0 ? (
+            <div
+              className="empty-unified-timeline"
+              style={{
+                textAlign: 'center',
+                padding: '48px 24px',
+                background: '#FFF0F3',
+                borderRadius: '24px',
+                border: '2px dashed #FDA4AF',
+                margin: '28px auto',
+                maxWidth: '620px',
+              }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>⏱️</div>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#380718', margin: '0 0 8px 0' }}>
+                Trục thời gian Lịch Sử dùng chung (Lớp 10 · 11 · 12)
+              </h3>
+              <p style={{ color: '#4A1D2F', fontSize: '0.92rem', lineHeight: 1.6, margin: '0 0 20px 0' }}>
+                Trục dọc niên biểu này là <b>duy nhất</b> và <b>đồng bộ liên tục</b> xuyên suốt toàn bộ các bài học trong cả 3 khối lớp. Hiện tại chưa có mốc nào. Hãy bấm nút bên dưới hoặc dùng <b>Bút dạ quang</b> tô sáng câu từ trong bài đọc để thêm mốc của bạn vào đây!
+              </p>
+              <button
+                type="button"
+                className="ios-btn md ios-btn-primary"
+                onClick={() => handleOpenAdd()}
+                style={{ padding: '10px 24px', fontSize: '0.95rem' }}
+              >
+                + Thêm Cột Mốc Đầu Tiên Vào Trục
+              </button>
+            </div>
+          ) : filteredMilestones.length === 0 ? (
             <div className="empty-milestones-notice">
               <p>Không tìm thấy mốc lịch sử nào phù hợp với bộ lọc hiện tại.</p>
               <button

@@ -7,99 +7,39 @@ import CauseEffectDiagram, { DEFAULT_CAUSE_EFFECT_LIST } from './CauseEffectDiag
 import ComparisonDiagram, { DEFAULT_COMPARISONS_LIST } from './ComparisonDiagram';
 
 // Dữ liệu mẫu chuẩn hoá của Bài 1: Liên hợp quốc & ASEAN (Bộ GD&ĐT 2026)
+// Kho lưu trữ duy nhất của Trục thời gian Lịch Sử dùng chung & đồng bộ xuyên suốt Lớp 10, 11, 12
+export const UNIFIED_TIMELINE_STORAGE_KEY = 'unified_history_milestones_timeline';
+
+export function getUnifiedMilestones() {
+  try {
+    const raw = localStorage.getItem(UNIFIED_TIMELINE_STORAGE_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    if (Array.isArray(list)) {
+      // Dọn sạch hoàn toàn các mốc mẫu mặc định cũ (ms-0, ms-1, ms-2...) để người dùng tự do thêm mới
+      const userOnly = list.filter((m) => m && !m.id?.match(/^ms-[0-6][b]?$/));
+      if (userOnly.length !== list.length) {
+        localStorage.setItem(UNIFIED_TIMELINE_STORAGE_KEY, JSON.stringify(userOnly));
+      }
+      return userOnly;
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveUnifiedMilestones(list) {
+  try {
+    localStorage.setItem(UNIFIED_TIMELINE_STORAGE_KEY, JSON.stringify(list));
+    window.dispatchEvent(new Event('unified_milestones_updated'));
+  } catch (e) {
+    console.error('Lỗi khi lưu trục mốc dùng chung:', e);
+  }
+}
+
 export const DEFAULT_BAI1_REVIEW_DATA = {
-  milestones: [
-    {
-      id: 'ms-0',
-      time: '4 đến 11-2-1945',
-      entityName: 'Hội nghị I-an-ta (Liên Xô)',
-      note: '3 cường quốc (Liên Xô, Mỹ, Anh) họp bàn phân chia phạm vi ảnh hưởng và thống nhất thành lập tổ chức Liên hợp quốc.',
-      typeTag: '#Sự_kiện',
-      spaceTag: '#Châu_Âu',
-      eraTag: '#1919-1945',
-      customTags: ['#Phân_chia_phạm_vi', '#Nền_tảng_LHQ'],
-    },
-    {
-      id: 'ms-1',
-      time: '25-4 đến 26-6-1945',
-      entityName: 'Hội nghị Xan Phran-xi-xcô (Mỹ)',
-      note: '50 quốc gia họp bàn và thông qua bản Hiến chương Liên hợp quốc.',
-      typeTag: '#Văn_kiện',
-      spaceTag: '#Châu_Mỹ',
-      eraTag: '#1919-1945',
-      customTags: ['#50_quốc_gia', '#Hiến_chương'],
-    },
-    {
-      id: 'ms-2',
-      time: '24-10-1945',
-      entityName: 'Hiến chương Liên hợp quốc chính thức có hiệu lực',
-      note: 'Đánh dấu sự thành lập chính thức của Liên hợp quốc (Ngày Liên hợp quốc hàng năm).',
-      typeTag: '#Văn_kiện',
-      spaceTag: '#Châu_Mỹ',
-      eraTag: '#1919-1945',
-      customTags: ['#Thành_lập_LHQ', '#Ngày_LHQ'],
-    },
-    {
-      id: 'ms-3',
-      time: '8-8-1967',
-      entityName: 'Thành lập Hiệp hội các quốc gia Đông Nam Á (ASEAN)',
-      note: '5 nước sáng lập (In-đô-nê-xi-a, Ma-lai-xi-a, Phi-líp-pin, Xin-ga-po, Thái Lan) ký Tuyên bố Băng Cốc.',
-      typeTag: '#Tổ_chức',
-      spaceTag: '#Đông_Nam_Á',
-      eraTag: '#Chống_Mỹ',
-      customTags: ['#5_nước_sáng_lập', '#Tuyên_bố_Băng_Cốc'],
-    },
-    {
-      id: 'ms-3b',
-      time: '2-1976',
-      entityName: 'Ký kết Hiệp ước Thân thiện và Hợp tác Đông Nam Á (Hiệp ước Ba-li)',
-      note: 'Xác định các nguyên tắc cơ bản trong quan hệ giữa các nước thành viên: tôn trọng độc lập chủ quyền, giải quyết tranh chấp bằng biện pháp hoà bình.',
-      typeTag: '#Văn_kiện',
-      spaceTag: '#Đông_Nam_Á',
-      eraTag: '#Chống_Mỹ',
-      customTags: ['#Hiệp_ước_Ba_li', '#Nguyên_tắc_hoà_bình'],
-    },
-    {
-      id: 'ms-4',
-      time: '20-9-1977',
-      entityName: 'Việt Nam gia nhập Liên hợp quốc (Thành viên 149)',
-      note: 'Tại kỳ họp thứ 32 của Đại hội đồng LHQ, mở ra thời kỳ hội nhập đa phương toàn cầu.',
-      typeTag: '#Sự_kiện',
-      spaceTag: '#Việt_Nam',
-      eraTag: '#Đổi_mới',
-      customTags: ['#Thành_viên_149', '#Đại_hội_đồng_32'],
-    },
-    {
-      id: 'ms-5',
-      time: '28-7-1995',
-      entityName: 'Việt Nam chính thức gia nhập ASEAN (Thành viên thứ 7)',
-      note: 'Đánh dấu bước ngoặt hoà nhập khu vực của Việt Nam trong công cuộc Đổi mới.',
-      typeTag: '#Sự_kiện',
-      spaceTag: '#Đông_Nam_Á',
-      eraTag: '#Đổi_mới',
-      customTags: ['#Thành_viên_thứ_7', '#Bước_ngoặt_Đổi_mới'],
-    },
-    {
-      id: 'ms-5b',
-      time: '11-2007',
-      entityName: 'Ký kết Hiến chương ASEAN (Có hiệu lực 12-2008)',
-      note: 'Tạo cơ sở pháp lý và khuôn khổ thể chế để hiện thực hoá mục tiêu xây dựng Cộng đồng ASEAN vững mạnh.',
-      typeTag: '#Văn_kiện',
-      spaceTag: '#Đông_Nam_Á',
-      eraTag: '#Đổi_mới',
-      customTags: ['#Hiến_chương_ASEAN', '#Khung_pháp_lý'],
-    },
-    {
-      id: 'ms-6',
-      time: '31-12-2015',
-      entityName: 'Chính thức thành lập Cộng đồng ASEAN',
-      note: 'Hiện thực hoá 3 trụ cột liên kết: Chính trị - An ninh (APSC), Kinh tế (AEC), Văn hoá - Xã hội (ASCC).',
-      typeTag: '#Tổ_chức',
-      spaceTag: '#Đông_Nam_Á',
-      eraTag: '#Đổi_mới',
-      customTags: ['#3_trụ_cột', '#APSC_AEC_ASCC'],
-    },
-  ],
+  milestones: [],
   axes: [
     {
       id: 'ax-1',
@@ -162,14 +102,34 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
   const [addModal, setAddModal] = useState(false);
   const [addType, setAddType] = useState('milestone'); // 'milestone' | 'axis' | 'causeEffect' | 'comparison'
 
-  // Dữ liệu ôn tập của bài học (Được lưu trong localStorage và cập nhật tự động)
+  // Trục mốc thời gian duy nhất dùng xuyên suốt và đồng bộ liên tục qua cả 3 lớp 10, 11, 12
+  const [unifiedMilestones, setUnifiedMilestones] = useState(() => getUnifiedMilestones());
+
+  useEffect(() => {
+    const syncMilestones = () => {
+      setUnifiedMilestones(getUnifiedMilestones());
+    };
+    window.addEventListener('unified_milestones_updated', syncMilestones);
+    window.addEventListener('storage', syncMilestones);
+    return () => {
+      window.removeEventListener('unified_milestones_updated', syncMilestones);
+      window.removeEventListener('storage', syncMilestones);
+    };
+  }, []);
+
+  const handleSaveUnifiedMilestones = (newList) => {
+    setUnifiedMilestones(newList);
+    saveUnifiedMilestones(newList);
+  };
+
+  // Dữ liệu ôn tập riêng của từng bài học (Trục chủ thể, Nhân quả, Bàn cân đối chiếu)
   const storageKey = `lesson_study_data_${lessonId}`;
   const [studyData, setStudyData] = useState(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.milestones?.length || parsed.axes?.length || parsed.causeEffects?.length || parsed.comparisons?.length) {
+        if (parsed.axes?.length || parsed.causeEffects?.length || parsed.comparisons?.length) {
           return parsed;
         }
       }
@@ -179,14 +139,14 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
     }
   });
 
-  // Tự động tính tổng số mục ôn tập và đẩy lên Badge của Tab Ôn tập cha
+  // Tự động tính tổng số mục ôn tập (gồm trục mốc chung + các mục riêng của bài)
   const totalCount = useMemo(() => {
-    const msCount = studyData.milestones?.length || 0;
+    const msCount = unifiedMilestones?.length || 0;
     const axCount = studyData.axes?.length || 0;
     const ceCount = studyData.causeEffects?.length || 0;
     const cmpCount = studyData.comparisons?.length || 0;
     return msCount + axCount + ceCount + cmpCount;
-  }, [studyData]);
+  }, [unifiedMilestones, studyData]);
 
   useEffect(() => {
     if (onCountChange) {
@@ -194,13 +154,13 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
     }
   }, [totalCount, onCountChange]);
 
-  // Lưu thay đổi vào localStorage
+  // Lưu thay đổi các công cụ riêng của bài học vào localStorage
   const saveStudyData = (nextData) => {
     setStudyData(nextData);
     localStorage.setItem(storageKey, JSON.stringify(nextData));
   };
 
-  // State form thêm Mốc mới
+  // State form thêm Mốc mới vào trục dùng chung
   const [mTime, setMTime] = useState('');
   const [mEntity, setMEntity] = useState('');
   const [mTypeTag, setMTypeTag] = useState('#Văn_kiện');
@@ -215,15 +175,12 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
       id: 'ms-user-' + Date.now(),
       time: mTime.trim(),
       entityName: mEntity.trim(),
-      note: mNote.trim() || 'Mốc sự kiện được thêm vào sổ ôn tập.',
+      note: mNote.trim() || `Mốc thời gian thêm từ: ${lessonTitle}`,
       typeTag: mTypeTag,
       spaceTag: mSpaceTag,
       eraTag: mEraTag,
     };
-    saveStudyData({
-      ...studyData,
-      milestones: [newMs, ...(studyData.milestones || [])],
-    });
+    handleSaveUnifiedMilestones([newMs, ...unifiedMilestones]);
     setAddModal(false);
     setMTime('');
     setMEntity('');
@@ -237,7 +194,7 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           ========================================================================= */}
       <div className="review-subtabs-bar">
         <div className="subtabs-pill-group">
-          {/* 1. Sơ đồ Mốc & Nhãn (Lõi 1) */}
+          {/* 1. Sơ đồ Mốc & Nhãn (Lõi 1) - Trục thời gian dùng chung & đồng bộ xuyên suốt */}
           <button
             type="button"
             className={`review-subtab-pill ${subTab === 'milestones' ? 'active' : ''}`}
@@ -245,7 +202,7 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           >
             <span className="pill-prefix">Lõi 1</span>
             <span>Sơ đồ Mốc & Nhãn</span>
-            <span className="pill-count">{studyData.milestones?.length || 0}</span>
+            <span className="pill-count">{unifiedMilestones?.length || 0}</span>
           </button>
 
           {/* 2. Chia trục Chủ thể & Giai đoạn (Lõi 2 & 4) */}
@@ -322,29 +279,26 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
       <div className="review-subtab-body">
         {/* ---------------------------------------------------------------------
             SUB-TAB 1: SƠ ĐỒ MỐC & NHÃN (LÕI 1 - ĐỊNH DANH)
+            Trục thời gian duy nhất dùng chung & đồng bộ liên tục Lớp 10 · 11 · 12
             --------------------------------------------------------------------- */}
         {subTab === 'milestones' && (
           <div className="review-core-pane">
             <div className="core-lead-row">
               <div>
-                <h3 className="core-lead-title">Lõi 1: Trục Sơ đồ Mốc thời gian & Quản lý Nhãn đa chiều</h3>
+                <h3 className="core-lead-title">Lõi 1: Trục Thời Gian & Quản Lý Nhãn Xuyên Suốt (Lớp 10 – 11 – 12)</h3>
                 <p className="small muted">
-                  Chuyển đổi linh hoạt giữa Trục dọc (nhánh rẽ), Trục ngang dòng chảy và Cụm Nhãn. Rèn luyện phản xạ phát hiện bẫy nhiễu đề thi.
+                  Trục niên biểu duy nhất, đồng bộ liên tục giữa mọi bài học. Tự do thêm mốc, kéo thả định danh và đối chiếu bẫy đề thi.
                 </p>
               </div>
               <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C' }}>
-                {studyData.milestones?.length || 0} mốc tri thức
+                {unifiedMilestones?.length || 0} mốc trên trục toàn diện
               </span>
             </div>
 
             <MilestoneDiagram
-              milestones={studyData.milestones || []}
-              onSaveMilestones={(newMilestones) => {
-                saveStudyData({
-                  ...studyData,
-                  milestones: newMilestones,
-                });
-              }}
+              milestones={unifiedMilestones || []}
+              onSaveMilestones={handleSaveUnifiedMilestones}
+              lessonTitle={lessonTitle}
             />
           </div>
         )}
