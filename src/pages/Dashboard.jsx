@@ -7,6 +7,7 @@ import { FormDialog } from '../components/Modal';
 import { DueBadge, ErrorBox, KindBadge, Loading, StatusBadge, Empty } from '../components/ui';
 import { maxScoreOf, nextSaturday, sortByPos, timeAgo, fmtDate } from '../lib/format';
 import { avgScore, isTodo, latestByAssignment } from '../lib/progress';
+import { seedHistoryCurriculum } from '../data/historyCurriculum';
 
 const SUBJECT_FIELDS = [
   { name: 'icon', label: 'Biểu tượng (emoji)', placeholder: '📘' },
@@ -20,6 +21,19 @@ export default function Dashboard() {
   const { user, isTeacher, partner, nameOf } = useAuth();
   const nav = useNavigate();
   const [dialog, setDialog] = useState(null);
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeedHistory = async () => {
+    setSeeding(true);
+    try {
+      await seedHistoryCurriculum(data);
+      logActivity('curriculum', 'Nạp chương trình Lịch Sử 10, 11, 12');
+    } catch (e) {
+      alert('Lỗi nạp môn: ' + e.message);
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const { data: d, loading, error } = useLive(async () => {
     const [subjects, chapters, assignments, questions, submissions, activity] = await Promise.all([
@@ -184,13 +198,23 @@ export default function Dashboard() {
         <div className="row between">
           <h2>📚 Môn học</h2>
           {isTeacher && (
-            <button className="btn primary" onClick={() => setDialog({})}>+ Thêm môn</button>
+            <div className="row">
+              <button className="btn sm" onClick={handleSeedHistory} disabled={seeding}>
+                {seeding ? 'Đang nạp…' : '🏛️ Nạp Sử 10, 11, 12'}
+              </button>
+              <button className="btn primary" onClick={() => setDialog({})}>+ Thêm môn</button>
+            </div>
           )}
         </div>
         {subjects.length === 0 ? (
-          <Empty>
-            {isTeacher ? 'Bắt đầu bằng việc thêm một môn học nhé!' : 'Anh chưa thêm môn học nào.'}
-          </Empty>
+          <div className="empty">
+            <p>{isTeacher ? 'Bắt đầu bằng việc thêm môn học hoặc nạp sẵn chương trình Sử 10, 11, 12!' : 'Anh chưa thêm môn học nào.'}</p>
+            {isTeacher && (
+              <button className="btn primary mt" onClick={handleSeedHistory} disabled={seeding}>
+                {seeding ? 'Đang nạp…' : '✨ Nạp sẵn Sử 10, 11, 12 (Kết nối tri thức)'}
+              </button>
+            )}
+          </div>
         ) : (
           <div className="cards">
             {sortByPos(subjects).map((s) => {

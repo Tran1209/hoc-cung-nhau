@@ -6,6 +6,7 @@
 import { emitDataChange } from './events';
 import { compressImage, fileExt } from '../lib/image';
 import { uid } from '../lib/format';
+import { HISTORY_CURRICULUM } from './historyCurriculum';
 
 const DB_NAME = 'hoc-cung-nhau-demo';
 const ME_KEY = 'hcn-demo-me';
@@ -50,7 +51,56 @@ function tx(store, mode, fn) {
 
 const reqP = (r) => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 
+let isSeeding = false;
+async function seedDefaultIfEmpty() {
+  if (isSeeding) return;
+  const existing = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('subjects')));
+  if (existing.length === 0) {
+    isSeeding = true;
+    for (let sIdx = 0; sIdx < HISTORY_CURRICULUM.length; sIdx++) {
+      const s = HISTORY_CURRICULUM[sIdx];
+      const subId = uid();
+      await putRow('subjects', {
+        id: subId,
+        title: s.title,
+        icon: s.icon,
+        color: s.color,
+        description: s.description,
+        position: sIdx + 1,
+        created_at: new Date().toISOString(),
+      });
+      for (let cIdx = 0; cIdx < s.chapters.length; cIdx++) {
+        const c = s.chapters[cIdx];
+        const chId = uid();
+        await putRow('chapters', {
+          id: chId,
+          subject_id: subId,
+          title: c.title,
+          description: c.description,
+          position: cIdx + 1,
+          created_at: new Date().toISOString(),
+        });
+        for (let lIdx = 0; lIdx < c.lessons.length; lIdx++) {
+          const l = c.lessons[lIdx];
+          await putRow('lessons', {
+            id: uid(),
+            chapter_id: chId,
+            title: l,
+            content: '',
+            position: lIdx + 1,
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
+    }
+    isSeeding = false;
+  }
+}
+
 async function allRows(table) {
+  if (table === 'subjects' || table === 'chapters' || table === 'lessons') {
+    await seedDefaultIfEmpty();
+  }
   return tx('rows', 'readonly', (s) => reqP(s.index('table').getAll(table))).then((rs) => rs.map((r) => r.data));
 }
 async function putRow(table, data, key = 'id') {
