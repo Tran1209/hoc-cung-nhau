@@ -29,22 +29,24 @@ export default function Layout({ children }) {
     <div className="app">
       <header className="topbar">
         <NavLink to="/" className="brand">
-          📚 <span>Học cùng nhau</span>
+          <span className="brand-dot" />
+          <span>Học Cùng Nhau</span>
+          <span className="brand-tag">Folio</span>
         </NavLink>
         <nav className="nav">
-          <NavLink to="/" end>🏠 <span>Trang chủ</span></NavLink>
+          <NavLink to="/" end>Tổng quan</NavLink>
           {isTeacher && (
             <NavLink to="/cham">
-              ✅ <span>Chấm bài</span>
+              Chấm bài
               {pendingCount > 0 && <b className="pill">{pendingCount}</b>}
             </NavLink>
           )}
-          <NavLink to="/cai-dat">⚙️ <span>Cài đặt</span></NavLink>
+          <NavLink to="/cai-dat">Thiết lập</NavLink>
         </nav>
         <div className="me">
           <span className={`role-dot ${user.role}`} title={isTeacher ? 'Quản lý' : 'Học viên'} />
           <span className="me-name">{user.display_name}</span>
-          <button className="btn ghost sm" onClick={logout}>Thoát</button>
+          <button className="btn ghost sm" onClick={logout}>Đăng xuất</button>
         </div>
       </header>
 
@@ -62,7 +64,7 @@ export default function Layout({ children }) {
       )}
 
       <main className="container">{children}</main>
-      <footer className="footer">Làm bằng 💕 cho hai đứa mình</footer>
+      <footer className="footer">Học Cùng Nhau · Rose Milk Editorial Folio · Sổ tay học tập liền khối chuẩn Apple</footer>
     </div>
   );
 }

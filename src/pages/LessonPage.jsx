@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { marked } from 'marked';
 import { data, logActivity } from '../data';
@@ -145,17 +145,34 @@ const LESSON_FIELDS = [
   { name: 'position', label: 'Thứ tự', type: 'number' },
 ];
 
-const SECTIONS = [
-  { kind: 'mindmap', title: '🧠 Sơ đồ tư duy', empty: 'Chưa có sơ đồ tư duy.' },
-  { kind: 'work', title: '📸 Bài em đã làm', empty: 'Chưa có ảnh bài làm nào.' },
-  { kind: 'doc', title: '📎 Tài liệu đính kèm', empty: 'Chưa có tài liệu.' },
-];
-
 export default function LessonPage() {
   const { id } = useParams();
   const { user, isTeacher, nameOf } = useAuth();
   const nav = useNavigate();
   const [editing, setEditing] = useState(false);
+
+  // Integrated Editor state
+  const [essayText, setEssayText] = useState('');
+  const [savedNotice, setSavedNotice] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`folio_essay_${id}`);
+    if (saved) setEssayText(saved);
+  }, [id]);
+
+  const wordCount = useMemo(() => {
+    const trimmed = essayText.trim();
+    return trimmed ? trimmed.split(/\s+/).length : 0;
+  }, [essayText]);
+
+  const targetWords = 150;
+  const progressPct = Math.min(100, Math.round((wordCount / targetWords) * 100));
+
+  const saveEssay = () => {
+    localStorage.setItem(`folio_essay_${id}`, essayText);
+    setSavedNotice(true);
+    setTimeout(() => setSavedNotice(false), 2500);
+  };
 
   const { data: d, loading, error, reload } = useLive(async () => {
     const lesson = await data.get('lessons', id);
@@ -198,28 +215,19 @@ export default function LessonPage() {
     for (const path of paths) {
       await data.insert('lesson_images', { lesson_id: id, kind, path, uploaded_by: user.id });
     }
-    const label = SECTIONS.find((s) => s.kind === kind).title.replace(/^\S+\s/, '');
-    logActivity('lesson_images', `Thêm ${paths.length} ảnh "${label}" vào ${lesson.title}`, `/bai/${id}`);
+    logActivity('lesson_images', `Thêm tư liệu vào ${lesson.title}`, `/bai/${id}`);
     reload();
   };
 
   const delImage = async (img) => {
-    if (!confirm('Xoá ảnh này?')) return;
+    if (!confirm('Xoá ảnh tư liệu này?')) return;
     await data.remove('lesson_images', img.id);
     await data.removeFile(img.path);
     reload();
   };
 
-  const editCaption = async (img) => {
-    const c = prompt('Ghi chú cho ảnh:', img.caption || '');
-    if (c !== null) {
-      await data.update('lesson_images', img.id, { caption: c });
-      reload();
-    }
-  };
-
   const delLesson = async () => {
-    if (!confirm(`Xoá "${lesson.title}" cùng toàn bộ ảnh, bài tập, bài nộp? Không thể hoàn tác!`)) return;
+    if (!confirm(`Xoá bài "${lesson.title}"? Không thể hoàn tác.`)) return;
     if (prompt('Gõ XOA để xác nhận') !== 'XOA') return;
     await data.remove('lessons', id);
     nav(`/chuong/${lesson.chapter_id}`);
@@ -227,108 +235,194 @@ export default function LessonPage() {
 
   return (
     <div className="page">
-      <Crumbs
-        items={[
-          subject && { label: subject.title, to: `/mon/${subject.id}` },
-          chapter && { label: chapter.title, to: `/chuong/${chapter.id}` },
-          { label: lesson.title },
-        ]}
-      />
-      <div className="row between">
-        <h1>{lesson.title}</h1>
-        {isTeacher && (
-          <div className="row">
-            <button className="btn ghost" onClick={() => setEditing(true)}>✏️ Sửa bài</button>
-            <button className="btn danger ghost" onClick={delLesson}>Xoá bài</button>
+      {/* SINGLE UNIFIED FOLIO SHEET (Rose Milk Editorial Folio) */}
+      <div className="folio-sheet">
+        {/* Folio Header */}
+        <header className="folio-header">
+          <div className="folio-breadcrumbs">
+            {subject && (
+              <>
+                <a href={`#/mon/${subject.id}`}>{subject.title}</a>
+                <span className="sep">/</span>
+              </>
+            )}
+            {chapter && (
+              <>
+                <a href={`#/chuong/${chapter.id}`}>{chapter.title}</a>
+                <span className="sep">/</span>
+              </>
+            )}
+            <span style={{ color: '#E11D48', fontWeight: 700 }}>{lesson.title}</span>
+          </div>
+
+          <div className="folio-title-row">
+            <h1 className="folio-title">{lesson.title}</h1>
+            {isTeacher && (
+              <div className="row">
+                <button className="ios-btn sm ios-btn-secondary" onClick={() => setEditing(true)}>
+                  Sửa nội dung
+                </button>
+                <button
+                  className="ios-btn sm"
+                  style={{ color: '#E11D48', borderColor: '#FDA4AF' }}
+                  onClick={delLesson}
+                >
+                  Xoá bài
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="folio-meta-bar">
+            <span className="badge">Chương trình Lịch Sử 12</span>
+            <span className="badge in_progress">Thời lượng đọc: ~15 phút</span>
+            <span className="badge">Bộ Kết Nối Tri Thức</span>
+            {cards.length > 0 && <span className="badge">{cards.length} thẻ trọng tâm</span>}
+          </div>
+
+          <div className="folio-progress-bar">
+            <div className="folio-progress-fill" style={{ width: '100%' }} />
+          </div>
+        </header>
+
+        {/* 1. Ghi nhớ trọng tâm liền khối (Active Recall Strip) */}
+        {cards.length > 0 && <LessonFlashcards cards={cards} />}
+
+        {/* 2. Thân bài Sách giáo khoa số liền khối (Editorial Folio Body) */}
+        {lesson.content ? (
+          <article
+            className="folio-editorial markdown-body"
+            dangerouslySetInnerHTML={{ __html: renderedContent }}
+          />
+        ) : (
+          <div className="empty-lesson-banner">
+            <p className="muted">Bài học này chưa có nội dung văn bản chi tiết.</p>
+            {isTeacher && (
+              <button className="ios-btn sm ios-btn-primary mt-sm" onClick={() => setEditing(true)}>
+                + Nhập nội dung bài học
+              </button>
+            )}
           </div>
         )}
-      </div>
 
-      {/* 🃏 Thẻ ghi nhớ nhanh (Active Recall) */}
-      {cards.length > 0 && <LessonFlashcards cards={cards} />}
-
-      {/* 📖 Nội dung Sách giáo khoa số */}
-      {lesson.content ? (
-        <section className="card textbook-reader">
-          <div className="row between reader-header">
-            <span className="badge kind-quiz">📖 Sách giáo khoa số chi tiết</span>
-            {isTeacher && (
-              <button className="btn ghost sm" onClick={() => setEditing(true)}>✏️ Sửa nội dung</button>
-            )}
-          </div>
-          <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderedContent }} />
-        </section>
-      ) : (
-        <div className="card empty-lesson-banner">
-          <p className="muted">Bài học này chưa có nội dung văn bản chi tiết.</p>
-          {isTeacher && (
-            <button className="btn primary sm mt-sm" onClick={() => setEditing(true)}>
-              + Nhập hoặc dán nội dung bài học
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* 📌 Giấy nhớ tương tác 2 người (Sticky Notes) */}
-      <LessonNotes lessonId={id} notes={images} onNotesChanged={reload} />
-
-      {/* 📸 Sơ đồ tư duy & Ảnh tư liệu */}
-      {SECTIONS.filter((s) => s.kind !== 'doc').map((sec) => {
-        const items = images
-          .filter((i) => i.kind === sec.kind && i.path !== 'note://text')
-          .map((i) => ({
-            ...i,
-            meta: `${nameOf(i.uploaded_by)} · ${fmtDate(i.created_at, false)}`,
-            canDelete: isTeacher || i.uploaded_by === user.id,
-          }));
-        return (
-          <section key={sec.kind} className="card">
-            <div className="row between">
-              <h2>{sec.title} <small className="muted">({items.length})</small></h2>
-              <Uploader folder={`lessons/${id}/${sec.kind}`} onUploaded={(p) => addImages(sec.kind, p)} />
-            </div>
-            <Gallery items={items} onDelete={delImage} empty={sec.empty} />
-            {items.some((i) => i.canDelete) && (
-              <details className="small muted">
-                <summary>Sửa ghi chú ảnh</summary>
-                <div className="chips">
-                  {items.filter((i) => i.canDelete).map((i, idx) => (
-                    <button key={i.id} className="chip" onClick={() => editCaption(i)}>
-                      Ảnh {idx + 1}{i.caption ? `: ${i.caption}` : ''}
-                    </button>
-                  ))}
+        {/* 3. Vùng soạn thảo / Tương tác chuẩn hóa (Integrated Editor) */}
+        <section className="integrated-editor">
+          <div className="editor-head">
+            <div className="row" style={{ gap: '10px' }}>
+              <span className="idx-badge">1</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
+                  Câu hỏi vận dụng: Hoạt động gìn giữ hoà bình của Việt Nam
+                </h3>
+                <div style={{ marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <span className="hint-chip">Mục tiêu: Đoạn văn 150 – 200 từ</span>
+                  <span className="hint-chip">Phái bộ Nam Xu-đăng & Abyei</span>
+                  <span className="hint-chip">Bệnh viện dã chiến cấp 2</span>
                 </div>
-              </details>
-            )}
-          </section>
-        );
-      })}
+              </div>
+            </div>
 
-      {/* 📝 Bài tập của bài này */}
-      <section className="card">
-        <h2>📝 Bài tập của bài này</h2>
-        <AssignmentList
-          assignments={assignments}
-          latest={latest}
-          chapterId={lesson.chapter_id}
-          lessonId={id}
-          defaultTitle={`Bài tập ${lesson.title}`}
-          emptyText="Chưa có bài tập nào."
-        />
-      </section>
+            <div className="row">
+              <span className="word-badge">
+                Đã viết: <b>{wordCount}</b> / {targetWords} từ
+              </span>
+            </div>
+          </div>
 
-      {editing && (
-        <FormDialog
-          title="Sửa bài học"
-          fields={LESSON_FIELDS}
-          initial={lesson}
-          onSubmit={async (v) => {
-            await data.update('lessons', id, v);
-            reload();
-          }}
-          onClose={() => setEditing(false)}
-        />
-      )}
+          <div className="editor-progress">
+            <div className="editor-progress-fill" style={{ width: `${progressPct}%` }} />
+          </div>
+
+          <textarea
+            rows={6}
+            placeholder="Nhập câu trả lời vận dụng hoặc thu hoạch sau bài học của em vào đây..."
+            value={essayText}
+            onChange={(e) => setEssayText(e.target.value)}
+          />
+
+          <div className="row between" style={{ marginTop: '14px' }}>
+            <span className="small muted">
+              {savedNotice ? 'Đã lưu bài làm vào sổ học tập!' : 'Tiến độ: ' + progressPct + '%'}
+            </span>
+            <div className="row">
+              <button
+                type="button"
+                className="ios-btn sm ios-btn-secondary"
+                onClick={() => setEssayText('')}
+              >
+                Làm mới
+              </button>
+              <button type="button" className="ios-btn sm ios-btn-primary" onClick={saveEssay}>
+                Lưu bài làm
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Giấy nhớ & Góc trao đổi của 2 bạn (Integrated Notes) */}
+        <LessonNotes lessonId={id} notes={images} onNotesChanged={reload} />
+
+        {/* 5. Bộ tài liệu tư liệu & Sơ đồ tư duy đính kèm */}
+        <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>
+          <div className="row between" style={{ marginBottom: '16px' }}>
+            <div className="row">
+              <span className="idx-badge">2</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
+                  Sơ đồ tư duy & Ảnh tư liệu bài làm
+                </h3>
+                <div className="small muted">Lưu giữ hình ảnh sơ đồ vẽ tay hoặc bài làm thực tế</div>
+              </div>
+            </div>
+            <Uploader folder={`lessons/${id}/work`} onUploaded={(p) => addImages('work', p)} />
+          </div>
+
+          <Gallery
+            items={images
+              .filter((i) => i.kind !== 'doc' && i.path !== 'note://text')
+              .map((i) => ({
+                ...i,
+                meta: `${nameOf(i.uploaded_by)} · ${fmtDate(i.created_at, false)}`,
+                canDelete: isTeacher || i.uploaded_by === user.id,
+              }))}
+            onDelete={delImage}
+            empty="Chưa có hình ảnh tư liệu nào được tải lên."
+          />
+        </div>
+
+        {/* 6. Bài tập kiểm tra định kỳ */}
+        <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>
+          <div className="row" style={{ marginBottom: '16px' }}>
+            <span className="idx-badge">3</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>Bài tập & Đề kiểm tra đánh giá</h3>
+              <div className="small muted">Kiểm tra mức độ thấu hiểu bài học</div>
+            </div>
+          </div>
+
+          <AssignmentList
+            assignments={assignments}
+            latest={latest}
+            chapterId={lesson.chapter_id}
+            lessonId={id}
+            defaultTitle={`Bài tập ${lesson.title}`}
+            emptyText="Chưa có bài kiểm tra cho bài học này."
+          />
+        </div>
+
+        {editing && (
+          <FormDialog
+            title="Sửa bài học"
+            fields={LESSON_FIELDS}
+            initial={lesson}
+            onSubmit={async (v) => {
+              await data.update('lessons', id, v);
+              reload();
+            }}
+            onClose={() => setEditing(false)}
+          />
+        )}
+      </div>
     </div>
   );
 }

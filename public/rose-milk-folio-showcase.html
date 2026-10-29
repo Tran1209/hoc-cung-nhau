@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rose Milk Editorial Folio — Giao diện học tập liền khối chuẩn Apple</title>
+  <!-- Google Fonts: Plus Jakarta Sans & Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:ital,wght@0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+            body: ['"Be Vietnam Pro"', 'sans-serif'],
+          },
+          colors: {
+            folio: {
+              canvas: '#FFF6F8',
+              bordeaux: '#380718',
+              sub: '#9F1239',
+              accent: '#BE123C',
+              note: '#FB7185',
+              subtle: '#FDA4AF',
+              border: 'rgba(253, 164, 175, 0.5)',
+              tapeBg: '#FFE4E8',
+              chipBg: '#FFF0F3',
+              chipBorder: '#FECDD6',
+            }
+          },
+          boxShadow: {
+            'folio': '0 24px 60px -15px rgba(244, 63, 94, 0.12)',
+            'tape': 'inset 0 -2px 0 rgba(244, 63, 94, 0.2)',
+            'ios': '0 4px 14px rgba(225, 29, 72, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 20% 20%, rgba(254, 205, 214, 0.45) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(255, 228, 232, 0.5) 0%, transparent 60%),
+                  #FFF6F8;
+      background-attachment: fixed;
+    }
+    .tape {
+      background-color: #FFE4E8;
+      color: #BE123C;
+      box-shadow: inset 0 -2px 0 rgba(244, 63, 94, 0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .card-3d {
+      perspective: 1000px;
+    }
+    .card-3d-inner {
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-style: preserve-3d;
+    }
+    .card-3d.flipped .card-3d-inner {
+      transform: rotateY(180deg);
+    }
+    .card-face {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="font-body text-[#380718] min-h-screen antialiased flex flex-col items-center py-10 px-4 sm:px-6 lg:px-8">
+
+  <!-- Top Navigation (Apple HIG Minimalist) -->
+  <header class="w-full max-w-4xl mb-8 flex items-center justify-between px-6 py-3.5 bg-white/80 backdrop-blur-xl border border-rose-200/50 rounded-full shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-rose-500 to-rose-600 shadow-[0_0_8px_rgba(244,63,94,0.5)]"></span>
+      <span class="font-display font-extrabold text-[#380718] tracking-tight text-lg">Học Cùng Nhau</span>
+      <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-100 text-[#BE123C] border border-rose-200">Editorial Folio</span>
+    </div>
+    <nav class="flex items-center gap-1.5 text-sm font-display font-semibold text-[#9F1239]">
+      <a href="#" class="px-3.5 py-1.5 rounded-full bg-white text-[#E11D48] border border-rose-200 shadow-sm">Bài học số 1</a>
+      <a href="#" class="px-3.5 py-1.5 rounded-full hover:bg-rose-50 transition">Đề luyện thi</a>
+      <a href="#" class="px-3.5 py-1.5 rounded-full hover:bg-rose-50 transition">Sổ tay</a>
+    </nav>
+    <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-rose-200 text-xs font-display font-bold">
+      <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+      <span>Anh & Em</span>
+    </div>
+  </header>
+
+  <!-- SINGLE UNIFIED FOLIO SHEET (Rose Milk Editorial Folio) -->
+  <main class="w-full max-w-4xl bg-white/95 backdrop-blur-[28px] border-[1.5px] border-[#FDA4AF]/60 rounded-[30px] shadow-[0_24px_60px_-15px_rgba(244,63,94,0.12)] p-8 sm:p-12 relative overflow-hidden">
+
+    <!-- Folio Header -->
+    <section class="border-b-[1.5px] border-rose-200/50 pb-7 mb-9">
+      <div class="flex items-center gap-2 text-xs font-semibold text-[#9F1239] mb-3">
+        <span>Lịch Sử 12</span>
+        <span class="text-rose-300">/</span>
+        <span>Chủ đề 1: Thế giới trong và sau Chiến tranh lạnh</span>
+        <span class="text-rose-300">/</span>
+        <span class="text-[#E11D48] font-bold">Bài 1</span>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
+        <h1 class="font-display font-extrabold text-3xl sm:text-4xl text-[#380718] tracking-tight">
+          Bài 1: LIÊN HỢP QUỐC
+        </h1>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-display font-bold px-3 py-1 rounded-full bg-rose-50 text-[#9F1239] border border-rose-200">
+            Thời lượng đọc: ~15 phút
+          </span>
+        </div>
+      </div>
+
+      <!-- Slim Progress Bar -->
+      <div class="w-full h-1 bg-rose-100 rounded-full overflow-hidden mt-6">
+        <div class="h-full w-full bg-gradient-to-r from-[#FB7185] to-[#E11D48] rounded-full"></div>
+      </div>
+    </section>
+
+    <!-- 1. Ghi nhớ trọng tâm (Active Recall 3D Strip) -->
+    <section class="mb-10 bg-[#FFFDFE] border-[1.5px] border-rose-200/60 rounded-[22px] p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <!-- Index Badge (30x30px, border-radius 10px, text 800) -->
+          <div class="w-[30px] h-[30px] rounded-[10px] bg-white border-[1.5px] border-[#FDA4AF] text-[#E11D48] font-display font-extrabold text-sm flex items-center justify-center shadow-sm">
+            1
+          </div>
+          <div>
+            <h2 class="font-display font-extrabold text-base text-[#380718] m-0">Ghi nhớ trọng tâm · Active Recall</h2>
+            <p class="text-xs text-[#9F1239] m-0">Kiểm tra khả năng tái hiện kiến thức cốt lõi</p>
+          </div>
+        </div>
+        <button id="mastered-btn" onclick="toggleDone()" class="text-xs font-display font-bold px-3.5 py-1.5 rounded-xl border border-rose-200 bg-white text-[#9F1239] hover:bg-rose-50 transition active:scale-95 shadow-sm">
+          Chưa thuộc
+        </button>
+      </div>
+
+      <!-- 3D Flip Card -->
+      <div id="flashcard" onclick="flipCard()" class="card-3d h-44 cursor-pointer select-none">
+        <div id="flashcard-inner" class="card-3d-inner relative w-full h-full rounded-2xl shadow-sm">
+          <!-- Front Face -->
+          <div class="card-face absolute inset-0 bg-white border-[1.5px] border-rose-200/60 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+            <span class="absolute top-3.5 left-4 text-[11px] font-display font-extrabold tracking-wide uppercase px-2 py-0.5 rounded bg-rose-100 text-[#BE123C]">Trọng tâm câu hỏi</span>
+            <p class="font-display font-bold text-lg text-[#380718] max-w-lg">
+              Liên hợp quốc chính thức được thành lập vào ngày tháng năm nào và trụ sở chính đặt ở đâu?
+            </p>
+            <!-- Inline Hint Chip -->
+            <div class="mt-3">
+              <span class="inline-flex items-center gap-1.5 bg-[#FFF0F3] border border-[#FECDD6] text-[#9F1239] text-xs font-semibold px-2.5 py-1 rounded-[8px]">
+                <span>Gợi ý:</span> <b class="font-bold">Mùa thu năm 1945 · New York, Mỹ</b>
+              </span>
+            </div>
+            <span class="absolute bottom-2.5 text-[11px] text-[#9F1239]/80 font-medium">Chạm mặt thẻ để lật xem đáp án</span>
+          </div>
+
+          <!-- Back Face -->
+          <div class="card-face card-back absolute inset-0 bg-[#FFF9FA] border-[1.5px] border-rose-300 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+            <span class="absolute top-3.5 left-4 text-[11px] font-display font-extrabold tracking-wide uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Đáp án chuẩn</span>
+            <p class="font-display font-bold text-base text-[#380718] max-w-lg leading-relaxed">
+              Chính thức thành lập ngày <span class="tape">24 - 10 - 1945</span> sau khi bản Hiến chương được phê chuẩn. Trụ sở chính đặt tại <span class="tape">Niu Oóc (New York, Mỹ)</span>.
+            </p>
+            <span class="absolute bottom-2.5 text-[11px] text-[#9F1239]/80 font-medium">Chạm mặt thẻ để quay lại</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Thân bài Sách giáo khoa liền khối (Editorial Textbook Flow) -->
+    <article class="space-y-6 text-[17px] leading-[1.85] text-[#380718]">
+
+      <!-- Callout: Mục tiêu bài học -->
+      <blockquote class="bg-[#FFF8F9] border-l-4 border-[#FDA4AF] rounded-r-2xl p-5 shadow-sm text-sm sm:text-base">
+        <h3 class="font-display font-bold text-[#BE123C] text-sm uppercase tracking-wider mb-2">🎯 Mục tiêu cốt lõi bài học</h3>
+        <ul class="list-disc pl-5 space-y-1.5 text-[#380718]">
+          <li>Nêu được <span class="tape">bối cảnh lịch sử</span> và quá trình hình thành Liên hợp quốc.</li>
+          <li>Trình bày mục tiêu, nguyên tắc hoạt động cơ bản của Liên hợp quốc.</li>
+          <li>Phân tích vai trò của Liên hợp quốc và quan hệ hợp tác đặc biệt với Việt Nam.</li>
+        </ul>
+      </blockquote>
+
+      <h2 class="font-display font-extrabold text-2xl text-[#BE123C] pt-4 flex items-center gap-2.5">
+        <span class="w-1.5 h-6 bg-gradient-to-b from-[#FB7185] to-[#E11D48] rounded-full inline-block"></span>
+        1. Một số vấn đề cơ bản về Liên hợp quốc
+      </h2>
+
+      <p class="text-justify">
+        Đầu năm 1945, Chiến tranh thế giới thứ hai bước vào giai đoạn kết thúc. Tại <span class="tape">Hội nghị I-an-ta (tháng 2 – 1945)</span>, nguyên thủ ba cường quốc Liên Xô, Mỹ, Anh đã nhất trí thành lập tổ chức quốc tế gìn giữ hoà bình. Từ ngày 25-4 đến 26-6-1945, hội nghị gồm đại biểu 50 nước tại <span class="tape">Xan Phran-xi-xcô (Mỹ)</span> đã thảo luận và thông qua bản Hiến chương Liên hợp quốc.
+      </p>
+
+      <!-- Figure with Editorial Frame -->
+      <figure class="my-6">
+        <img src="https://sachgiaokhoa.online/uploads/tinymce/mceclip2-1748617517.png" alt="Lễ kí Hiến chương Liên hợp quốc" class="w-full rounded-2xl border-[1.5px] border-rose-200/60 shadow-md">
+        <figcaption class="text-xs text-center text-[#9F1239] mt-2.5 font-medium italic">
+          Hình ảnh tư liệu: Lễ kí Hiến chương Liên hợp quốc tại Hội nghị Xan Phran-xi-xcô (tháng 6 – 1945).
+        </figcaption>
+      </figure>
+
+      <h3 class="font-display font-bold text-xl text-[#9F1239]">Nguyên tắc hoạt động then chốt</h3>
+      <p class="text-justify">
+        Hiến chương nêu rõ các nguyên tắc cốt lõi: bình đẳng chủ quyền giữa các quốc gia; tôn trọng toàn vẹn lãnh thổ; giải quyết tranh chấp bằng biện pháp hoà bình; không can thiệp vào công việc nội bộ và đặc biệt là <span class="tape">nguyên tắc nhất trí giữa 5 nước lớn</span> uỷ viên thường trực Hội đồng Bảo an (Mỹ, Nga, Anh, Pháp, Trung Quốc).
+      </p>
+    </article>
+
+    <!-- 3. Vùng soạn thảo / Tương tác chuẩn hóa (Integrated Editor) -->
+    <section class="mt-12 bg-[#FFFBFD] border-[1.5px] border-rose-200 rounded-[22px] p-6 sm:p-8 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
+          <!-- Index Badge (30x30px) -->
+          <div class="w-[30px] h-[30px] rounded-[10px] bg-white border-[1.5px] border-[#FDA4AF] text-[#E11D48] font-display font-extrabold text-sm flex items-center justify-center shadow-sm">
+            2
+          </div>
+          <div>
+            <h3 class="font-display font-extrabold text-lg text-[#380718] m-0">Vận dụng: Hoạt động gìn giữ hoà bình Việt Nam</h3>
+            <!-- Inline Hint Chips -->
+            <div class="flex flex-wrap gap-2 mt-1.5">
+              <span class="inline-flex items-center gap-1 bg-[#FFF0F3] border border-[#FECDD6] text-[#9F1239] text-xs font-semibold px-2.5 py-0.5 rounded-[8px]">
+                Mục tiêu: 150 – 200 từ
+              </span>
+              <span class="inline-flex items-center gap-1 bg-[#FFF0F3] border border-[#FECDD6] text-[#9F1239] text-xs font-semibold px-2.5 py-0.5 rounded-[8px]">
+                Nam Xu-đăng & Abyei
+              </span>
+              <span class="inline-flex items-center gap-1 bg-[#FFF0F3] border border-[#FECDD6] text-[#9F1239] text-xs font-semibold px-2.5 py-0.5 rounded-[8px]">
+                Bệnh viện dã chiến cấp 2
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-time Word Badge -->
+        <div class="flex items-center">
+          <span class="inline-flex items-center gap-1.5 bg-[#FFF0F3] border border-[#FECDD6] text-[#9F1239] font-display text-xs font-bold px-3 py-1 rounded-full shadow-xs">
+            Đã viết: <b id="word-count" class="text-[#E11D48] text-sm font-extrabold">0</b> / 150 từ
+          </span>
+        </div>
+      </div>
+
+      <!-- Color-shifting progress bar -->
+      <div class="w-full h-1 bg-rose-100 rounded-full overflow-hidden mb-4">
+        <div id="word-progress" class="h-full bg-gradient-to-r from-[#FB7185] to-[#E11D48] rounded-full transition-all duration-300 w-0"></div>
+      </div>
+
+      <!-- Integrated Textarea -->
+      <textarea
+        id="essay-input"
+        oninput="updateWordCount()"
+        rows="5"
+        placeholder="Nhập phần trả lời hoặc đoạn văn thu hoạch của em vào đây..."
+        class="w-full bg-white border-[1.5px] border-rose-200/70 rounded-xl p-4 text-[#380718] placeholder-rose-300 focus:outline-none focus:border-[#E11D48] focus:ring-2 focus:ring-rose-200 transition font-body text-base leading-relaxed"
+      ></textarea>
+
+      <!-- iOS Action Buttons -->
+      <div class="flex items-center justify-between mt-4">
+        <span id="save-status" class="text-xs font-semibold text-[#9F1239] opacity-80">Chưa lưu bài</span>
+        <div class="flex items-center gap-2.5">
+          <button onclick="clearText()" class="px-4 py-2 rounded-xl border-[1.5px] border-rose-200 bg-white text-[#9F1239] font-display font-bold text-sm hover:bg-rose-50 transition active:scale-[0.97] shadow-xs">
+            Làm mới
+          </button>
+          <button onclick="saveEssay()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#FB7185] to-[#E11D48] text-white font-display font-bold text-sm shadow-[0_4px_14px_rgba(225,29,72,0.28)] hover:shadow-lg transition active:scale-[0.97]">
+            Lưu bài làm
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function flipCard() {
+      const card = document.getElementById('flashcard');
+      card.classList.toggle('flipped');
+    }
+
+    let isMastered = false;
+    function toggleDone() {
+      isMastered = !isMastered;
+      const btn = document.getElementById('mastered-btn');
+      if (isMastered) {
+        btn.innerText = 'Đã ghi nhớ';
+        btn.className = 'text-xs font-display font-bold px-3.5 py-1.5 rounded-xl border border-transparent bg-gradient-to-r from-[#FB7185] to-[#E11D48] text-white shadow-sm transition active:scale-95';
+      } else {
+        btn.innerText = 'Chưa thuộc';
+        btn.className = 'text-xs font-display font-bold px-3.5 py-1.5 rounded-xl border border-rose-200 bg-white text-[#9F1239] hover:bg-rose-50 transition active:scale-95 shadow-sm';
+      }
+    }
+
+    function updateWordCount() {
+      const text = document.getElementById('essay-input').value.trim();
+      const count = text ? text.split(/\s+/).length : 0;
+      document.getElementById('word-count').innerText = count;
+
+      const target = 150;
+      const pct = Math.min(100, Math.round((count / target) * 100));
+      document.getElementById('word-progress').style.width = pct + '%';
+    }
+
+    function saveEssay() {
+      const text = document.getElementById('essay-input').value;
+      localStorage.setItem('rose_milk_showcase_essay', text);
+      const status = document.getElementById('save-status');
+      status.innerText = 'Đã lưu vào bộ nhớ cục bộ!';
+      status.style.color = '#059669';
+      setTimeout(() => {
+        status.innerText = 'Đã lưu';
+      }, 2000);
+    }
+
+    function clearText() {
+      document.getElementById('essay-input').value = '';
+      updateWordCount();
+    }
+
+    // Load initial
+    const saved = localStorage.getItem('rose_milk_showcase_essay');
+    if (saved) {
+      document.getElementById('essay-input').value = saved;
+      updateWordCount();
+    }
+  </script>
+</body>
+</html>
