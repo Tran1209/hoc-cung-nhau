@@ -22,7 +22,15 @@ export default function Dashboard() {
   const nav = useNavigate();
   const [activeTab, setActiveTab] = useState('history'); // 'history' | 'todo' | 'journal'
 
-  // State cho Nhật ký hôm nay
+  // Thời gian thực hiện tại
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const sat = nextSaturday(20);
+
+  // State ngày được chọn để xem (mặc định là ngày hôm nay theo thời gian thực)
+  const [selectedDateStr, setSelectedDateStr] = useState(todayStr);
+
+  // State cho Nhật ký
   const [journalText, setJournalText] = useState('');
   const [savingJournal, setSavingJournal] = useState(false);
   const [journalNotice, setJournalNotice] = useState(false);
@@ -77,12 +85,7 @@ export default function Dashboard() {
     .filter((s) => s.status === 'submitted')
     .sort((x, y) => String(x.submitted_at).localeCompare(String(y.submitted_at)));
 
-  // Thời gian thực
-  const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
-  const sat = nextSaturday(20);
-
-  // Tính số ngày lịch tới Thứ 7
+  // Tính số ngày lịch tới Thứ 7 (luôn cố định theo thời gian thực)
   const satMidnight = new Date(sat);
   satMidnight.setHours(0, 0, 0, 0);
   const nowMidnight = new Date(now);
@@ -96,7 +99,7 @@ export default function Dashboard() {
     year: 'numeric',
   }).format(now);
 
-  // Dải 7 ngày trong tuần
+  // Tạo dải 7 ngày trong tuần từ Thứ 2 đến Chủ Nhật của tuần thực tế hiện tại
   const currentDay = now.getDay();
   const mondayOffset = (currentDay + 6) % 7;
   const monday = new Date(now);
@@ -104,21 +107,40 @@ export default function Dashboard() {
   monday.setHours(0, 0, 0, 0);
 
   const shortNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const fullDayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const dt = new Date(monday);
     dt.setDate(monday.getDate() + i);
-    const isToday = dt.toDateString() === now.toDateString();
+    const dateStr = dt.toISOString().slice(0, 10);
+    const isRealToday = dt.toDateString() === now.toDateString();
     const isSaturday = dt.getDay() === 6;
     return {
       date: dt,
+      dateStr,
       dayNum: dt.getDate(),
       monthNum: dt.getMonth() + 1,
       shortName: shortNames[dt.getDay()],
-      isToday,
+      dayName: fullDayNames[dt.getDay()],
+      isRealToday,
       isSaturday,
     };
   });
+
+  // Tìm thông tin ngày đang được bấm xem
+  const selectedDayObj =
+    weekDays.find((d) => d.dateStr === selectedDateStr) ||
+    weekDays.find((d) => d.isRealToday) ||
+    weekDays[0];
+  const isViewingRealToday = selectedDayObj.isRealToday;
+
+  // Lọc hoạt động, bài nộp, nhật ký của ngày đang chọn
+  const selectedDayActivities = activity.filter((x) => (x.created_at || '').startsWith(selectedDateStr));
+  const selectedDaySubmissions = submissions.filter((s) =>
+    (s.submitted_at || s.created_at || '').startsWith(selectedDateStr),
+  );
+  const selectedDayJournals = selectedDayActivities.filter((x) => x.type === 'daily_journal');
+  const otherDayActivities = selectedDayActivities.filter((x) => x.type !== 'daily_journal');
 
   // Tìm bài học & bài tập trọng tâm Lịch Sử 12
   const historyLesson = lessons.find((l) => l.title.toLowerCase().includes('liên hợp quốc'));
@@ -130,20 +152,28 @@ export default function Dashboard() {
   const mainHistoryAssignment = historyAssignments[0];
   const historySub = mainHistoryAssignment ? latest[mainHistoryAssignment.id] : null;
 
-  // Lọc nhật ký của ngày hôm nay
-  const todayJournals = activity.filter(
-    (x) => x.type === 'daily_journal' && (x.created_at || '').startsWith(todayStr),
-  );
+  // Xử lý khi bấm vào 1 ngày trong dải 7 ngày
+  const handleSelectDay = (dItem) => {
+    setSelectedDateStr(dItem.dateStr);
+    // Tự động chuyển sang tab Nhật ký để người dùng xem ngay những việc đã làm trong ngày đó
+    setActiveTab('journal');
+  };
 
   const handleSaveJournal = async (e) => {
     e?.preventDefault();
     if (!journalText.trim() || savingJournal) return;
     setSavingJournal(true);
     try {
+      // Gắn mốc thời gian theo ngày đang chọn
+      const createdIso = isViewingRealToday
+        ? new Date().toISOString()
+        : `${selectedDateStr}T12:00:00.000Z`;
+
       await data.insert('activity', {
         type: 'daily_journal',
         message: journalText.trim(),
         link: historyLesson ? `/bai/${historyLesson.id}` : null,
+        created_at: createdIso,
       });
       setJournalText('');
       setJournalNotice(true);
@@ -160,16 +190,16 @@ export default function Dashboard() {
     <div className="page">
       {/* SINGLE UNIFIED FOLIO SHEET (Cố định 1 màn hình chuẩn điện thoại) */}
       <div className="folio-sheet">
-        {/* 1. LỊCH TRÌNH NGÀY HỌC LIỀN KHỐI (APPLE MINIMALIST HEADER) */}
+        {/* 1. LỊCH TRÌNH NGÀY HỌC LIỀN KHỐI (LUÔN CỐ ĐỊNH THEO THỜI GIAN THỰC) */}
         <header className="folio-schedule-clean">
           <div className="schedule-header-row">
             <div>
               <div className="today-meta-lead">
                 <span className="today-chip">
                   <span className="today-chip-dot" />
-                  <span>Hôm nay</span>
+                  <span>Hôm nay thực tế</span>
                 </span>
-                <span className="small muted">Không gian học tập</span>
+                <span className="small muted">Tuần học tập trọng tâm</span>
               </div>
               <h1 className="schedule-title">{todayFullDate}</h1>
               <p className="schedule-subtitle">
@@ -179,7 +209,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* Apple Countdown Pill */}
+            {/* Apple Countdown Pill (luôn đếm tới Thứ 7 thực tế) */}
             <div className="apple-countdown-pill">
               <span className="countdown-main">
                 {daysDiff === 0 ? 'Hôm nay' : daysDiff === 1 ? 'Ngày mai' : `${daysDiff} ngày nữa`}
@@ -191,22 +221,58 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Dải lịch 7 ngày trong tuần 1 hàng duy nhất */}
+          {/* Dải lịch 7 ngày trong tuần: BẤM ĐƯỢC TỪNG NGÀY, LUÔN CỐ ĐỊNH THỜI GIAN THỰC */}
           <div className="apple-week-strip">
-            {weekDays.map((dItem, idx) => (
-              <div
-                key={idx}
-                className={`apple-day-col ${dItem.isToday ? 'active-today' : ''} ${
-                  dItem.isSaturday ? 'study-day' : ''
-                }`}
-              >
-                <span className="day-txt">{dItem.shortName}</span>
-                <span className="date-txt">{dItem.dayNum}</span>
-                {dItem.isToday && <span className="today-indicator">Hôm nay</span>}
-                {dItem.isSaturday && !dItem.isToday && <span className="study-badge">Học 20h</span>}
-              </div>
-            ))}
+            {weekDays.map((dItem, idx) => {
+              const isSelected = dItem.dateStr === selectedDateStr;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectDay(dItem)}
+                  className={`apple-day-col ${isSelected ? 'is-selected' : ''} ${
+                    dItem.isRealToday ? 'is-real-today' : ''
+                  } ${dItem.isSaturday ? 'study-day' : ''}`}
+                  title={`${dItem.dayName}, ngày ${dItem.dayNum}/${dItem.monthNum}${
+                    dItem.isRealToday ? ' (Hôm nay thực tế)' : ''
+                  }`}
+                >
+                  <span className="day-txt">{dItem.shortName}</span>
+                  <span className="date-txt">{dItem.dayNum}</span>
+                  {dItem.isRealToday && (
+                    <span className="today-indicator">
+                      {isSelected ? 'Hôm nay' : '●'}
+                    </span>
+                  )}
+                  {dItem.isSaturday && !dItem.isRealToday && !isSelected && (
+                    <span className="study-badge">Học 20h</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+
+          {/* Thanh chỉ báo khi đang bấm xem một ngày khác ngày hôm nay */}
+          {!isViewingRealToday && (
+            <div className="day-inspect-bar">
+              <div className="row" style={{ gap: '6px' }}>
+                <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#380718' }}>
+                  Đang xem {selectedDayObj.dayName} ({selectedDayObj.dayNum}/{selectedDayObj.monthNum})
+                </span>
+                <span className="badge" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>
+                  {selectedDayActivities.length + selectedDaySubmissions.length} việc đã làm
+                </span>
+              </div>
+              <button
+                type="button"
+                className="ios-btn sm ios-btn-secondary"
+                style={{ padding: '3px 8px', fontSize: '0.74rem' }}
+                onClick={() => setSelectedDateStr(todayStr)}
+              >
+                Quay lại Hôm nay ↺
+              </button>
+            </div>
+          )}
         </header>
 
         {/* 2. DẢI CHỈ SỐ LIỀN KHỐI (FOLIO METRIC STRIP) */}
@@ -273,7 +339,12 @@ export default function Dashboard() {
             className={`segmented-tab-btn ${activeTab === 'journal' ? 'active' : ''}`}
             onClick={() => setActiveTab('journal')}
           >
-            Nhật ký {todayJournals.length > 0 && <span className="tab-badge">{todayJournals.length}</span>}
+            {isViewingRealToday ? 'Nhật ký hôm nay' : `Việc ${selectedDayObj.shortName}`}
+            {(selectedDayActivities.length + selectedDaySubmissions.length > 0) && (
+              <span className="tab-badge">
+                {selectedDayActivities.length + selectedDaySubmissions.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -418,84 +489,206 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* TAB 3: NHẬT KÝ HÔM NAY */}
+          {/* TAB 3: NHẬT KÝ & TIẾN TRÌNH CỦA NGÀY ĐƯỢC CHỌN */}
           {activeTab === 'journal' && (
             <div style={{ marginTop: '8px' }}>
-              <div className="journal-compose">
-                <div className="journal-chips">
-                  {QUICK_JOURNAL_CHIPS.map((chip, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className="journal-chip-btn"
-                      onClick={() =>
-                        setJournalText((prev) => (prev ? `${prev} · ${chip}` : chip))
+              {/* Nếu đang xem Hôm nay: Có ô nhập nhanh nhật ký */}
+              {isViewingRealToday ? (
+                <div className="journal-compose">
+                  <div className="journal-chips">
+                    {QUICK_JOURNAL_CHIPS.map((chip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className="journal-chip-btn"
+                        onClick={() =>
+                          setJournalText((prev) => (prev ? `${prev} · ${chip}` : chip))
+                        }
+                      >
+                        + {chip}
+                      </button>
+                    ))}
+                  </div>
+
+                  <form onSubmit={handleSaveJournal}>
+                    <textarea
+                      rows={2}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '10px',
+                        border: '1px solid rgba(253, 164, 175, 0.45)',
+                        background: '#FFFDFE',
+                        fontSize: '0.88rem',
+                        color: '#380718',
+                        resize: 'none',
+                      }}
+                      placeholder={
+                        isTeacher
+                          ? 'Ghi chú dặn dò học tập hôm nay cho em...'
+                          : 'Hôm nay em đã đọc xong bài gì, làm bài nào...'
                       }
+                      value={journalText}
+                      onChange={(e) => setJournalText(e.target.value)}
+                    />
+
+                    <div className="row between" style={{ marginTop: '6px' }}>
+                      <span className="small muted">
+                        {journalNotice ? 'Đã lưu nhật ký hôm nay!' : todayStr}
+                      </span>
+                      <button
+                        type="submit"
+                        className="ios-btn sm ios-btn-primary"
+                        disabled={!journalText.trim() || savingJournal}
+                      >
+                        {savingJournal ? 'Đang lưu...' : 'Lưu nhật ký'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                /* Nếu đang xem một ngày khác trong quá khứ/tuần này */
+                <div style={{ marginBottom: '10px' }}>
+                  <div className="row between" style={{ marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#380718' }}>
+                      Các việc đã thực hiện ngày {selectedDayObj.dayName} ({selectedDayObj.dayNum}/{selectedDayObj.monthNum}):
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Danh sách bài tập đã nộp trong ngày đang chọn */}
+              {selectedDaySubmissions.length > 0 && (
+                <div style={{ marginBottom: '10px' }}>
+                  <div className="small muted" style={{ fontWeight: 700, color: '#BE123C', marginBottom: '6px' }}>
+                    Bài tập đã nộp ({selectedDaySubmissions.length})
+                  </div>
+                  {selectedDaySubmissions.map((s) => (
+                    <Link
+                      key={s.id}
+                      to={`/nop/${s.id}`}
+                      className="compact-action-row"
+                      style={{ textDecoration: 'none', padding: '8px 12px', marginBottom: '6px' }}
                     >
-                      + {chip}
-                    </button>
+                      <div>
+                        <b>{aById[s.assignment_id]?.title || 'Bài tập'}</b>
+                        <div className="small muted">
+                          Nộp lúc:{' '}
+                          {new Date(s.submitted_at || s.created_at).toLocaleTimeString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
+                      <span className={`badge ${s.status === 'graded' ? 'graded' : 'submitted'}`}>
+                        {s.status === 'graded' ? `${s.score}/10đ` : 'Chờ chấm'}
+                      </span>
+                    </Link>
                   ))}
                 </div>
+              )}
 
-                <form onSubmit={handleSaveJournal}>
-                  <textarea
-                    rows={2}
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      borderRadius: '10px',
-                      border: '1px solid rgba(253, 164, 175, 0.45)',
-                      background: '#FFFDFE',
-                      fontSize: '0.88rem',
-                      color: '#380718',
-                      resize: 'none',
-                    }}
-                    placeholder={
-                      isTeacher
-                        ? 'Ghi chú dặn dò học tập hôm nay cho em...'
-                        : 'Hôm nay em đã đọc xong bài gì, làm bài nào...'
-                    }
-                    value={journalText}
-                    onChange={(e) => setJournalText(e.target.value)}
-                  />
-
-                  <div className="row between" style={{ marginTop: '6px' }}>
-                    <span className="small muted">
-                      {journalNotice ? 'Đã lưu nhật ký!' : todayStr}
-                    </span>
-                    <button
-                      type="submit"
-                      className="ios-btn sm ios-btn-primary"
-                      disabled={!journalText.trim() || savingJournal}
-                    >
-                      {savingJournal ? 'Đang lưu...' : 'Lưu nhật ký'}
-                    </button>
+              {/* Danh sách nhật ký học tập trong ngày đang chọn */}
+              {selectedDayJournals.length > 0 && (
+                <div style={{ marginBottom: '10px' }}>
+                  <div className="small muted" style={{ fontWeight: 700, color: '#BE123C', marginBottom: '6px' }}>
+                    Ghi chú nhật ký ({selectedDayJournals.length})
                   </div>
-                </form>
-              </div>
-
-              {/* Dòng nhật ký hôm nay */}
-              <div className="journal-timeline">
-                {todayJournals.length === 0 ? (
-                  <div className="small muted" style={{ padding: '6px 4px' }}>
-                    Chưa có ghi chép nhật ký nào cho ngày hôm nay. Hãy ghi nhanh một dòng tiến độ học tập nhé.
-                  </div>
-                ) : (
-                  todayJournals.map((item) => (
-                    <div key={item.id} className="journal-item">
+                  {selectedDayJournals.map((item) => (
+                    <div key={item.id} className="journal-item" style={{ marginBottom: '6px' }}>
                       <div className="journal-item-top">
                         <span className="who" style={{ color: '#BE123C', fontWeight: 700, fontSize: '0.85rem' }}>
                           {nameOf(item.actor_id)}
                         </span>
-                        <span className="small muted">{timeAgo(item.created_at)}</span>
+                        <span className="small muted">
+                          {new Date(item.created_at).toLocaleTimeString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
                       </div>
                       <div style={{ fontSize: '0.88rem', color: '#380718', marginTop: '1px' }}>
                         {item.message}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Danh sách hoạt động khác trong ngày đang chọn */}
+              {otherDayActivities.length > 0 && (
+                <div style={{ marginBottom: '10px' }}>
+                  <div className="small muted" style={{ fontWeight: 700, color: '#BE123C', marginBottom: '6px' }}>
+                    Nhật ký hoạt động khác
+                  </div>
+                  {otherDayActivities.map((item) => (
+                    <div key={item.id} className="journal-item" style={{ marginBottom: '6px' }}>
+                      <div className="journal-item-top">
+                        <span className="who" style={{ color: '#BE123C', fontWeight: 700, fontSize: '0.85rem' }}>
+                          {nameOf(item.actor_id)}
+                        </span>
+                        <span className="small muted">
+                          {new Date(item.created_at).toLocaleTimeString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.88rem', color: '#380718', marginTop: '1px' }}>
+                        {item.message}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Trường hợp ngày đó chưa làm gì */}
+              {selectedDayActivities.length === 0 && selectedDaySubmissions.length === 0 && (
+                <div
+                  style={{
+                    padding: '24px 14px',
+                    textAlign: 'center',
+                    background: '#FFFDFE',
+                    border: '1.5px dashed rgba(253, 164, 175, 0.45)',
+                    borderRadius: '14px',
+                    margin: '8px 0',
+                  }}
+                >
+                  <p className="small muted" style={{ margin: 0 }}>
+                    Chưa có bài tập nộp hay ghi chép nhật ký nào trong ngày {selectedDayObj.dayName} ({selectedDayObj.dayNum}/{selectedDayObj.monthNum}).
+                  </p>
+                </div>
+              )}
+
+              {/* Cho phép ghi thêm nhận xét/nhật ký bổ sung cho ngày đang xem */}
+              {!isViewingRealToday && (
+                <form onSubmit={handleSaveJournal} style={{ marginTop: '10px' }}>
+                  <div className="row" style={{ gap: '6px' }}>
+                    <input
+                      type="text"
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        borderRadius: '10px',
+                        border: '1px solid rgba(253, 164, 175, 0.45)',
+                        background: '#FFFDFE',
+                        fontSize: '0.86rem',
+                        color: '#380718',
+                      }}
+                      placeholder={`Ghi thêm nhật ký cho ${selectedDayObj.dayName}...`}
+                      value={journalText}
+                      onChange={(e) => setJournalText(e.target.value)}
+                    />
+                    <button
+                      type="submit"
+                      className="ios-btn sm ios-btn-primary"
+                      disabled={!journalText.trim() || savingJournal}
+                    >
+                      {savingJournal ? 'Lưu...' : 'Ghi nhận'}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
         </div>
