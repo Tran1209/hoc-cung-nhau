@@ -131,7 +131,66 @@ export const HISTORY_CURRICULUM = [
         title: 'Chủ đề 1: Thế giới trong và sau Chiến tranh lạnh',
         description: 'Liên hợp quốc, Trật tự thế giới trong và sau Chiến tranh lạnh',
         lessons: [
-          'Bài 1: Liên hợp quốc',
+          {
+            title: 'Bài 1: Liên hợp quốc',
+            content: `## 1. Bối cảnh lịch sử và sự thành lập Liên hợp quốc
+
+### a. Bối cảnh lịch sử
+- Đầu năm 1945, Chiến tranh thế giới thứ hai bước vào giai đoạn kết thúc, các nước Đồng minh và nhân dân thế giới có nguyện vọng **ngăn chặn thảm hoạ chiến tranh**, gìn giữ hoà bình và an ninh quốc tế.
+- Tại **Hội nghị I-an-ta (Liên Xô, tháng 2 - 1945)**, ba cường quốc (Liên Xô, Mỹ, Anh) đã thống nhất thành lập một tổ chức quốc tế để duy trì hoà bình và an ninh sau chiến tranh.
+
+### b. Quá trình thành lập
+- Từ ngày **25-4 đến 26-6-1945**, đại biểu 50 nước họp tại **Xan Phran-xi-xcô (Mỹ)** đã thông qua bản **Hiến chương Liên hợp quốc**.
+- Ngày **24-10-1945**, Hiến chương chính thức có hiệu lực sau khi được các nước phê chuẩn. Ngày này được lấy làm **Ngày Liên hợp quốc**.
+
+> 💡 **Ghi nhớ cốt lõi:** Trụ sở chính của Liên hợp quốc đặt tại **Niu Oóc (New York, Mỹ)**.
+
+---
+
+## 2. Mục tiêu và Nguyên tắc hoạt động
+
+### a. Mục tiêu chính (Theo Điều 1 Hiến chương)
+1. **Duy trì hoà bình và an ninh quốc tế.**
+2. **Phát triển mối quan hệ hữu nghị** giữa các dân tộc dựa trên cơ sở tôn trọng quyền bình đẳng và quyền tự quyết của các dân tộc.
+3. **Thực hiện hợp tác quốc tế** giải quyết các vấn đề kinh tế, xã hội, văn hoá, nhân đạo; khuyến khích tôn trọng nhân quyền và tự do cơ bản cho tất cả mọi người.
+4. Là trung tâm điều hoà các nỗ lực quốc tế vì những mục tiêu chung trên.
+
+### b. Nguyên tắc hoạt động (Theo Điều 2 Hiến chương)
+* ⚖️ **Bình đẳng chủ quyền** giữa tất cả các quốc gia thành viên.
+* 🤝 **Tôn trọng toàn vẹn lãnh thổ** và độc lập chính trị của các nước.
+* 🕊️ **Giải quyết các tranh chấp quốc tế bằng biện pháp hoà bình.**
+* 🚫 **Không can thiệp vào công việc nội bộ** của bất kì quốc gia nào.
+* 🌟 **Tôn trọng các nghĩa vụ quốc tế và luật pháp quốc tế.**
+* ⭐ **Sự nhất trí giữa 5 nước uỷ viên thường trực Hội đồng Bảo an** (Liên Xô/Nga, Mỹ, Anh, Pháp, Trung Quốc).
+
+---
+
+## 3. Cơ cấu tổ chức chủ yếu
+
+| Cơ quan | Chức năng & Vai trò |
+| :--- | :--- |
+| **Đại hội đồng** | Đại diện cho tất cả các nước thành viên, họp thường niên mỗi năm 1 lần để thảo luận các vấn đề thuộc phạm vi Hiến chương. |
+| **Hội đồng Bảo an** | Cơ quan giữ vai trò **trọng yếu nhất** trong việc duy trì hoà bình và an ninh thế giới (gồm 5 uỷ viên thường trực có quyền phủ quyết và 10 uỷ viên không thường trực). |
+| **Ban Thư ký** | Cơ quan hành chính, đứng đầu là **Tổng Thư ký** với nhiệm kỳ 5 năm. |
+| **Tòa án Quốc tế (ICJ)** | Cơ quan tư pháp chủ yếu, giải quyết tranh chấp pháp lý giữa các quốc gia. |
+| **Hội đồng Kinh tế - Xã hội (ECOSOC)** | Điều phối các hoạt động kinh tế, xã hội, văn hoá, y tế và nhân đạo. |
+
+---
+
+## 4. Vai trò của Liên hợp quốc
+
+1. **Ngăn ngừa không để xảy ra một cuộc chiến tranh thế giới mới** trong suốt hơn 7 thập kỉ qua.
+2. **Thúc đẩy quá trình phi thực dân hoá**, xoá bỏ chủ nghĩa thực dân và chế độ phân biệt chủng tộc A-pác-thai (Apartheid).
+3. **Thúc đẩy hợp tác quốc tế giải quyết các thách thức toàn cầu**: xoá đói giảm nghèo, chống biến đổi khí hậu, phòng chống dịch bệnh (WHO), bảo vệ di sản văn hoá (UNESCO), bảo vệ trẻ em (UNICEF).
+
+---
+
+## 5. Quan hệ Việt Nam – Liên hợp quốc
+
+- Ngày **20-9-1977**, Việt Nam chính thức gia nhập Liên hợp quốc, trở thành thành viên thứ **149**.
+- Việt Nam đã 2 lần được bầu làm **Ủy viên không thường trực Hội đồng Bảo an Liên hợp quốc** (nhiệm kì 2008 – 2009 và 2020 – 2021) với số phiếu ủng hộ gần như tuyệt đối.
+- Việt Nam tích cực tham gia lực lượng **Gìn giữ hoà bình Liên hợp quốc** tại Nam Xu-đăng, Cộng hoà Trung Phi... khẳng định vị thế một quốc gia có trách nhiệm với cộng đồng quốc tế.`,
+          },
           'Bài 2: Trật tự thế giới trong Chiến tranh lạnh',
           'Bài 3: Trật tự thế giới sau Chiến tranh lạnh',
         ],

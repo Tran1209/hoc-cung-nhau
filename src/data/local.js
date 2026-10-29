@@ -87,6 +87,17 @@ async function cleanDuplicates() {
       await delRow('lessons', l.id);
     } else {
       seenLs.add(key);
+      if (!l.content) {
+        for (const sub of HISTORY_CURRICULUM) {
+          for (const ch of sub.chapters) {
+            for (const item of ch.lessons) {
+              if (typeof item === 'object' && item.title === l.title && item.content) {
+                await putRow('lessons', { ...l, content: item.content });
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -122,11 +133,13 @@ async function seedDefaultIfEmpty() {
           });
           for (let lIdx = 0; lIdx < c.lessons.length; lIdx++) {
             const l = c.lessons[lIdx];
+            const title = typeof l === 'string' ? l : l.title;
+            const content = typeof l === 'string' ? '' : l.content || '';
             await putRow('lessons', {
               id: uid(),
               chapter_id: chId,
-              title: l,
-              content: '',
+              title,
+              content,
               position: lIdx + 1,
               created_at: new Date().toISOString(),
             });

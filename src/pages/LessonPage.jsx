@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { marked } from 'marked';
 import { data, logActivity } from '../data';
 import { useLive } from '../data/useLive';
 import { useAuth } from '../context/AuthContext';
@@ -75,6 +76,15 @@ export default function LessonPage() {
     nav(`/chuong/${lesson.chapter_id}`);
   };
 
+  const renderedContent = useMemo(() => {
+    if (!lesson?.content) return '';
+    try {
+      return marked.parse(lesson.content);
+    } catch {
+      return lesson.content;
+    }
+  }, [lesson?.content]);
+
   return (
     <div className="page">
       <Crumbs
@@ -93,7 +103,27 @@ export default function LessonPage() {
           </div>
         )}
       </div>
-      {lesson.content && <div className="card note pre">{lesson.content}</div>}
+
+      {lesson.content ? (
+        <section className="card textbook-reader">
+          <div className="row between reader-header">
+            <span className="badge kind-quiz">📖 Nội dung bài học SGK số</span>
+            {isTeacher && (
+              <button className="btn ghost sm" onClick={() => setEditing(true)}>✏️ Sửa nội dung</button>
+            )}
+          </div>
+          <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderedContent }} />
+        </section>
+      ) : (
+        <div className="card empty-lesson-banner">
+          <p className="muted">Bài học này chưa có nội dung văn bản chi tiết.</p>
+          {isTeacher && (
+            <button className="btn primary sm mt-sm" onClick={() => setEditing(true)}>
+              + Nhập hoặc dán nội dung bài học
+            </button>
+          )}
+        </div>
+      )}
 
       {SECTIONS.map((sec) => {
         const items = images
