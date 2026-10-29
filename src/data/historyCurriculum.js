@@ -225,15 +225,19 @@ export async function seedHistoryCurriculum(dataApi) {
       }
 
       for (let lIdx = 0; lIdx < c.lessons.length; lIdx++) {
-        const lTitle = c.lessons[lIdx];
+        const item = c.lessons[lIdx];
+        const lTitle = typeof item === 'object' ? item.title : item;
+        const lContent = typeof item === 'object' ? (item.content || '') : '';
         const existingLs = await dataApi.list('lessons', { where: { chapter_id: ch.id, title: lTitle } });
         if (!existingLs?.length) {
           await dataApi.insert('lessons', {
             chapter_id: ch.id,
             title: lTitle,
-            content: '',
+            content: lContent,
             position: lIdx + 1,
           });
+        } else if (!existingLs[0].content && lContent) {
+          await dataApi.update('lessons', existingLs[0].id, { content: lContent });
         }
       }
     }

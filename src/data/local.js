@@ -87,11 +87,15 @@ async function cleanDuplicates() {
       await delRow('lessons', l.id);
     } else {
       seenLs.add(key);
-      if (!l.content) {
-        for (const sub of HISTORY_CURRICULUM) {
-          for (const ch of sub.chapters) {
-            for (const item of ch.lessons) {
-              if (typeof item === 'object' && item.title === l.title && item.content) {
+      for (const sub of HISTORY_CURRICULUM) {
+        for (const ch of sub.chapters) {
+          for (const item of ch.lessons) {
+            if (typeof item === 'object' && item.title === l.title && item.content) {
+              const needsUpdate = !l.content ||
+                l.content.includes('$data.ratingData') ||
+                l.content.includes('formData.append') ||
+                (item.title.includes('Bài 1') && !l.content.includes('MỤC TIÊU BÀI HỌC'));
+              if (needsUpdate) {
                 await putRow('lessons', { ...l, content: item.content });
               }
             }
