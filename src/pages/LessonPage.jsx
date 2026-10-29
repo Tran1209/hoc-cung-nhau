@@ -9,6 +9,7 @@ import { Gallery } from '../components/Gallery';
 import Uploader from '../components/Uploader';
 import AssignmentList from '../components/AssignmentList';
 import LessonFlashcards from '../components/LessonFlashcards';
+import LessonReviewHub from '../components/LessonReviewHub';
 import LessonNotes from '../components/LessonNotes';
 import { Crumbs, Empty, ErrorBox, Loading } from '../components/ui';
 import { fmtDate } from '../lib/format';
@@ -297,6 +298,20 @@ export default function LessonPage() {
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
+    }
+  });
+
+  // Tổng số lượng mục ôn tập hiển thị trên badge của Tab Ôn tập
+  const [reviewCount, setReviewCount] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`lesson_study_data_${id}`);
+      if (saved) {
+        const d = JSON.parse(saved);
+        return (d.milestones?.length || 0) + (d.axes?.length || 0) + (d.causeEffects?.length || 0) + (d.comparisons?.length || 0);
+      }
+      return 14; // Mặc định 14 mục ôn tập cho Bài 1
+    } catch {
+      return 14;
     }
   });
 
@@ -606,7 +621,7 @@ export default function LessonPage() {
             className={`segmented-tab-btn ${activeTab === 'review' ? 'active' : ''}`}
             onClick={() => switchTab('review')}
           >
-            Ôn tập {cards.length > 0 && <span className="tab-badge">{cards.length}</span>}
+            Ôn tập {reviewCount > 0 && <span className="tab-badge">{reviewCount}</span>}
           </button>
           <button
             type="button"
@@ -1115,17 +1130,16 @@ export default function LessonPage() {
         )}
 
         {/* =========================================================================
-            TAB 3: ÔN TẬP (ACTIVE RECALL FLASHCARDS)
+            TAB 3: ÔN TẬP (4 CHẾ ĐỘ SƠ ĐỒ LÕI + THẺ LẬT 3D)
             ========================================================================= */}
         {activeTab === 'review' && (
           <div className="tab-pane-content">
-            {cards.length > 0 ? (
-              <LessonFlashcards cards={cards} />
-            ) : (
-              <div className="empty-lesson-banner">
-                <p className="muted">Chưa có bộ thẻ ghi nhớ phản xạ nhanh cho bài học này.</p>
-              </div>
-            )}
+            <LessonReviewHub
+              lessonId={id}
+              lessonTitle={lesson.title}
+              flashcards={cards}
+              onCountChange={setReviewCount}
+            />
           </div>
         )}
 
