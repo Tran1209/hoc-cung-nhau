@@ -371,6 +371,27 @@ export const local = {
         if (key && key.correct !== null && key.correct !== undefined && String(answers[q.id]) === String(key.correct)) {
           auto += Number(q.points || 1);
         }
+      } else if (q.type === 'tf') {
+        // Chấm điểm câu hỏi Đúng / Sai chuẩn định dạng Đề thi THPT Quốc Gia 2026 (Bộ GD&ĐT)
+        const key = await getRow('answer_keys', q.id);
+        if (key && key.correct) {
+          const userAns = answers[q.id] || {};
+          const keyCorrect = key.correct || {};
+          let numMatch = 0;
+          for (let k = 0; k < 4; k++) {
+            const uVal = userAns[k];
+            const kVal = keyCorrect[k];
+            if (uVal !== undefined && uVal !== null && Boolean(uVal) === Boolean(kVal)) {
+              numMatch++;
+            }
+          }
+          const qPts = Number(q.points || 1);
+          // Quy chuẩn bậc điểm THPTQG: 1 ý = 0.1, 2 ý = 0.25, 3 ý = 0.5, 4 ý = 1.0 (nhân theo điểm câu)
+          if (numMatch === 1) auto += qPts * 0.1;
+          else if (numMatch === 2) auto += qPts * 0.25;
+          else if (numMatch === 3) auto += qPts * 0.5;
+          else if (numMatch === 4) auto += qPts * 1.0;
+        }
       } else manual = true;
     }
     const now = new Date().toISOString();

@@ -13,6 +13,7 @@ import LessonNotes from '../components/LessonNotes';
 import { Crumbs, Empty, ErrorBox, Loading } from '../components/ui';
 import { fmtDate } from '../lib/format';
 import { latestByAssignment } from '../lib/progress';
+import { seedBtAssignmentsForLesson } from '../data/historyCurriculum';
 
 const FLASHCARDS_MAP = {
   'Liên hợp quốc': [
@@ -388,12 +389,19 @@ export default function LessonPage() {
     const lesson = await data.get('lessons', id);
     if (!lesson) return { lesson: null };
     const chapter = await data.get('chapters', lesson.chapter_id);
-    const [subject, images, assignments, submissions] = await Promise.all([
+    let [subject, images, assignments, submissions] = await Promise.all([
       chapter ? data.get('subjects', chapter.subject_id) : null,
       data.list('lesson_images', { where: { lesson_id: id }, order: 'created_at' }),
       data.list('assignments', { where: { lesson_id: id } }),
       data.list('submissions'),
     ]);
+
+    // Tự động gieo sẵn các bài tập BT1, BT2, BT3 chuẩn Đề thi THPTQG 2026 nếu chưa có
+    if (lesson.title.toLowerCase().includes('liên hợp quốc') && !assignments.some((a) => (a.title || '').includes('BT2'))) {
+      await seedBtAssignmentsForLesson(data, lesson.id, lesson.chapter_id);
+      assignments = await data.list('assignments', { where: { lesson_id: id } });
+    }
+
     return { lesson, chapter, subject, images, assignments, submissions };
   }, [id]);
 
@@ -667,15 +675,39 @@ export default function LessonPage() {
         )}
 
         {/* =========================================================================
-            TAB 2: BÀI TẬP (CÂU HỎI VẬN DỤNG & ĐỀ KIỂM TRA ĐÁNH GIÁ)
+            TAB 2: BÀI TẬP (HỆ THỐNG BT1, BT2, BT3,... VÀ CÂU HỎI VẬN DỤNG)
             ========================================================================= */}
         {activeTab === 'exercises' && (
           <div className="tab-pane-content">
-            {/* Vùng soạn thảo / Tương tác chuẩn hóa (Integrated Editor) */}
+            {/* 1. Hệ thống bài tập trọng tâm BT1, BT2, BT3,... */}
+            <div style={{ marginBottom: '32px' }}>
+              <div className="row" style={{ marginBottom: '16px' }}>
+                <span className="idx-badge">BT</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.18rem', color: '#380718' }}>
+                    Hệ thống bài tập trọng tâm (BT1, BT2, BT3, ...)
+                  </h3>
+                  <div className="small muted">
+                    Cấu trúc bám sát định dạng Đề thi Tốt nghiệp THPT Quốc Gia 2026 của Bộ GD&ĐT (Trắc nghiệm 4 lựa chọn & Đúng / Sai theo tư liệu)
+                  </div>
+                </div>
+              </div>
+
+              <AssignmentList
+                assignments={assignments}
+                latest={latest}
+                chapterId={lesson.chapter_id}
+                lessonId={id}
+                defaultTitle={`BT${assignments.length + 1}: Bài tập ${lesson.title}`}
+                emptyText="Chưa có bài tập nào cho bài học này."
+              />
+            </div>
+
+            {/* 2. Vùng soạn thảo / Tương tác câu hỏi vận dụng (Integrated Editor) */}
             <section className="integrated-editor">
               <div className="editor-head">
                 <div className="row" style={{ gap: '10px' }}>
-                  <span className="idx-badge">1</span>
+                  <span className="idx-badge">Vận dụng</span>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
                       Câu hỏi vận dụng: Hoạt động gìn giữ hoà bình của Việt Nam
@@ -700,7 +732,7 @@ export default function LessonPage() {
               </div>
 
               <textarea
-                rows={6}
+                rows={5}
                 placeholder="Nhập câu trả lời vận dụng hoặc thu hoạch sau bài học của em vào đây..."
                 value={essayText}
                 onChange={(e) => setEssayText(e.target.value)}
@@ -724,28 +756,6 @@ export default function LessonPage() {
                 </div>
               </div>
             </section>
-
-            {/* Danh sách bài tập & Đề kiểm tra đánh giá */}
-            <div style={{ marginTop: '32px' }}>
-              <div className="row" style={{ marginBottom: '16px' }}>
-                <span className="idx-badge">2</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
-                    Bài tập & Đề kiểm tra đánh giá
-                  </h3>
-                  <div className="small muted">Kiểm tra mức độ thấu hiểu bài học</div>
-                </div>
-              </div>
-
-              <AssignmentList
-                assignments={assignments}
-                latest={latest}
-                chapterId={lesson.chapter_id}
-                lessonId={id}
-                defaultTitle={`Bài tập ${lesson.title}`}
-                emptyText="Chưa có bài kiểm tra cho bài học này."
-              />
-            </div>
           </div>
         )}
 

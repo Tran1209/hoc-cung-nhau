@@ -61,8 +61,16 @@ export default function AssignmentEditor() {
     setQs((list) => [
       ...list,
       {
-        id: uid(), _new: true, assignment_id: id, type, prompt: '', image_path: null,
-        options: type === 'mcq' ? ['', '', '', ''] : [], points: 1, correct: null, explanation: '',
+        id: uid(),
+        _new: true,
+        assignment_id: id,
+        type,
+        prompt: '',
+        image_path: null,
+        options: type === 'mcq' ? ['', '', '', ''] : type === 'tf' ? ['', '', '', ''] : [],
+        points: 1,
+        correct: type === 'tf' ? { 0: true, 1: false, 2: false, 3: true } : null,
+        explanation: '',
       },
     ]);
   const removeQ = (i) => {
@@ -92,6 +100,9 @@ export default function AssignmentEditor() {
         if (opts.length < 2) return setErr(`Câu ${i + 1}: cần ít nhất 2 đáp án.`);
         if (q.correct === null || q.correct === undefined || !q.options[q.correct]?.trim())
           return setErr(`Câu ${i + 1}: chưa chọn đáp án đúng.`);
+      } else if (q.type === 'tf') {
+        const opts = (q.options || []).filter((o) => o.trim());
+        if (opts.length < 4) return setErr(`Câu ${i + 1} (Đúng/Sai THPTQG 2026): cần nhập đủ 4 mệnh đề a, b, c, d.`);
       }
     }
     if (form.kind === 'exam' && !(Number(form.time_limit_minutes) > 0)) return setErr('Bài thi cần thời gian làm bài (phút).');
@@ -120,13 +131,13 @@ export default function AssignmentEditor() {
             type: q.type,
             prompt: q.prompt,
             image_path: q.image_path || null,
-            options: q.type === 'mcq' ? q.options : [],
+            options: q.type === 'mcq' || q.type === 'tf' ? q.options : [],
             points: Number(q.points || 0),
             position: i,
           });
           await data.upsert(
             'answer_keys',
-            { question_id: q.id, correct: q.type === 'mcq' ? q.correct : null, explanation: q.explanation || '' },
+            { question_id: q.id, correct: q.type === 'mcq' || q.type === 'tf' ? q.correct : null, explanation: q.explanation || '' },
             'question_id',
           );
         }
@@ -266,7 +277,7 @@ export default function AssignmentEditor() {
             {qs.map((q, i) => (
               <div key={q.id} className="qedit">
                 <div className="row between">
-                  <b>Câu {i + 1} · {q.type === 'mcq' ? 'Trắc nghiệm' : 'Tự luận'}</b>
+                  <b>Câu {i + 1} · {q.type === 'mcq' ? 'Trắc nghiệm 4 lựa chọn' : q.type === 'tf' ? 'Trắc nghiệm Đúng / Sai (THPTQG 2026)' : 'Tự luận'}</b>
                   <div className="row">
                     <label className="inline-field">
                       Điểm <input type="number" step="0.25" min="0" value={q.points} onChange={(e) => setQ(i, { points: e.target.value })} />
@@ -276,7 +287,7 @@ export default function AssignmentEditor() {
                     <button className="btn ghost sm danger" onClick={() => removeQ(i)} title="Xoá">Xoá</button>
                   </div>
                 </div>
-                <textarea rows={2} placeholder="Nội dung câu hỏi…" value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} />
+                <textarea rows={2} placeholder="Nội dung câu hỏi hoặc đoạn tư liệu lịch sử…" value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} />
                 <div className="row">
                   {q.image_path ? (
                     <Gallery items={[{ path: q.image_path }]} onDelete={() => setQ(i, { image_path: null })} />
@@ -309,13 +320,64 @@ export default function AssignmentEditor() {
                     )}
                   </div>
                 )}
-                <input className="mt-sm" placeholder={q.type === 'mcq' ? 'Giải thích đáp án (học viên xem sau khi chấm) — tuỳ chọn' : 'Gợi ý đáp án / ghi chú chấm bài'}
+                {q.type === 'tf' && (
+                  <div className="tf-edit-box" style={{ marginTop: '12px', background: '#FFFDFE', padding: '12px', borderRadius: '12px', border: '1px solid rgba(253, 164, 175, 0.4)' }}>
+                    <div className="small muted" style={{ marginBottom: '8px', fontWeight: 700, color: '#BE123C' }}>
+                      Phần II Đúng / Sai: Nhập 4 mệnh đề a, b, c, d và chọn phương án Đúng hoặc Sai:
+                    </div>
+                    {['a', 'b', 'c', 'd'].map((letter, k) => {
+                      const isTrue = q.correct?.[k] === true;
+                      const isFalse = q.correct?.[k] === false;
+                      return (
+                        <div key={k} style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                          <b style={{ minWidth: '24px', color: '#BE123C' }}>{letter})</b>
+                          <input
+                            style={{ flex: 1, padding: '7px 10px', borderRadius: '8px', border: '1px solid rgba(253, 164, 175, 0.45)', background: '#FFFFFF' }}
+                            placeholder={`Mệnh đề ${letter})…`}
+                            value={q.options?.[k] || ''}
+                            onChange={(e) => {
+                              const newOpts = [...(q.options || ['', '', '', ''])];
+                              newOpts[k] = e.target.value;
+                              setQ(i, { options: newOpts });
+                            }}
+                          />
+                          <div className="row" style={{ gap: '4px' }}>
+                            <button
+                              type="button"
+                              className={`ios-btn sm ${isTrue ? 'ios-btn-primary' : 'ios-btn-secondary'}`}
+                              style={{ padding: '3px 10px', fontSize: '0.78rem' }}
+                              onClick={() => {
+                                const nextKey = { ...(q.correct || {}), [k]: true };
+                                setQ(i, { correct: nextKey });
+                              }}
+                            >
+                              Đúng
+                            </button>
+                            <button
+                              type="button"
+                              className={`ios-btn sm ${isFalse ? 'ios-btn-primary' : 'ios-btn-secondary'}`}
+                              style={{ padding: '3px 10px', fontSize: '0.78rem' }}
+                              onClick={() => {
+                                const nextKey = { ...(q.correct || {}), [k]: false };
+                                setQ(i, { correct: nextKey });
+                              }}
+                            >
+                              Sai
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <input className="mt-sm" placeholder={q.type === 'mcq' || q.type === 'tf' ? 'Giải thích đáp án (học viên xem sau khi chấm) — tuỳ chọn' : 'Gợi ý đáp án / ghi chú chấm bài'}
                   value={q.explanation} onChange={(e) => setQ(i, { explanation: e.target.value })} />
               </div>
             ))}
-            <div className="row mt">
-              <button className="ios-btn sm ios-btn-secondary" onClick={() => addQ('mcq')}>+ Thêm trắc nghiệm</button>
-              <button className="ios-btn sm ios-btn-secondary" onClick={() => addQ('essay')}>+ Thêm tự luận</button>
+            <div className="row mt" style={{ gap: '8px', flexWrap: 'wrap' }}>
+              <button type="button" className="ios-btn sm ios-btn-secondary" onClick={() => addQ('mcq')}>+ Thêm trắc nghiệm 4 lựa chọn</button>
+              <button type="button" className="ios-btn sm ios-btn-primary" onClick={() => addQ('tf')}>+ Thêm câu hỏi Đúng / Sai (THPTQG 2026)</button>
+              <button type="button" className="ios-btn sm ios-btn-secondary" onClick={() => addQ('essay')}>+ Thêm tự luận</button>
             </div>
           </section>
         )}

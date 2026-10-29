@@ -38,12 +38,22 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
       : null;
   const remaining = deadline ? Math.max(0, deadline - now) : null;
 
+  const isQuestionDone = (q) => {
+    const a = answers[q.id];
+    if (a === undefined || a === null || a === '') return false;
+    if (q.type === 'tf') {
+      const opts = q.options || [];
+      return opts.length > 0 && opts.every((_, idx) => a[idx] === true || a[idx] === false);
+    }
+    return true;
+  };
+
   const submit = useCallback(
     async (auto = false) => {
       if (submittedRef.current) return;
       if (!auto) {
-        const unanswered = questions.filter((q) => answers[q.id] === undefined || answers[q.id] === '').length;
-        if (unanswered && !confirm(`Còn ${unanswered} câu chưa làm. Vẫn nộp bài?`)) return;
+        const unanswered = questions.filter((q) => !isQuestionDone(q)).length;
+        if (unanswered && !confirm(`Còn ${unanswered} câu chưa hoàn thành đủ các ý. Vẫn nộp bài?`)) return;
       }
       submittedRef.current = true;
       setBusy(true);
@@ -116,7 +126,7 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
   }
 
   const setA = (qid, v) => setAnswers((a) => ({ ...a, [qid]: v }));
-  const done = questions.filter((q) => answers[q.id] !== undefined && answers[q.id] !== '').length;
+  const done = questions.filter(isQuestionDone).length;
   const hasEssay = questions.some((q) => q.type === 'essay');
 
   return (
@@ -137,14 +147,27 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
       {questions.map((q, i) => (
         <div key={q.id} className="qcard">
           <div className="qtitle">
-            <b>Câu {i + 1}</b> <small className="muted">({q.points}đ)</small>
+            <div className="row" style={{ gap: '8px' }}>
+              <b>Câu {i + 1}</b>
+              {q.type === 'tf' ? (
+                <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C', border: '1px solid #FECDD6' }}>
+                  Trắc nghiệm Đúng / Sai THPTQG 2026
+                </span>
+              ) : q.type === 'mcq' ? (
+                <span className="badge">Trắc nghiệm 4 lựa chọn</span>
+              ) : (
+                <span className="badge">Tự luận vận dụng</span>
+              )}
+            </div>
+            <small className="muted">({q.points}đ)</small>
           </div>
-          <div className="pre">{q.prompt}</div>
+          <div className="pre" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7, margin: '10px 0' }}>{q.prompt}</div>
           {q.image_path && (
             <div className="qimg">
               <FileThumb path={q.image_path} onOpen={(u) => lightbox[1](u)} className="wide" />
             </div>
           )}
+
           {q.type === 'mcq' ? (
             <div className="choices">
               {q.options.map((o, k) =>
@@ -155,6 +178,48 @@ export default function QuizRunner({ assignment, questions, inProgress }) {
                   </label>
                 ) : null,
               )}
+            </div>
+          ) : q.type === 'tf' ? (
+            <div className="tf-question-box">
+              <div className="tf-guideline-badge">
+                Phần II: Chọn Đúng hoặc Sai cho từng mệnh đề a), b), c), d)
+              </div>
+              <div className="tf-table">
+                {q.options.map((stmt, k) => {
+                  const letter = ['a', 'b', 'c', 'd'][k] || String.fromCharCode(97 + k);
+                  const currentVal = answers[q.id]?.[k];
+                  return (
+                    <div key={k} className="tf-row">
+                      <div className="tf-stmt-text">
+                        <span className="tf-letter-badge">{letter})</span>
+                        <span>{stmt}</span>
+                      </div>
+                      <div className="tf-actions-group">
+                        <button
+                          type="button"
+                          className={`tf-choice-btn btn-true ${currentVal === true ? 'selected' : ''}`}
+                          onClick={() => {
+                            const prev = answers[q.id] || {};
+                            setA(q.id, { ...prev, [k]: true });
+                          }}
+                        >
+                          Đúng
+                        </button>
+                        <button
+                          type="button"
+                          className={`tf-choice-btn btn-false ${currentVal === false ? 'selected' : ''}`}
+                          onClick={() => {
+                            const prev = answers[q.id] || {};
+                            setA(q.id, { ...prev, [k]: false });
+                          }}
+                        >
+                          Sai
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <textarea rows={5} placeholder="Em trả lời ở đây…" value={answers[q.id] || ''} onChange={(e) => setA(q.id, e.target.value)} />

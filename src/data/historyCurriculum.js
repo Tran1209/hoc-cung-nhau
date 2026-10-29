@@ -245,92 +245,213 @@ export async function seedHistoryCurriculum(dataApi) {
           }
         }
 
-        // Tạo bài tập trắc nghiệm & tự luận trọng tâm cho Bài 1: Liên Hợp Quốc nếu chưa có
+        // Tự động gieo sẵn các bài tập BT1, BT2, BT3 chuẩn Đề thi THPTQG 2026 cho Bài 1: Liên Hợp Quốc
         if (lTitle.toLowerCase().includes('liên hợp quốc') && lessonId) {
-          const existingAs = await dataApi.list('assignments', { where: { lesson_id: lessonId } });
-          if (!existingAs?.length) {
-            const newA = await dataApi.insert('assignments', {
-              chapter_id: ch.id,
-              lesson_id: lessonId,
-              title: 'Bài tập trọng tâm: Bài 1 - Liên hợp quốc',
-              kind: 'quiz',
-              instructions: 'Làm 5 câu hỏi trắc nghiệm kiểm tra mức độ hiểu bài và 1 câu hỏi tự luận ngắn về vai trò của Liên hợp quốc.',
-              max_score: 10,
-              position: 1,
-              is_published: true,
-            });
-
-            const sampleQs = [
-              {
-                type: 'mcq',
-                prompt: 'Liên hợp quốc chính thức được thành lập vào ngày tháng năm nào?',
-                options: ['24 - 10 - 1945', '02 - 09 - 1945', '08 - 08 - 1967', '20 - 09 - 1977'],
-                correct: 0,
-                points: 1.5,
-                explanation: 'Ngày 24-10-1945 bản Hiến chương Liên hợp quốc chính thức có hiệu lực sau khi được các nước phê chuẩn.',
-              },
-              {
-                type: 'mcq',
-                prompt: 'Trụ sở chính của Liên hợp quốc hiện nay đặt tại thành phố nào?',
-                options: ['Giơ-ne-vơ (Thuỵ Sĩ)', 'Niu Oóc (New York, Mỹ)', 'Pa-ri (Pháp)', 'Luân Đôn (Anh)'],
-                correct: 1,
-                points: 1.5,
-                explanation: 'Trụ sở chính của Liên hợp quốc đặt tại thành phố Niu Oóc (New York, Mỹ).',
-              },
-              {
-                type: 'mcq',
-                prompt: 'Cơ quan nào của Liên hợp quốc giữ vai trò trọng yếu trong việc duy trì hoà bình và an ninh quốc tế?',
-                options: ['Đại hội đồng', 'Ban Thư ký', 'Hội đồng Bảo an', 'Toà án Quốc tế'],
-                correct: 2,
-                points: 1.5,
-                explanation: 'Hội đồng Bảo an Liên hợp quốc gồm 5 uỷ viên thường trực và 10 uỷ viên không thường trực.',
-              },
-              {
-                type: 'mcq',
-                prompt: 'Việt Nam chính thức được kết nạp làm thành viên thứ 149 của Liên hợp quốc vào năm nào?',
-                options: ['1975', '1977', '1986', '1995'],
-                correct: 1,
-                points: 1.5,
-                explanation: 'Ngày 20-9-1977, tại khoá họp 32 Đại hội đồng LHQ, Việt Nam chính thức trở thành thành viên thứ 149.',
-              },
-              {
-                type: 'mcq',
-                prompt: 'Nguyên tắc biểu quyết mang tính quyết định của 5 nước uỷ viên thường trực Hội đồng Bảo an là gì?',
-                options: ['Nguyên tắc đa số giản đơn', 'Nguyên tắc nhất trí tuyệt đối giữa 5 cường quốc lớn', 'Nguyên tắc 2/3 số phiếu', 'Nguyên tắc luân phiên'],
-                correct: 1,
-                points: 2,
-                explanation: 'Chỉ cần 1 nước thường trực bỏ phiếu chống thì nghị quyết sẽ không được thông qua (quyền phủ quyết).',
-              },
-              {
-                type: 'essay',
-                prompt: 'Nêu ngắn gọn vai trò và một số đóng góp tiêu biểu của Việt Nam khi tham gia lực lượng gìn giữ hoà bình của Liên hợp quốc thời gian gần đây.',
-                options: [],
-                correct: null,
-                points: 2,
-                explanation: 'Cử bệnh viện dã chiến cấp 2 đến Nam Xu-đăng, đội công binh đến Abyei, thể hiện vai trò tích cực và trách nhiệm quốc tế.',
-              },
-            ];
-
-            for (let qIdx = 0; qIdx < sampleQs.length; qIdx++) {
-              const q = sampleQs[qIdx];
-              const createdQ = await dataApi.insert('questions', {
-                assignment_id: newA.id,
-                type: q.type,
-                prompt: q.prompt,
-                options: q.options,
-                points: q.points,
-                position: qIdx + 1,
-              });
-              await dataApi.upsert(
-                'answer_keys',
-                { question_id: createdQ.id, correct: q.correct, explanation: q.explanation },
-                'question_id',
-              );
-            }
-          }
+          await seedBtAssignmentsForLesson(dataApi, lessonId, ch.id);
         }
       }
     }
   }
   return count;
+}
+
+/**
+ * Gieo hệ thống bài tập BT1, BT2, BT3 chuẩn định dạng Đề thi THPT Quốc Gia 2026 của Bộ GD&ĐT
+ */
+export async function seedBtAssignmentsForLesson(dataApi, lessonId, chapterId) {
+  const existingAs = await dataApi.list('assignments', { where: { lesson_id: lessonId } });
+  const hasBt2 = existingAs.some((a) => (a.title || '').includes('BT2'));
+  if (hasBt2) return;
+
+  // Thu hồi các bài tập cũ chưa đánh số BT
+  for (const oldA of existingAs) {
+    if (!oldA.title.startsWith('BT')) {
+      await dataApi.remove('assignments', oldA.id);
+      const oldQs = await dataApi.list('questions', { where: { assignment_id: oldA.id } });
+      for (const q of oldQs) await dataApi.remove('questions', q.id);
+    }
+  }
+
+  // 1. BT1: Trắc nghiệm 4 lựa chọn (Phần I - THPTQG 2026)
+  const a1 = await dataApi.insert('assignments', {
+    chapter_id: chapterId,
+    lesson_id: lessonId,
+    title: 'BT1: Trắc nghiệm nhiều lựa chọn (Phần I - Đề thi THPTQG 2026)',
+    kind: 'quiz',
+    instructions: 'Gồm các câu hỏi trắc nghiệm khách quan 4 lựa chọn (A, B, C, D) kiểm tra kiến thức cốt lõi Bài 1: Liên hợp quốc.',
+    max_score: 10,
+    position: 1,
+    is_published: true,
+  });
+
+  const qList1 = [
+    {
+      type: 'mcq',
+      prompt: 'Bản Hiến chương Liên hợp quốc chính thức có hiệu lực vào ngày tháng năm nào?',
+      options: ['24 - 10 - 1945', '02 - 09 - 1945', '08 - 08 - 1967', '20 - 09 - 1977'],
+      correct: 0,
+      points: 2,
+      explanation: 'Ngày 24-10-1945, sau khi được các nước phê chuẩn, Hiến chương Liên hợp quốc chính thức có hiệu lực. Ngày 24-10 hàng năm được chọn làm "Ngày Liên hợp quốc".',
+    },
+    {
+      type: 'mcq',
+      prompt: 'Trụ sở chính thức của tổ chức Liên hợp quốc hiện nay đặt tại thành phố nào?',
+      options: ['Giơ-ne-vơ (Thuỵ Sĩ)', 'Niu Oóc (New York, Mỹ)', 'Pa-ri (Pháp)', 'Luân Đôn (Anh)'],
+      correct: 1,
+      points: 2,
+      explanation: 'Trụ sở chính của Liên hợp quốc được đặt tại thành phố Niu Oóc (New York, Mỹ).',
+    },
+    {
+      type: 'mcq',
+      prompt: 'Cơ quan nào của Liên hợp quốc giữ vai trò trọng yếu nhất trong việc duy trì hoà bình và an ninh quốc tế?',
+      options: ['Đại hội đồng', 'Ban Thư ký', 'Hội đồng Bảo an', 'Toà án Công lý Quốc tế'],
+      correct: 2,
+      points: 2,
+      explanation: 'Hội đồng Bảo an là cơ quan chịu trách nhiệm chính về duy trì hoà bình và an ninh quốc tế.',
+    },
+    {
+      type: 'mcq',
+      prompt: 'Nguyên tắc biểu quyết mang tính quyết định của 5 nước uỷ viên thường trực Hội đồng Bảo an là gì?',
+      options: ['Nguyên tắc đa số giản đơn', 'Nguyên tắc nhất trí tuyệt đối giữa 5 cường quốc lớn', 'Nguyên tắc 2/3 số phiếu', 'Nguyên tắc luân phiên'],
+      correct: 1,
+      points: 2,
+      explanation: 'Chỉ cần 1 nước trong 5 nước thường trực (Liên Xô/Nga, Mỹ, Anh, Pháp, Trung Quốc) bỏ phiếu chống là nghị quyết không được thông qua (quyền phủ quyết).',
+    },
+    {
+      type: 'mcq',
+      prompt: 'Việt Nam chính thức được kết nạp làm thành viên thứ 149 của Liên hợp quốc vào ngày tháng năm nào?',
+      options: ['30 - 04 - 1975', '20 - 09 - 1977', '28 - 07 - 1995', '11 - 01 - 2007'],
+      correct: 1,
+      points: 2,
+      explanation: 'Ngày 20-9-1977, tại khoá họp 32 Đại hội đồng LHQ, Việt Nam chính thức trở thành thành viên thứ 149 của tổ chức.',
+    },
+  ];
+
+  for (let idx = 0; idx < qList1.length; idx++) {
+    const q = qList1[idx];
+    const createdQ = await dataApi.insert('questions', {
+      assignment_id: a1.id,
+      type: q.type,
+      prompt: q.prompt,
+      options: q.options,
+      points: q.points,
+      position: idx + 1,
+    });
+    await dataApi.upsert(
+      'answer_keys',
+      { question_id: createdQ.id, correct: q.correct, explanation: q.explanation },
+      'question_id',
+    );
+  }
+
+  // 2. BT2: Trắc nghiệm Đúng / Sai theo tư liệu lịch sử (Phần II - Định dạng mới THPTQG 2026)
+  const a2 = await dataApi.insert('assignments', {
+    chapter_id: chapterId,
+    lesson_id: lessonId,
+    title: 'BT2: Trắc nghiệm Đúng / Sai theo tư liệu (Phần II - Định dạng mới THPTQG 2026)',
+    kind: 'quiz',
+    instructions: 'Mỗi câu hỏi có 1 đoạn trích tư liệu lịch sử kèm 4 mệnh đề a, b, c, d. Thí sinh chọn Đúng hoặc Sai cho từng mệnh đề theo chuẩn quy chế thi THPTQG 2026 của Bộ GD&ĐT.',
+    max_score: 10,
+    position: 2,
+    is_published: true,
+  });
+
+  const qList2 = [
+    {
+      type: 'tf',
+      prompt: 'Đọc đoạn tư liệu sau đây về sự hình thành và mục tiêu của Liên hợp quốc:\n\n"Tại Hội nghị Xan Phran-xi-xcô (Mỹ, từ ngày 25-4 đến 26-6-1945), đại biểu của 50 quốc gia đã thông qua bản Hiến chương Liên hợp quốc. Ngày 24-10-1945, Hiến chương chính thức có hiệu lực sau khi được các nước phê chuẩn. Mục tiêu hàng đầu của tổ chức là duy trì hoà bình và an ninh quốc tế; phát triển mối quan hệ hữu nghị giữa các dân tộc trên cơ sở tôn trọng quyền bình đẳng và quyền tự quyết của các dân tộc; thực hiện hợp tác quốc tế trong việc giải quyết các vấn đề toàn cầu."\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:',
+      options: [
+        'Hội nghị Xan Phran-xi-xcô (1945) có sự tham gia thảo luận của đại biểu 193 quốc gia trên toàn thế giới.',
+        'Ngày 24-10 hàng năm được chọn làm "Ngày Liên hợp quốc" vì đây là thời điểm bản Hiến chương chính thức có hiệu lực.',
+        'Mục tiêu duy trì hoà bình của Liên hợp quốc cho phép các cường quốc can thiệp quân sự vào công việc nội bộ của các quốc gia nhỏ mà không cần sự đồng thuận.',
+        'Đoạn tư liệu khẳng định việc tôn trọng quyền bình đẳng và quyền tự quyết của các dân tộc là cơ sở cốt lõi để phát triển quan hệ hữu nghị giữa các quốc gia.',
+      ],
+      correct: { 0: false, 1: true, 2: false, 3: true },
+      points: 5,
+      explanation: 'Ý a) Sai vì Hội nghị Xan Phran-xi-xcô năm 1945 chỉ có đại biểu 50 nước tham gia; Ý b) Đúng theo Điều lệ LHQ; Ý c) Sai vì nguyên tắc Hiến chương nghiêm cấm can thiệp công việc nội bộ; Ý d) Đúng theo Điều 1 Hiến chương.',
+    },
+    {
+      type: 'tf',
+      prompt: 'Đọc đoạn tư liệu sau đây về vai trò và nguyên tắc hoạt động của Hội đồng Bảo an:\n\n"Hội đồng Bảo an là cơ quan giữ vai trò trọng yếu trong việc duy trì hoà bình và an ninh quốc tế. Mọi quyết định quan trọng của Hội đồng Bảo an chỉ được thông qua khi có sự nhất trí của 5 nước uỷ viên thường trực (Liên Xô/Nga, Mỹ, Anh, Pháp, Trung Quốc). Chỉ cần một nước thường trực bỏ phiếu chống thì nghị quyết sẽ không được thông qua."\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:',
+      options: [
+        'Hội đồng Bảo an là cơ quan duy nhất của Liên hợp quốc có quyền xem xét mọi vấn đề phát triển kinh tế, y tế và văn hoá xã hội.',
+        'Nguyên tắc nhất trí giữa 5 nước lớn nhằm bảo đảm không xảy ra xung đột quân sự trực tiếp giữa các siêu cường hạt nhân sau Chiến tranh thế giới thứ hai.',
+        'Nếu 4 nước uỷ viên thường trực bỏ phiếu thuận và 1 nước thường trực bỏ phiếu chống, nghị quyết của Hội đồng Bảo an vẫn được thông qua theo nguyên tắc đa số.',
+        'Cơ chế biểu quyết đặc biệt của 5 nước uỷ viên thường trực tại Hội đồng Bảo an thường được gọi là quyền phủ quyết (veto).',
+      ],
+      correct: { 0: false, 1: true, 2: false, 3: true },
+      points: 5,
+      explanation: 'Ý a) Sai vì các vấn đề kinh tế xã hội thuộc chức năng của ECOSOC và Đại hội đồng; Ý b) Đúng; Ý c) Sai vì chỉ cần 1 phiếu chống là nghị quyết bị phủ quyết ngay; Ý d) Đúng.',
+    },
+  ];
+
+  for (let idx = 0; idx < qList2.length; idx++) {
+    const q = qList2[idx];
+    const createdQ = await dataApi.insert('questions', {
+      assignment_id: a2.id,
+      type: q.type,
+      prompt: q.prompt,
+      options: q.options,
+      points: q.points,
+      position: idx + 1,
+    });
+    await dataApi.upsert(
+      'answer_keys',
+      { question_id: createdQ.id, correct: q.correct, explanation: q.explanation },
+      'question_id',
+    );
+  }
+
+  // 3. BT3: Vận dụng kiến thức & Phân tích sự kiện Lịch Sử
+  const a3 = await dataApi.insert('assignments', {
+    chapter_id: chapterId,
+    lesson_id: lessonId,
+    title: 'BT3: Vận dụng kiến thức & Phân tích sự kiện Lịch Sử',
+    kind: 'quiz',
+    instructions: 'Luyện tập câu hỏi đọc hiểu tư liệu kết hợp câu hỏi tự luận vận dụng thực tế quan hệ Việt Nam - Liên hợp quốc.',
+    max_score: 10,
+    position: 3,
+    is_published: true,
+  });
+
+  const qList3 = [
+    {
+      type: 'mcq',
+      prompt: 'Từ năm 2014 đến nay, lực lượng Gìn giữ hoà bình của Việt Nam đã được cử đến thực hiện nhiệm vụ quốc tế tại những phái bộ nào của Liên hợp quốc?',
+      options: [
+        'Phái bộ UNMISS tại Nam Xu-đăng và phái bộ UNISFA tại khu vực Abyei.',
+        'Phái bộ tại Đông Ti-mo và phái bộ tại Béc-lin.',
+        'Phái bộ tại Bờ Biển Ngà và phái bộ tại U-crai-na.',
+        'Phái bộ tại Li-băng và phái bộ tại Cô-xô-vô.',
+      ],
+      correct: 0,
+      points: 4,
+      explanation: 'Việt Nam đã cử bệnh viện dã chiến cấp 2 đến Nam Xu-đăng (UNMISS) và đội công binh đến Abyei (UNISFA).',
+    },
+    {
+      type: 'essay',
+      prompt: 'Dựa vào kiến thức đã học, em hãy phân tích ngắn gọn (khoảng 5 - 7 dòng) ý nghĩa của nguyên tắc "Sự nhất trí giữa 5 nước uỷ viên thường trực Hội đồng Bảo an" đối với nền hoà bình thế giới.',
+      options: [],
+      correct: null,
+      points: 6,
+      explanation: 'Nguyên tắc nhất trí 5 nước lớn bảo đảm các cường quốc phải đối thoại, thương lượng; tránh nguy cơ đối đầu quân sự trực tiếp dẫn đến Chiến tranh thế giới thứ ba.',
+    },
+  ];
+
+  for (let idx = 0; idx < qList3.length; idx++) {
+    const q = qList3[idx];
+    const createdQ = await dataApi.insert('questions', {
+      assignment_id: a3.id,
+      type: q.type,
+      prompt: q.prompt,
+      options: q.options,
+      points: q.points,
+      position: idx + 1,
+    });
+    await dataApi.upsert(
+      'answer_keys',
+      { question_id: createdQ.id, correct: q.correct, explanation: q.explanation },
+      'question_id',
+    );
+  }
 }

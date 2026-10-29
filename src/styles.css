@@ -1717,6 +1717,144 @@ a.folio-metric-cell:hover {
   flex-wrap: wrap;
 }
 
+/* ==========================================================================
+   TRUE/FALSE QUESTION STYLING (Chuẩn Đề thi THPT Quốc Gia 2026 - Bộ GD&ĐT)
+   ========================================================================== */
+.tf-question-box {
+  background: #FFFDFE;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin-top: 14px;
+}
+
+.tf-guideline-badge {
+  display: inline-block;
+  background: #FFF0F3;
+  color: #BE123C;
+  border: 1px solid rgba(253, 164, 175, 0.5);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.tf-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tf-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border: 1px solid rgba(253, 164, 175, 0.35);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+.tf-row:hover {
+  border-color: rgba(225, 29, 72, 0.4);
+}
+
+.tf-stmt-text {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #380718;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tf-letter-badge {
+  font-weight: 800;
+  color: #BE123C;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  min-width: 22px;
+}
+
+.tf-actions-group {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tf-choice-btn {
+  border: 1.5px solid rgba(253, 164, 175, 0.55);
+  background: #FFFFFF;
+  color: #380718;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 750;
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+.tf-choice-btn:hover {
+  background: #FFF5F7;
+}
+.tf-choice-btn:active {
+  transform: scale(0.95);
+}
+
+.tf-choice-btn.selected.btn-true {
+  background: #059669 !important;
+  border-color: #059669 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+}
+
+.tf-choice-btn.selected.btn-false {
+  background: #E11D48 !important;
+  border-color: #E11D48 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
+}
+
+/* BT Assignment Card in Tab Bài tập */
+.bt-card {
+  background: #FFFDFE;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--folio-shadow-sm);
+  text-decoration: none;
+  color: inherit;
+}
+.bt-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(225, 29, 72, 0.5);
+  box-shadow: 0 8px 24px rgba(244, 63, 94, 0.12);
+}
+
+.bt-badge {
+  background: #380718;
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: inline-block;
+  box-shadow: 0 2px 6px rgba(56, 7, 24, 0.2);
+}
+
 /* Mobile-fit 100vh Layout Rules */
 @media (max-width: 768px) {
   html, body {

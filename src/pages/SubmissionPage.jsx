@@ -130,18 +130,46 @@ function AnswerView({ i, q, answer, k, qScore, showKey }) {
   const answered = answer !== undefined && answer !== '' && answer !== null;
   const hasKey = showKey && k && k.correct !== null && k.correct !== undefined;
   const right = q.type === 'mcq' && hasKey && Number(answer) === Number(k.correct);
+
+  let tfNumRight = 0;
+  let tfEarned = 0;
+  if (q.type === 'tf' && hasKey) {
+    const userObj = answer || {};
+    const keyObj = k.correct || {};
+    for (let idx = 0; idx < 4; idx++) {
+      if (userObj[idx] !== undefined && Boolean(userObj[idx]) === Boolean(keyObj[idx])) {
+        tfNumRight++;
+      }
+    }
+    const qPts = Number(q.points || 1);
+    if (tfNumRight === 1) tfEarned = qPts * 0.1;
+    else if (tfNumRight === 2) tfEarned = qPts * 0.25;
+    else if (tfNumRight === 3) tfEarned = qPts * 0.5;
+    else if (tfNumRight === 4) tfEarned = qPts * 1.0;
+  }
+
   return (
     <div className={`qcard ${q.type === 'mcq' && hasKey ? (right ? 'right' : 'wrong') : ''}`} style={{ marginBottom: '14px' }}>
       <div className="qtitle">
-        <b>Câu {i + 1}</b> <small className="muted">({q.points} điểm)</small>
+        <div className="row" style={{ gap: '8px' }}>
+          <b>Câu {i + 1}</b>
+          {q.type === 'tf' && <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C' }}>Đúng / Sai THPTQG 2026</span>}
+          {q.type === 'mcq' && <span className="badge">Trắc nghiệm 4 lựa chọn</span>}
+        </div>
+        <small className="muted">({q.points} điểm)</small>
         {q.type === 'mcq' && hasKey && (
           <span className="mark" style={{ color: right ? '#059669' : '#E11D48' }}>
             {right ? 'Đúng' : answered ? 'Sai' : 'Chưa chọn'}
           </span>
         )}
+        {q.type === 'tf' && hasKey && (
+          <span className="mark" style={{ color: tfNumRight === 4 ? '#059669' : tfNumRight > 0 ? '#BE123C' : '#E11D48' }}>
+            Đúng {tfNumRight}/4 ý ({tfEarned.toFixed(2)}đ)
+          </span>
+        )}
         {q.type === 'essay' && qScore !== undefined && <span className="mark">{qScore}/{q.points} điểm</span>}
       </div>
-      <div className="pre">{q.prompt}</div>
+      <div className="pre" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7, margin: '10px 0' }}>{q.prompt}</div>
       {q.image_path && <div className="qimg"><FileThumb path={q.image_path} onOpen={setLb} className="wide" /></div>}
       {q.type === 'mcq' ? (
         <div className="choices readonly">
@@ -153,12 +181,41 @@ function AnswerView({ i, q, answer, k, qScore, showKey }) {
             ) : null,
           )}
         </div>
+      ) : q.type === 'tf' ? (
+        <div className="tf-question-box">
+          <div className="tf-table">
+            {q.options.map((stmt, idx) => {
+              const letter = ['a', 'b', 'c', 'd'][idx] || String.fromCharCode(97 + idx);
+              const userVal = answer?.[idx];
+              const keyVal = k?.correct?.[idx];
+              const isMatch = userVal !== undefined && Boolean(userVal) === Boolean(keyVal);
+              return (
+                <div key={idx} className="tf-row" style={{ background: hasKey ? (isMatch ? '#F0FDF4' : '#FEF2F2') : '#FFFFFF' }}>
+                  <div className="tf-stmt-text">
+                    <span className="tf-letter-badge">{letter})</span>
+                    <span>{stmt}</span>
+                  </div>
+                  <div className="row" style={{ gap: '8px', flexShrink: 0, fontSize: '0.84rem' }}>
+                    <span>
+                      Đã chọn: <b>{userVal === true ? 'Đúng' : userVal === false ? 'Sai' : 'Chưa chọn'}</b>
+                    </span>
+                    {hasKey && (
+                      <span style={{ color: isMatch ? '#059669' : '#DC2626', fontWeight: 700 }}>
+                        {isMatch ? '✓' : `(Đáp án: ${keyVal ? 'Đúng' : 'Sai'})`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       ) : (
         <div className="essay-answer pre">{answered ? answer : <i className="muted">(không trả lời trên web)</i>}</div>
       )}
       {showKey && k?.explanation && (
-        <div className="explain" style={{ background: '#FFF8F9', borderLeft: '3px solid #FDA4AF', padding: '8px 12px', marginTop: '10px' }}>
-          Giải thích: {k.explanation}
+        <div className="explain" style={{ background: '#FFF8F9', borderLeft: '3px solid #FDA4AF', padding: '10px 14px', marginTop: '12px', borderRadius: '0 8px 8px 0', fontSize: '0.88rem' }}>
+          <b>Giải thích đáp án:</b> {k.explanation}
         </div>
       )}
     </div>
