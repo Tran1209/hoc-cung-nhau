@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { marked } from 'marked';
 import { data, logActivity } from '../data';
@@ -145,13 +145,160 @@ const LESSON_FIELDS = [
   { name: 'position', label: 'Thứ tự', type: 'number' },
 ];
 
+// Các mốc lịch sử và thuật ngữ cốt lõi để tự động tô bút dạ quang hồng chuẩn Apple
+const CORE_HISTORY_TERMS = [
+  '24 - 10 - 1945',
+  '24-10-1945',
+  '20 - 9 - 1977',
+  '20-9-1977',
+  '25-4 đến 26-6-1945',
+  'tháng 2 - 1945',
+  'tháng 12 - 1991',
+  'tháng 11 - 1989',
+  '8 - 8 - 1967',
+  '28 - 7 - 1995',
+  '31 - 12 - 2015',
+  '18 - 8 - 1945',
+  '2 - 9 - 1945',
+  'tháng 12 - 1986',
+  'Hiến chương Liên hợp quốc',
+  'Hội đồng Bảo an',
+  'thành viên thứ 149',
+  'quyền phủ quyết',
+  'sự nhất trí giữa 5 nước lớn',
+  'sự nhất trí giữa năm nước uỷ viên thường trực',
+  'ngăn chặn thảm hoạ chiến tranh',
+  'Bình đẳng về chủ quyền',
+  'Tôn trọng toàn vẹn lãnh thổ và độc lập chính trị',
+  'Giải quyết các tranh chấp quốc tế bằng biện pháp hoà bình',
+  'Không can thiệp vào công việc nội bộ',
+];
+
+function applyEditorialHighlights(html, userHighlights = [], autoHighlight = true) {
+  if (!html) return '';
+
+  const terms = [];
+  if (autoHighlight) {
+    terms.push(...CORE_HISTORY_TERMS);
+  }
+  userHighlights.forEach((uh) => {
+    const trimmed = (uh || '').trim();
+    if (trimmed && !terms.includes(trimmed)) {
+      terms.push(trimmed);
+    }
+  });
+
+  if (!terms.length) return html;
+
+  // Sắp xếp giảm dần theo độ dài để tránh regex trùng nhau
+  const sorted = [...terms].sort((a, b) => b.length - a.length);
+
+  // Tách HTML: chỉ thay thế an toàn trong phần text ngoài tags
+  const parts = html.split(/(<[^>]+>)/g);
+  return parts
+    .map((part) => {
+      if (part.startsWith('<')) return part;
+      let text = part;
+      for (const term of sorted) {
+        const isUser = userHighlights.includes(term);
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const reg = new RegExp(`(${escaped})`, 'gi');
+        text = text.replace(
+          reg,
+          `<mark class="highlight-tape ${isUser ? 'user-highlight' : ''}">$1</mark>`,
+        );
+      }
+      return text;
+    })
+    .join('');
+}
+
 export default function LessonPage() {
   const { id } = useParams();
   const { user, isTeacher, nameOf } = useAuth();
   const nav = useNavigate();
   const [editing, setEditing] = useState(false);
 
-  // Integrated Editor state
+  // Quản lý tab: 'theory' (Kiến thức) | 'exercises' (Bài tập) | 'review' (Ôn tập) | 'notes' (Lưu ý)
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('tab');
+    if (['theory', 'exercises', 'review', 'notes'].includes(t)) return t;
+    return 'theory';
+  });
+
+  const switchTab = (tabName) => {
+    setActiveTab(tabName);
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabName);
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  // State Bút dạ quang (Chỉ cho phép dùng trên trang Kiến thức)
+  const [autoHighlight, setAutoHighlight] = useState(true);
+  const [userHighlights, setUserHighlights] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`lesson_user_highlights_${id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Floating Highlighter Action Pill
+  const articleRef = useRef(null);
+  const [floatingPos, setFloatingPos] = useState(null);
+  const [selectedSnippet, setSelectedSnippet] = useState('');
+
+  const handleSelection = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) {
+      setFloatingPos(null);
+      setSelectedSnippet('');
+      return;
+    }
+    const text = sel.toString().trim();
+    if (text.length < 2 || text.length > 120) {
+      setFloatingPos(null);
+      setSelectedSnippet('');
+      return;
+    }
+
+    const range = sel.getRangeAt(0);
+    if (!articleRef.current || !articleRef.current.contains(range.commonAncestorContainer)) {
+      setFloatingPos(null);
+      setSelectedSnippet('');
+      return;
+    }
+
+    const rect = range.getBoundingClientRect();
+    setSelectedSnippet(text);
+    setFloatingPos({
+      top: rect.top + window.scrollY - 10,
+      left: rect.left + window.scrollX + rect.width / 2,
+    });
+  };
+
+  const handleAddHighlight = () => {
+    if (!selectedSnippet) return;
+    if (!userHighlights.includes(selectedSnippet)) {
+      const next = [...userHighlights, selectedSnippet];
+      setUserHighlights(next);
+      localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(next));
+    }
+    window.getSelection()?.removeAllRanges();
+    setFloatingPos(null);
+    setSelectedSnippet('');
+  };
+
+  const handleClearHighlights = () => {
+    if (confirm('Xoá các đoạn bạn đã đánh dấu bút dạ quang trong bài này?')) {
+      setUserHighlights([]);
+      localStorage.removeItem(`lesson_user_highlights_${id}`);
+    }
+  };
+
+  // Integrated Editor state (trong tab Bài tập)
   const [essayText, setEssayText] = useState('');
   const [savedNotice, setSavedNotice] = useState(false);
 
@@ -187,14 +334,21 @@ export default function LessonPage() {
     return { lesson, chapter, subject, images, assignments, submissions };
   }, [id]);
 
+  // Làm sạch hoàn toàn emoji trẻ con và áp dụng bút dạ quang
   const renderedContent = useMemo(() => {
     if (!d?.lesson?.content) return '';
     try {
-      return marked.parse(d.lesson.content);
+      let clean = d.lesson.content
+        .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+        .replace(/\*\*\s*MỤC TIÊU BÀI HỌC:/g, '**MỤC TIÊU BÀI HỌC:**')
+        .replace(/##\s*Luyện tập/g, '## Luyện tập');
+
+      const html = marked.parse(clean);
+      return applyEditorialHighlights(html, userHighlights, autoHighlight);
     } catch {
       return d.lesson.content;
     }
-  }, [d?.lesson?.content]);
+  }, [d?.lesson?.content, userHighlights, autoHighlight]);
 
   const cards = useMemo(() => {
     const title = d?.lesson?.title || '';
@@ -277,7 +431,6 @@ export default function LessonPage() {
             <span className="badge">Chương trình Lịch Sử 12</span>
             <span className="badge in_progress">Thời lượng đọc: ~15 phút</span>
             <span className="badge">Bộ Kết Nối Tri Thức</span>
-            {cards.length > 0 && <span className="badge">{cards.length} thẻ trọng tâm</span>}
           </div>
 
           <div className="folio-progress-bar">
@@ -285,130 +438,282 @@ export default function LessonPage() {
           </div>
         </header>
 
-        {/* 1. Ghi nhớ trọng tâm liền khối (Active Recall Strip) */}
-        {cards.length > 0 && <LessonFlashcards cards={cards} />}
+        {/* BỘ CHUYỂN TAB CHUẨN APPLE: PHÂN TÁCH RÕ RÀNG KIẾN THỨC, BÀI TẬP, ÔN TẬP, LƯU Ý */}
+        <div className="folio-segmented-tabs" style={{ marginBottom: '22px' }}>
+          <button
+            type="button"
+            className={`segmented-tab-btn ${activeTab === 'theory' ? 'active' : ''}`}
+            onClick={() => switchTab('theory')}
+          >
+            Kiến thức
+          </button>
+          <button
+            type="button"
+            className={`segmented-tab-btn ${activeTab === 'exercises' ? 'active' : ''}`}
+            onClick={() => switchTab('exercises')}
+          >
+            Bài tập {assignments.length > 0 && <span className="tab-badge">{assignments.length}</span>}
+          </button>
+          <button
+            type="button"
+            className={`segmented-tab-btn ${activeTab === 'review' ? 'active' : ''}`}
+            onClick={() => switchTab('review')}
+          >
+            Ôn tập {cards.length > 0 && <span className="tab-badge">{cards.length}</span>}
+          </button>
+          <button
+            type="button"
+            className={`segmented-tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
+            onClick={() => switchTab('notes')}
+          >
+            Lưu ý {images.length > 0 && <span className="tab-badge">{images.length}</span>}
+          </button>
+        </div>
 
-        {/* 2. Thân bài Sách giáo khoa số liền khối (Editorial Folio Body) */}
-        {lesson.content ? (
-          <article
-            className="folio-editorial markdown-body"
-            dangerouslySetInnerHTML={{ __html: renderedContent }}
-          />
-        ) : (
-          <div className="empty-lesson-banner">
-            <p className="muted">Bài học này chưa có nội dung văn bản chi tiết.</p>
-            {isTeacher && (
-              <button className="ios-btn sm ios-btn-primary mt-sm" onClick={() => setEditing(true)}>
-                + Nhập nội dung bài học
-              </button>
+        {/* =========================================================================
+            TAB 1: KIẾN THỨC (CHỈ GHI KIẾN THỨC BÀI ĐỌC, ĐƯỢC PHÉP DÙNG HIGHLIGHT)
+            ========================================================================= */}
+        {activeTab === 'theory' && (
+          <div className="tab-pane-content">
+            {/* Reading Toolbar (Bút dạ quang hồng & Chỉ báo đọc) */}
+            <div className="editorial-reading-toolbar">
+              <div className="reading-tool-group">
+                <span className="small muted" style={{ fontWeight: 700, color: '#380718' }}>
+                  Sách giáo khoa số · Bản chuẩn
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAutoHighlight((v) => !v)}
+                  className={`reading-tool-pill ${autoHighlight ? 'active' : ''}`}
+                  title="Tự động tô mốc sự kiện, ngày tháng, nguyên tắc quan trọng"
+                >
+                  {autoHighlight ? 'Trọng tâm dạ quang: Đang bật' : 'Trọng tâm dạ quang: Tắt'}
+                </button>
+              </div>
+
+              <div className="reading-tool-group">
+                {userHighlights.length > 0 && (
+                  <>
+                    <span className="small muted" style={{ fontSize: '0.78rem' }}>
+                      Đã tô <b>{userHighlights.length}</b> đoạn
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleClearHighlights}
+                      className="ios-btn sm"
+                      style={{ padding: '3px 8px', fontSize: '0.74rem', color: '#BE123C' }}
+                    >
+                      Xoá tô màu
+                    </button>
+                  </>
+                )}
+                <span className="small muted" style={{ fontSize: '0.76rem', color: '#BE123C' }}>
+                  Bôi đen chữ để tô bút dạ quang
+                </span>
+              </div>
+            </div>
+
+            {/* Thân bài Sách giáo khoa số liền khối (Thuần tuý kiến thức) */}
+            {lesson.content ? (
+              <article
+                ref={articleRef}
+                className="folio-editorial markdown-body"
+                dangerouslySetInnerHTML={{ __html: renderedContent }}
+                onMouseUp={handleSelection}
+                onTouchEnd={handleSelection}
+              />
+            ) : (
+              <div className="empty-lesson-banner">
+                <p className="muted">Bài học này chưa có nội dung văn bản chi tiết.</p>
+                {isTeacher && (
+                  <button className="ios-btn sm ios-btn-primary mt-sm" onClick={() => setEditing(true)}>
+                    + Nhập nội dung bài học
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Floating Highlighter Action Pill khi bôi đen văn bản */}
+            {floatingPos && (
+              <div
+                className="floating-highlighter-pill"
+                style={{ top: floatingPos.top, left: floatingPos.left }}
+              >
+                <button type="button" onClick={handleAddHighlight}>
+                  Tô dạ quang
+                </button>
+              </div>
+            )}
+
+            {/* Thanh chuyển tiếp tự nhiên ở chân bài đọc */}
+            <div
+              style={{
+                marginTop: '36px',
+                paddingTop: '20px',
+                borderTop: '1.5px solid rgba(253, 164, 175, 0.35)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+              }}
+            >
+              <div className="small muted">Hoàn thành bài đọc lý thuyết? Tiếp tục củng cố kiến thức:</div>
+              <div className="row" style={{ gap: '8px' }}>
+                <button
+                  type="button"
+                  className="ios-btn sm ios-btn-primary"
+                  onClick={() => switchTab('exercises')}
+                >
+                  Làm bài tập của bài này →
+                </button>
+                <button
+                  type="button"
+                  className="ios-btn sm ios-btn-secondary"
+                  onClick={() => switchTab('review')}
+                >
+                  Ôn tập thẻ phản xạ →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB 2: BÀI TẬP (CÂU HỎI VẬN DỤNG & ĐỀ KIỂM TRA ĐÁNH GIÁ)
+            ========================================================================= */}
+        {activeTab === 'exercises' && (
+          <div className="tab-pane-content">
+            {/* Vùng soạn thảo / Tương tác chuẩn hóa (Integrated Editor) */}
+            <section className="integrated-editor">
+              <div className="editor-head">
+                <div className="row" style={{ gap: '10px' }}>
+                  <span className="idx-badge">1</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
+                      Câu hỏi vận dụng: Hoạt động gìn giữ hoà bình của Việt Nam
+                    </h3>
+                    <div style={{ marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <span className="hint-chip">Mục tiêu: Đoạn văn 150 – 200 từ</span>
+                      <span className="hint-chip">Phái bộ Nam Xu-đăng & Abyei</span>
+                      <span className="hint-chip">Bệnh viện dã chiến cấp 2</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <span className="word-badge">
+                    Đã viết: <b>{wordCount}</b> / {targetWords} từ
+                  </span>
+                </div>
+              </div>
+
+              <div className="editor-progress">
+                <div className="editor-progress-fill" style={{ width: `${progressPct}%` }} />
+              </div>
+
+              <textarea
+                rows={6}
+                placeholder="Nhập câu trả lời vận dụng hoặc thu hoạch sau bài học của em vào đây..."
+                value={essayText}
+                onChange={(e) => setEssayText(e.target.value)}
+              />
+
+              <div className="row between" style={{ marginTop: '14px' }}>
+                <span className="small muted">
+                  {savedNotice ? 'Đã lưu bài làm vào sổ học tập!' : 'Tiến độ: ' + progressPct + '%'}
+                </span>
+                <div className="row">
+                  <button
+                    type="button"
+                    className="ios-btn sm ios-btn-secondary"
+                    onClick={() => setEssayText('')}
+                  >
+                    Làm mới
+                  </button>
+                  <button type="button" className="ios-btn sm ios-btn-primary" onClick={saveEssay}>
+                    Lưu bài làm
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Danh sách bài tập & Đề kiểm tra đánh giá */}
+            <div style={{ marginTop: '32px' }}>
+              <div className="row" style={{ marginBottom: '16px' }}>
+                <span className="idx-badge">2</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
+                    Bài tập & Đề kiểm tra đánh giá
+                  </h3>
+                  <div className="small muted">Kiểm tra mức độ thấu hiểu bài học</div>
+                </div>
+              </div>
+
+              <AssignmentList
+                assignments={assignments}
+                latest={latest}
+                chapterId={lesson.chapter_id}
+                lessonId={id}
+                defaultTitle={`Bài tập ${lesson.title}`}
+                emptyText="Chưa có bài kiểm tra cho bài học này."
+              />
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB 3: ÔN TẬP (ACTIVE RECALL FLASHCARDS)
+            ========================================================================= */}
+        {activeTab === 'review' && (
+          <div className="tab-pane-content">
+            {cards.length > 0 ? (
+              <LessonFlashcards cards={cards} />
+            ) : (
+              <div className="empty-lesson-banner">
+                <p className="muted">Chưa có bộ thẻ ghi nhớ phản xạ nhanh cho bài học này.</p>
+              </div>
             )}
           </div>
         )}
 
-        {/* 3. Vùng soạn thảo / Tương tác chuẩn hóa (Integrated Editor) */}
-        <section className="integrated-editor">
-          <div className="editor-head">
-            <div className="row" style={{ gap: '10px' }}>
-              <span className="idx-badge">1</span>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
-                  Câu hỏi vận dụng: Hoạt động gìn giữ hoà bình của Việt Nam
-                </h3>
-                <div style={{ marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <span className="hint-chip">Mục tiêu: Đoạn văn 150 – 200 từ</span>
-                  <span className="hint-chip">Phái bộ Nam Xu-đăng & Abyei</span>
-                  <span className="hint-chip">Bệnh viện dã chiến cấp 2</span>
+        {/* =========================================================================
+            TAB 4: LƯU Ý (GIẤY NHỚ, TRAO ĐỔI & ẢNH SƠ ĐỒ TƯ DUY)
+            ========================================================================= */}
+        {activeTab === 'notes' && (
+          <div className="tab-pane-content">
+            {/* Giấy nhớ & Góc trao đổi của 2 bạn */}
+            <LessonNotes lessonId={id} notes={images} onNotesChanged={reload} />
+
+            {/* Bộ tài liệu tư liệu & Sơ đồ tư duy đính kèm */}
+            <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>
+              <div className="row between" style={{ marginBottom: '16px' }}>
+                <div className="row">
+                  <span className="idx-badge">Sơ đồ</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
+                      Sơ đồ tư duy & Ảnh tư liệu bài làm
+                    </h3>
+                    <div className="small muted">Lưu giữ hình ảnh sơ đồ vẽ tay hoặc bài làm thực tế</div>
+                  </div>
                 </div>
+                <Uploader folder={`lessons/${id}/work`} onUploaded={(p) => addImages('work', p)} />
               </div>
-            </div>
 
-            <div className="row">
-              <span className="word-badge">
-                Đã viết: <b>{wordCount}</b> / {targetWords} từ
-              </span>
-            </div>
-          </div>
-
-          <div className="editor-progress">
-            <div className="editor-progress-fill" style={{ width: `${progressPct}%` }} />
-          </div>
-
-          <textarea
-            rows={6}
-            placeholder="Nhập câu trả lời vận dụng hoặc thu hoạch sau bài học của em vào đây..."
-            value={essayText}
-            onChange={(e) => setEssayText(e.target.value)}
-          />
-
-          <div className="row between" style={{ marginTop: '14px' }}>
-            <span className="small muted">
-              {savedNotice ? 'Đã lưu bài làm vào sổ học tập!' : 'Tiến độ: ' + progressPct + '%'}
-            </span>
-            <div className="row">
-              <button
-                type="button"
-                className="ios-btn sm ios-btn-secondary"
-                onClick={() => setEssayText('')}
-              >
-                Làm mới
-              </button>
-              <button type="button" className="ios-btn sm ios-btn-primary" onClick={saveEssay}>
-                Lưu bài làm
-              </button>
+              <Gallery
+                items={images
+                  .filter((i) => i.kind !== 'doc' && i.path !== 'note://text')
+                  .map((i) => ({
+                    ...i,
+                    meta: `${nameOf(i.uploaded_by)} · ${fmtDate(i.created_at, false)}`,
+                    canDelete: isTeacher || i.uploaded_by === user.id,
+                  }))}
+                onDelete={delImage}
+                empty="Chưa có hình ảnh tư liệu nào được tải lên."
+              />
             </div>
           </div>
-        </section>
-
-        {/* 4. Giấy nhớ & Góc trao đổi của 2 bạn (Integrated Notes) */}
-        <LessonNotes lessonId={id} notes={images} onNotesChanged={reload} />
-
-        {/* 5. Bộ tài liệu tư liệu & Sơ đồ tư duy đính kèm */}
-        <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>
-          <div className="row between" style={{ marginBottom: '16px' }}>
-            <div className="row">
-              <span className="idx-badge">2</span>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>
-                  Sơ đồ tư duy & Ảnh tư liệu bài làm
-                </h3>
-                <div className="small muted">Lưu giữ hình ảnh sơ đồ vẽ tay hoặc bài làm thực tế</div>
-              </div>
-            </div>
-            <Uploader folder={`lessons/${id}/work`} onUploaded={(p) => addImages('work', p)} />
-          </div>
-
-          <Gallery
-            items={images
-              .filter((i) => i.kind !== 'doc' && i.path !== 'note://text')
-              .map((i) => ({
-                ...i,
-                meta: `${nameOf(i.uploaded_by)} · ${fmtDate(i.created_at, false)}`,
-                canDelete: isTeacher || i.uploaded_by === user.id,
-              }))}
-            onDelete={delImage}
-            empty="Chưa có hình ảnh tư liệu nào được tải lên."
-          />
-        </div>
-
-        {/* 6. Bài tập kiểm tra định kỳ */}
-        <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>
-          <div className="row" style={{ marginBottom: '16px' }}>
-            <span className="idx-badge">3</span>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.12rem', color: '#380718' }}>Bài tập & Đề kiểm tra đánh giá</h3>
-              <div className="small muted">Kiểm tra mức độ thấu hiểu bài học</div>
-            </div>
-          </div>
-
-          <AssignmentList
-            assignments={assignments}
-            latest={latest}
-            chapterId={lesson.chapter_id}
-            lessonId={id}
-            defaultTitle={`Bài tập ${lesson.title}`}
-            emptyText="Chưa có bài kiểm tra cho bài học này."
-          />
-        </div>
+        )}
 
         {editing && (
           <FormDialog
