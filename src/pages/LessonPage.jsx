@@ -10,6 +10,7 @@ import Uploader from '../components/Uploader';
 import AssignmentList from '../components/AssignmentList';
 import LessonFlashcards from '../components/LessonFlashcards';
 import LessonReviewHub from '../components/LessonReviewHub';
+import LessonNotesHub from '../components/LessonNotesHub';
 import LessonNotes from '../components/LessonNotes';
 import { Crumbs, Empty, ErrorBox, Loading } from '../components/ui';
 import { fmtDate } from '../lib/format';
@@ -1144,12 +1145,19 @@ export default function LessonPage() {
         )}
 
         {/* =========================================================================
-            TAB 4: LƯU Ý (GIẤY NHỚ, TRAO ĐỔI & ẢNH SƠ ĐỒ TƯ DUY)
+            TAB 4: LƯU Ý (TRẠM RADAR CẢNH BÁO BẪY & CẨM NANG CHỐNG SAI NGU)
             ========================================================================= */}
         {activeTab === 'notes' && (
           <div className="tab-pane-content">
-            {/* Giấy nhớ & Góc trao đổi của 2 bạn */}
-            <LessonNotes lessonId={id} notes={images} onNotesChanged={reload} />
+            <LessonNotesHub
+              lessonId={id}
+              userHighlights={userHighlights}
+              highlightTags={highlightTags}
+              notes={images}
+              onNotesChanged={reload}
+              onSwitchTab={switchTab}
+              onRemoveHighlight={handleRemoveHighlight}
+            />
 
             {/* Bộ tài liệu tư liệu & Sơ đồ tư duy đính kèm */}
             <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1.5px solid rgba(253, 164, 175, 0.35)' }}>

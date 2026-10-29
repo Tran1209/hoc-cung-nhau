@@ -5346,3 +5346,522 @@ a.folio-metric-cell:hover {
   gap: 14px;
   padding: 4px 0;
 }
+
+/* ==========================================================================
+   LESSON RADAR & NOTES HUB (TAB LƯU Ý - BƯỚC 7)
+   ========================================================================== */
+.radar-hub-container {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* 1. Radar Hero Banner */
+.radar-hero-banner {
+  background: linear-gradient(135deg, #FFF0F3 0%, #FFFFFF 50%, #FFF5F7 100%);
+  border: 1.5px solid rgba(253, 164, 175, 0.5);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 10px 30px -10px rgba(244, 63, 94, 0.12);
+}
+
+.radar-hero-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 680px;
+}
+
+.radar-icon-badge {
+  font-size: 2rem;
+  background: #FFE4E8;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border: 1px solid #FDA4AF;
+  box-shadow: 0 4px 12px rgba(190, 18, 60, 0.1);
+}
+
+.radar-lead-tag {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: #BE123C;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.radar-hero-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0 0 4px 0;
+}
+
+.radar-hero-sub {
+  font-size: 0.85rem;
+  color: #4B5563;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.radar-stats-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.r-stat-pill {
+  background: #FFFFFF;
+  border: 1px solid rgba(253, 164, 175, 0.45);
+  color: #881337;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(244, 63, 94, 0.04);
+  white-space: nowrap;
+}
+
+.r-stat-pill b {
+  color: #BE123C;
+  font-weight: 850;
+}
+
+/* 2. Section Styles */
+.radar-card-section {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 8px 24px -8px rgba(244, 63, 94, 0.06);
+}
+
+.radar-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(253, 164, 175, 0.3);
+}
+
+.radar-badge-pill {
+  font-size: 0.72rem;
+  font-weight: 850;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: #FFE4E8;
+  color: #BE123C;
+  letter-spacing: 0.02em;
+}
+
+.radar-badge-pill.pill-alert {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FCA5A5;
+}
+
+.radar-badge-pill.pill-highlight {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+.radar-section-title {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0 0 2px 0;
+}
+
+/* --------------------------------------------------------------------------
+   BẢNG 1: CÁC CẶP KHÁI NIỆM DỄ ĐÁNH TRÁO (A ≠ B)
+   -------------------------------------------------------------------------- */
+.concept-pairs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.concept-pair-card {
+  background: #FFF9FA;
+  border: 1.5px solid rgba(253, 164, 175, 0.35);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.concept-pair-card:hover {
+  border-color: #FDA4AF;
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.08);
+}
+
+.pair-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pair-card-title {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0;
+}
+
+.pair-del-btn {
+  border: none;
+  background: transparent;
+  color: #FDA4AF;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.pair-del-btn:hover {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+/* Khối Đối Xứng 2 Vế */
+.pair-symmetric-box {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .pair-symmetric-box {
+    grid-template-columns: 1fr;
+  }
+  .not-equal-divider {
+    padding: 6px 0;
+  }
+}
+
+.pair-side {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.pair-side.side-a {
+  border: 1.5px solid #FECDD6;
+}
+
+.pair-side.side-b {
+  border: 1.5px solid #BAE6FD;
+}
+
+.side-badge {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 850;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.side-badge.badge-a {
+  background: #FFF0F3;
+  color: #BE123C;
+}
+
+.side-badge.badge-b {
+  background: #F0F9FF;
+  color: #0369A1;
+}
+
+.side-label {
+  font-size: 0.92rem;
+  font-weight: 850;
+  color: #1F2937;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.side-desc {
+  font-size: 0.83rem;
+  color: #4B5563;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.not-equal-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.ne-sign {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #BE123C;
+  line-height: 1;
+}
+
+.ne-sub {
+  font-size: 0.62rem;
+  font-weight: 850;
+  color: #9F1239;
+  letter-spacing: 0.05em;
+}
+
+.pair-trap-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #FEF2F2;
+  border: 1px dashed #FCA5A5;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.pair-trap-box .trap-icon {
+  font-size: 0.9rem;
+  margin-top: 1px;
+}
+
+.pair-trap-box .trap-text {
+  font-size: 0.82rem;
+  color: #991B1B;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   BẢNG 2: TỪ ĐIỂN TỪ KHÓA TUYỆT ĐỐI HÓA & NHẠY CẢM
+   -------------------------------------------------------------------------- */
+.sensitive-words-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.sensitive-word-card {
+  background: #FFF9FA;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sw-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sw-keyword-badge {
+  background: #380718;
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 850;
+  padding: 3px 10px;
+  border-radius: 8px;
+  letter-spacing: -0.01em;
+}
+
+.sw-level-pill {
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: #FEE2E2;
+  color: #DC2626;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #FCA5A5;
+}
+
+.sw-explanation {
+  font-size: 0.84rem;
+  color: #4B5563;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sw-examples-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(253, 164, 175, 0.25);
+}
+
+.sw-wrong-row,
+.sw-correct-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sw-tag {
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+}
+
+.tag-wrong {
+  color: #DC2626;
+}
+
+.tag-correct {
+  color: #15803D;
+}
+
+.sw-example-text {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sw-example-text.wrong {
+  color: #7F1D1D;
+  background: #FEF2F2;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #DC2626;
+}
+
+.sw-example-text.correct {
+  color: #14532D;
+  background: #F0FDF4;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #16A34A;
+}
+
+/* --------------------------------------------------------------------------
+   BẢNG 3: CÁC ĐOẠN TRỌNG TÂM DẠ QUANG TỪ SÁCH GIÁO KHOA SỐ
+   -------------------------------------------------------------------------- */
+.highlighted-snippets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.highlight-snippet-item {
+  background: #FFFDFE;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.04);
+}
+
+.snippet-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.snippet-index {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: #9F1239;
+}
+
+.snippet-tag-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #FFE4E8;
+  color: #BE123C;
+  border: 1px solid #FECDD6;
+}
+
+.snippet-quote-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #380718;
+  line-height: 1.6;
+  background: #FFF5F7;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #BE123C;
+  font-style: italic;
+}
+
+.snippet-footer-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.snippet-goto-btn {
+  border: none;
+  background: transparent;
+  color: #BE123C;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.snippet-goto-btn:hover {
+  text-decoration: underline;
+}
+
+.empty-highlights-box {
+  text-align: center;
+  padding: 36px 16px;
+  background: #FFF9FA;
+  border-radius: 16px;
+  border: 1.5px dashed rgba(253, 164, 175, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.empty-hl-icon {
+  font-size: 2rem;
+}
+
+.empty-highlights-box h4 {
+  font-size: 1rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0;
+}
+
+/* Modal Form Styles */
+.radar-form-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0;
+}
+
+.radar-legacy-notes-section {
+  padding-top: 20px;
+  border-top: 1.5px solid rgba(253, 164, 175, 0.35);
+}
