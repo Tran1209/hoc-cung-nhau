@@ -1,10 +1,21 @@
 import { useState, useMemo, useEffect } from 'react';
 import { FormDialog } from './Modal';
 import LessonFlashcards from './LessonFlashcards';
+import MilestoneDiagram from './MilestoneDiagram';
 
 // Dữ liệu mẫu chuẩn hoá của Bài 1: Liên hợp quốc & ASEAN (Bộ GD&ĐT 2026)
 export const DEFAULT_BAI1_REVIEW_DATA = {
   milestones: [
+    {
+      id: 'ms-0',
+      time: '4 đến 11-2-1945',
+      entityName: 'Hội nghị I-an-ta (Liên Xô)',
+      note: '3 cường quốc (Liên Xô, Mỹ, Anh) họp bàn phân chia phạm vi ảnh hưởng và thống nhất thành lập tổ chức Liên hợp quốc.',
+      typeTag: '#Sự_kiện',
+      spaceTag: '#Châu_Âu',
+      eraTag: '#1919-1945',
+      customTags: ['#Phân_chia_phạm_vi', '#Nền_tảng_LHQ'],
+    },
     {
       id: 'ms-1',
       time: '25-4 đến 26-6-1945',
@@ -13,6 +24,7 @@ export const DEFAULT_BAI1_REVIEW_DATA = {
       typeTag: '#Văn_kiện',
       spaceTag: '#Châu_Mỹ',
       eraTag: '#1919-1945',
+      customTags: ['#50_quốc_gia', '#Hiến_chương'],
     },
     {
       id: 'ms-2',
@@ -22,24 +34,37 @@ export const DEFAULT_BAI1_REVIEW_DATA = {
       typeTag: '#Văn_kiện',
       spaceTag: '#Châu_Mỹ',
       eraTag: '#1919-1945',
+      customTags: ['#Thành_lập_LHQ', '#Ngày_LHQ'],
     },
     {
       id: 'ms-3',
-      time: '20-9-1977',
-      entityName: 'Việt Nam gia nhập Liên hợp quốc (Thành viên 149)',
-      note: 'Tại kỳ họp thứ 32 của Đại hội đồng LHQ, mở ra thời kỳ hội nhập đa phương toàn cầu.',
-      typeTag: '#Sự_kiện',
-      spaceTag: '#Việt_Nam',
-      eraTag: '#Đổi_mới',
-    },
-    {
-      id: 'ms-4',
       time: '8-8-1967',
       entityName: 'Thành lập Hiệp hội các quốc gia Đông Nam Á (ASEAN)',
       note: '5 nước sáng lập (In-đô-nê-xi-a, Ma-lai-xi-a, Phi-líp-pin, Xin-ga-po, Thái Lan) ký Tuyên bố Băng Cốc.',
       typeTag: '#Tổ_chức',
       spaceTag: '#Đông_Nam_Á',
       eraTag: '#Chống_Mỹ',
+      customTags: ['#5_nước_sáng_lập', '#Tuyên_bố_Băng_Cốc'],
+    },
+    {
+      id: 'ms-3b',
+      time: '2-1976',
+      entityName: 'Ký kết Hiệp ước Thân thiện và Hợp tác Đông Nam Á (Hiệp ước Ba-li)',
+      note: 'Xác định các nguyên tắc cơ bản trong quan hệ giữa các nước thành viên: tôn trọng độc lập chủ quyền, giải quyết tranh chấp bằng biện pháp hoà bình.',
+      typeTag: '#Văn_kiện',
+      spaceTag: '#Đông_Nam_Á',
+      eraTag: '#Chống_Mỹ',
+      customTags: ['#Hiệp_ước_Ba_li', '#Nguyên_tắc_hoà_bình'],
+    },
+    {
+      id: 'ms-4',
+      time: '20-9-1977',
+      entityName: 'Việt Nam gia nhập Liên hợp quốc (Thành viên 149)',
+      note: 'Tại kỳ họp thứ 32 của Đại hội đồng LHQ, mở ra thời kỳ hội nhập đa phương toàn cầu.',
+      typeTag: '#Sự_kiện',
+      spaceTag: '#Việt_Nam',
+      eraTag: '#Đổi_mới',
+      customTags: ['#Thành_viên_149', '#Đại_hội_đồng_32'],
     },
     {
       id: 'ms-5',
@@ -49,6 +74,17 @@ export const DEFAULT_BAI1_REVIEW_DATA = {
       typeTag: '#Sự_kiện',
       spaceTag: '#Đông_Nam_Á',
       eraTag: '#Đổi_mới',
+      customTags: ['#Thành_viên_thứ_7', '#Bước_ngoặt_Đổi_mới'],
+    },
+    {
+      id: 'ms-5b',
+      time: '11-2007',
+      entityName: 'Ký kết Hiến chương ASEAN (Có hiệu lực 12-2008)',
+      note: 'Tạo cơ sở pháp lý và khuôn khổ thể chế để hiện thực hoá mục tiêu xây dựng Cộng đồng ASEAN vững mạnh.',
+      typeTag: '#Văn_kiện',
+      spaceTag: '#Đông_Nam_Á',
+      eraTag: '#Đổi_mới',
+      customTags: ['#Hiến_chương_ASEAN', '#Khung_pháp_lý'],
     },
     {
       id: 'ms-6',
@@ -58,6 +94,7 @@ export const DEFAULT_BAI1_REVIEW_DATA = {
       typeTag: '#Tổ_chức',
       spaceTag: '#Đông_Nam_Á',
       eraTag: '#Đổi_mới',
+      customTags: ['#3_trụ_cột', '#APSC_AEC_ASCC'],
     },
   ],
   axes: [
@@ -341,33 +378,25 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           <div className="review-core-pane">
             <div className="core-lead-row">
               <div>
-                <h3 className="core-lead-title">Lõi 1: Trục Sơ đồ Mốc thời gian & Nhãn định vị</h3>
+                <h3 className="core-lead-title">Lõi 1: Trục Sơ đồ Mốc thời gian & Quản lý Nhãn đa chiều</h3>
                 <p className="small muted">
-                  Hệ thống mốc thời gian kèm 3 nhóm nhãn loại thực thể, không gian và thời kỳ để rèn luyện quy tắc loại trừ đề thi THPTQG.
+                  Chuyển đổi linh hoạt giữa Trục dọc (nhánh rẽ), Trục ngang dòng chảy và Cụm Nhãn. Rèn luyện phản xạ phát hiện bẫy nhiễu đề thi.
                 </p>
               </div>
               <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C' }}>
-                {studyData.milestones?.length || 0} mốc trọng tâm
+                {studyData.milestones?.length || 0} mốc tri thức
               </span>
             </div>
 
-            <div className="milestone-timeline-grid">
-              {(studyData.milestones || []).map((m) => (
-                <div key={m.id} className="milestone-card">
-                  <div className="milestone-card-top">
-                    <span className="time-badge">{m.time}</span>
-                    <div className="tag-badges-row">
-                      <span className="tag-pill tag-type">{m.typeTag}</span>
-                      <span className="tag-pill tag-space">{m.spaceTag}</span>
-                      <span className="tag-pill tag-era">{m.eraTag}</span>
-                    </div>
-                  </div>
-
-                  <h4 className="entity-name">{m.entityName}</h4>
-                  <p className="entity-note">{m.note}</p>
-                </div>
-              ))}
-            </div>
+            <MilestoneDiagram
+              milestones={studyData.milestones || []}
+              onSaveMilestones={(newMilestones) => {
+                saveStudyData({
+                  ...studyData,
+                  milestones: newMilestones,
+                });
+              }}
+            />
           </div>
         )}
 

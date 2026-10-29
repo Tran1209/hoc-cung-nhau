@@ -3128,3 +3128,677 @@ a.folio-metric-cell:hover {
   padding: 3px 8px;
   border-radius: 6px;
 }
+
+/* ==========================================================================
+   MILESTONE DIAGRAM & TAG MANAGER (LÕI 1 - BƯỚC 3)
+   ========================================================================== */
+.milestone-hub-box {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* 1. Toolbar */
+.milestone-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.view-mode-pill-bar {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 240, 243, 0.9);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  gap: 4px;
+}
+
+.view-pill-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 750;
+  color: #881337;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.view-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: #BE123C;
+}
+
+.view-pill-btn.active {
+  background: #380718;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(56, 7, 24, 0.25);
+}
+
+.milestone-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 220px;
+  max-width: 360px;
+}
+
+.milestone-search-input-wrap .search-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 0.85rem;
+  color: #9F1239;
+  pointer-events: none;
+}
+
+.milestone-search-input {
+  width: 100%;
+  padding: 7px 32px 7px 34px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(253, 164, 175, 0.5);
+  background: #FFFDFE;
+  color: #380718;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.milestone-search-input:focus {
+  border-color: #BE123C;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(190, 18, 60, 0.12);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  border: none;
+  background: transparent;
+  color: #9F1239;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+.clear-search-btn:hover {
+  background: #FFE4E8;
+  color: #BE123C;
+}
+
+/* 2. Tag Filter Bar */
+.milestone-tag-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #FFF8F9;
+  border-radius: 16px;
+  border: 1px solid rgba(253, 164, 175, 0.35);
+  overflow: hidden;
+}
+
+.tag-filter-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #881337;
+  white-space: nowrap;
+}
+
+.tag-filter-scroll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  width: 100%;
+}
+
+.tag-chip-filter {
+  border: 1px solid rgba(253, 164, 175, 0.4);
+  background: #FFFFFF;
+  color: #4B5563;
+  font-size: 0.74rem;
+  font-weight: 750;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.tag-chip-filter:hover {
+  border-color: #BE123C;
+  color: #BE123C;
+  background: #FFF0F3;
+}
+
+.tag-chip-filter.active {
+  background: #BE123C;
+  color: #FFFFFF;
+  border-color: #BE123C;
+  box-shadow: 0 2px 8px rgba(190, 18, 60, 0.2);
+}
+
+.tag-chip-filter.type-chip {
+  border-color: #BAE6FD;
+  color: #0369A1;
+}
+.tag-chip-filter.type-chip.active {
+  background: #0284C7;
+  color: #FFFFFF;
+}
+
+.tag-chip-filter.space-chip {
+  border-color: #FDE68A;
+  color: #B45309;
+}
+.tag-chip-filter.space-chip.active {
+  background: #D97706;
+  color: #FFFFFF;
+}
+
+.tag-chip-filter.era-chip {
+  border-color: #E9D5FF;
+  color: #7E22CE;
+}
+.tag-chip-filter.era-chip.active {
+  background: #7E22CE;
+  color: #FFFFFF;
+}
+
+/* 3. Timeline Track (Trục dọc & Trục ngang) */
+.timeline-diagram-container {
+  position: relative;
+  width: 100%;
+}
+
+.timeline-diagram-container.is-vertical .timeline-track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-left: 28px;
+}
+
+/* Đường trục trung tâm dọc */
+.timeline-diagram-container.is-vertical .timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 20px;
+  left: 11px;
+  width: 3px;
+  background: linear-gradient(180deg, #FDA4AF 0%, #BE123C 50%, #380718 100%);
+  border-radius: 999px;
+}
+
+.timeline-node-segment {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Khoảng trống rê chuột chèn mốc (In-between Hover Zone) */
+.insert-hover-zone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  margin: 4px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.insert-line-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.insert-add-btn {
+  opacity: 0;
+  transform: scale(0.85);
+  background: #FFFFFF;
+  border: 1.5px dashed #BE123C;
+  color: #BE123C;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(190, 18, 60, 0.15);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 5;
+}
+
+.insert-hover-zone:hover .insert-line-bar {
+  background: repeating-linear-gradient(90deg, #FDA4AF 0, #FDA4AF 6px, transparent 6px, transparent 12px);
+}
+
+.insert-hover-zone:hover .insert-add-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.insert-hover-zone.last-zone {
+  height: 40px;
+  margin-top: 10px;
+}
+
+.insert-hover-zone.last-zone .insert-add-btn {
+  opacity: 0.85;
+  transform: scale(1);
+  border-style: solid;
+}
+
+.insert-hover-zone.last-zone:hover .insert-add-btn {
+  opacity: 1;
+  background: #FFF0F3;
+}
+
+/* Thẻ Mốc Lịch Sử (Interactive Milestone Node) */
+.milestone-interactive-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 8px 24px -6px rgba(244, 63, 94, 0.08);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 4px;
+}
+
+.milestone-interactive-card:hover {
+  border-color: #FDA4AF;
+  box-shadow: 0 12px 32px -4px rgba(244, 63, 94, 0.14);
+  transform: translateY(-2px);
+}
+
+.milestone-interactive-card.is-dragging {
+  opacity: 0.4;
+  border-style: dashed;
+  border-color: #BE123C;
+}
+
+/* Điểm neo liên kết thẻ với trục dọc */
+.node-axis-anchor {
+  position: absolute;
+  left: -28px;
+  top: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.anchor-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #BE123C;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 0 0 2px rgba(190, 18, 60, 0.4);
+  z-index: 3;
+}
+
+.anchor-stem {
+  width: 14px;
+  height: 2px;
+  background: #FDA4AF;
+}
+
+.node-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.node-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.node-time-badge {
+  background: #380718;
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-size: 0.84rem;
+  font-weight: 850;
+  padding: 4px 12px;
+  border-radius: 10px;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 6px rgba(56, 7, 24, 0.2);
+}
+
+.node-action-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drag-handle-pill {
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: #9F1239;
+  background: #FFF0F3;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: grab;
+  user-select: none;
+  border: 1px solid rgba(253, 164, 175, 0.4);
+}
+
+.drag-handle-pill:active {
+  cursor: grabbing;
+}
+
+.node-mini-btn {
+  border: 1px solid rgba(253, 164, 175, 0.4);
+  background: #FFFDFE;
+  color: #881337;
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.node-mini-btn:hover {
+  background: #FFE4E8;
+  color: #BE123C;
+  border-color: #FDA4AF;
+}
+
+.node-mini-btn.delete:hover {
+  background: #FEF2F2;
+  color: #DC2626;
+  border-color: #FCA5A5;
+}
+
+.node-entity-title {
+  font-size: 1.12rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.node-note-text {
+  font-size: 0.88rem;
+  color: #4B5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.node-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.tag-custom {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+/* Nút mở Bẫy nhiễu đề thi */
+.node-trap-trigger-row {
+  padding-top: 6px;
+  border-top: 1px dashed rgba(253, 164, 175, 0.35);
+}
+
+.trap-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #FECDD3;
+  background: #FFF1F2;
+  color: #9F1239;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.trap-toggle-btn:hover,
+.trap-toggle-btn.is-active {
+  background: #FFE4E8;
+  color: #BE123C;
+  border-color: #FDA4AF;
+}
+
+.trap-arrow {
+  font-size: 0.65rem;
+}
+
+.node-trap-content {
+  background: #FEF2F2;
+  border: 1.5px dashed #FCA5A5;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 4px;
+  animation: trapSlideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes trapSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.trap-content-head {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 850;
+  color: #DC2626;
+  margin-bottom: 6px;
+}
+
+.trap-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.8rem;
+  color: #991B1B;
+  line-height: 1.55;
+}
+
+.trap-list li {
+  margin-bottom: 4px;
+}
+
+/* 4. Timeline Track Ngang (Horizontal Stream) */
+.timeline-diagram-container.is-horizontal {
+  overflow-x: auto;
+  padding: 16px 8px;
+}
+
+.timeline-diagram-container.is-horizontal .timeline-track {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: max-content;
+  padding-top: 24px;
+}
+
+.timeline-diagram-container.is-horizontal .timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  background: linear-gradient(90deg, #FDA4AF 0%, #BE123C 50%, #380718 100%);
+  border-radius: 999px;
+}
+
+.timeline-diagram-container.is-horizontal .timeline-node-segment {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.timeline-diagram-container.is-horizontal .node-axis-anchor {
+  position: absolute;
+  top: -24px;
+  left: 24px;
+  flex-direction: column;
+}
+
+.timeline-diagram-container.is-horizontal .anchor-stem {
+  width: 2px;
+  height: 14px;
+}
+
+/* 5. Cụm Nhãn (Cluster View) */
+.cluster-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cluster-subbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cluster-dimension-pills {
+  display: inline-flex;
+  background: #FFF0F3;
+  padding: 3px;
+  border-radius: 999px;
+  gap: 4px;
+}
+
+.dim-pill {
+  border: none;
+  background: transparent;
+  color: #881337;
+  font-size: 0.76rem;
+  font-weight: 750;
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dim-pill:hover {
+  color: #BE123C;
+}
+
+.dim-pill.active {
+  background: #BE123C;
+  color: #FFFFFF;
+}
+
+.clusters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+
+.cluster-box {
+  background: #FFF9FA;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cluster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid rgba(253, 164, 175, 0.3);
+}
+
+.cluster-tag-badge {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 850;
+  color: #380718;
+}
+
+.cluster-count {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #9F1239;
+  background: #FFE4E8;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.cluster-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cluster-item-node {
+  background: #FFFFFF;
+  border: 1px solid rgba(253, 164, 175, 0.35);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Modal Form Styles */
+.milestone-form-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0;
+}
+
+.form-tags-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .form-tags-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empty-milestones-notice {
+  text-align: center;
+  padding: 36px 16px;
+  color: #9F1239;
+  background: #FFF8F9;
+  border-radius: 16px;
+  border: 1px dashed rgba(253, 164, 175, 0.5);
+}
