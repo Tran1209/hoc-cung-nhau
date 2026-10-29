@@ -229,15 +229,105 @@ export async function seedHistoryCurriculum(dataApi) {
         const lTitle = typeof item === 'object' ? item.title : item;
         const lContent = typeof item === 'object' ? (item.content || '') : '';
         const existingLs = await dataApi.list('lessons', { where: { chapter_id: ch.id, title: lTitle } });
+        let lessonId;
         if (!existingLs?.length) {
-          await dataApi.insert('lessons', {
+          const newLesson = await dataApi.insert('lessons', {
             chapter_id: ch.id,
             title: lTitle,
             content: lContent,
             position: lIdx + 1,
           });
-        } else if (!existingLs[0].content && lContent) {
-          await dataApi.update('lessons', existingLs[0].id, { content: lContent });
+          lessonId = newLesson.id;
+        } else {
+          lessonId = existingLs[0].id;
+          if (!existingLs[0].content && lContent) {
+            await dataApi.update('lessons', existingLs[0].id, { content: lContent });
+          }
+        }
+
+        // Tạo bài tập trắc nghiệm & tự luận trọng tâm cho Bài 1: Liên Hợp Quốc nếu chưa có
+        if (lTitle.toLowerCase().includes('liên hợp quốc') && lessonId) {
+          const existingAs = await dataApi.list('assignments', { where: { lesson_id: lessonId } });
+          if (!existingAs?.length) {
+            const newA = await dataApi.insert('assignments', {
+              chapter_id: ch.id,
+              lesson_id: lessonId,
+              title: 'Bài tập trọng tâm: Bài 1 - Liên hợp quốc',
+              kind: 'quiz',
+              instructions: 'Làm 5 câu hỏi trắc nghiệm kiểm tra mức độ hiểu bài và 1 câu hỏi tự luận ngắn về vai trò của Liên hợp quốc.',
+              max_score: 10,
+              position: 1,
+              is_published: true,
+            });
+
+            const sampleQs = [
+              {
+                type: 'mcq',
+                prompt: 'Liên hợp quốc chính thức được thành lập vào ngày tháng năm nào?',
+                options: ['24 - 10 - 1945', '02 - 09 - 1945', '08 - 08 - 1967', '20 - 09 - 1977'],
+                correct: 0,
+                points: 1.5,
+                explanation: 'Ngày 24-10-1945 bản Hiến chương Liên hợp quốc chính thức có hiệu lực sau khi được các nước phê chuẩn.',
+              },
+              {
+                type: 'mcq',
+                prompt: 'Trụ sở chính của Liên hợp quốc hiện nay đặt tại thành phố nào?',
+                options: ['Giơ-ne-vơ (Thuỵ Sĩ)', 'Niu Oóc (New York, Mỹ)', 'Pa-ri (Pháp)', 'Luân Đôn (Anh)'],
+                correct: 1,
+                points: 1.5,
+                explanation: 'Trụ sở chính của Liên hợp quốc đặt tại thành phố Niu Oóc (New York, Mỹ).',
+              },
+              {
+                type: 'mcq',
+                prompt: 'Cơ quan nào của Liên hợp quốc giữ vai trò trọng yếu trong việc duy trì hoà bình và an ninh quốc tế?',
+                options: ['Đại hội đồng', 'Ban Thư ký', 'Hội đồng Bảo an', 'Toà án Quốc tế'],
+                correct: 2,
+                points: 1.5,
+                explanation: 'Hội đồng Bảo an Liên hợp quốc gồm 5 uỷ viên thường trực và 10 uỷ viên không thường trực.',
+              },
+              {
+                type: 'mcq',
+                prompt: 'Việt Nam chính thức được kết nạp làm thành viên thứ 149 của Liên hợp quốc vào năm nào?',
+                options: ['1975', '1977', '1986', '1995'],
+                correct: 1,
+                points: 1.5,
+                explanation: 'Ngày 20-9-1977, tại khoá họp 32 Đại hội đồng LHQ, Việt Nam chính thức trở thành thành viên thứ 149.',
+              },
+              {
+                type: 'mcq',
+                prompt: 'Nguyên tắc biểu quyết mang tính quyết định của 5 nước uỷ viên thường trực Hội đồng Bảo an là gì?',
+                options: ['Nguyên tắc đa số giản đơn', 'Nguyên tắc nhất trí tuyệt đối giữa 5 cường quốc lớn', 'Nguyên tắc 2/3 số phiếu', 'Nguyên tắc luân phiên'],
+                correct: 1,
+                points: 2,
+                explanation: 'Chỉ cần 1 nước thường trực bỏ phiếu chống thì nghị quyết sẽ không được thông qua (quyền phủ quyết).',
+              },
+              {
+                type: 'essay',
+                prompt: 'Nêu ngắn gọn vai trò và một số đóng góp tiêu biểu của Việt Nam khi tham gia lực lượng gìn giữ hoà bình của Liên hợp quốc thời gian gần đây.',
+                options: [],
+                correct: null,
+                points: 2,
+                explanation: 'Cử bệnh viện dã chiến cấp 2 đến Nam Xu-đăng, đội công binh đến Abyei, thể hiện vai trò tích cực và trách nhiệm quốc tế.',
+              },
+            ];
+
+            for (let qIdx = 0; qIdx < sampleQs.length; qIdx++) {
+              const q = sampleQs[qIdx];
+              const createdQ = await dataApi.insert('questions', {
+                assignment_id: newA.id,
+                type: q.type,
+                prompt: q.prompt,
+                options: q.options,
+                points: q.points,
+                position: qIdx + 1,
+              });
+              await dataApi.upsert(
+                'answer_keys',
+                { question_id: createdQ.id, correct: q.correct, explanation: q.explanation },
+                'question_id',
+              );
+            }
+          }
         }
       }
     }
