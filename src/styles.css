@@ -4471,3 +4471,387 @@ a.folio-metric-cell:hover {
   background: #FFE4E8;
   border-color: #FDA4AF;
 }
+
+/* ==========================================================================
+   CAUSE & EFFECT DIAGRAM (LÕI 3 - BƯỚC 5)
+   ========================================================================== */
+.cause-effect-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Top Event Switcher */
+.ce-top-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+
+.ce-event-pill-tabs {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 240, 243, 0.85);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  gap: 4px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.ce-event-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #881337;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.ce-event-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: #BE123C;
+}
+
+.ce-event-tab-btn.active {
+  background: #380718;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(56, 7, 24, 0.25);
+}
+
+.ce-tab-icon {
+  font-size: 0.85rem;
+}
+
+.ce-control-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Sơ đồ 3 Khối Nối Mũi Tên Ngang */
+.ce-horizontal-flow-stage {
+  display: grid;
+  grid-template-columns: 1.15fr auto 1fr auto 1.25fr;
+  align-items: stretch;
+  gap: 12px;
+}
+
+@media (max-width: 1080px) {
+  .ce-horizontal-flow-stage {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .ce-flow-arrow {
+    transform: rotate(90deg);
+    padding: 10px 0;
+  }
+}
+
+.ce-stage-block {
+  background: #FFF9FA;
+  border: 1.5px solid rgba(253, 164, 175, 0.4);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.04);
+}
+
+.stage-block-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid rgba(253, 164, 175, 0.3);
+}
+
+.block-step-badge {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 850;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #FFE4E8;
+  color: #BE123C;
+  letter-spacing: 0.02em;
+}
+
+.badge-center {
+  background: #380718;
+  color: #FFFFFF;
+}
+
+.badge-output {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.block-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Mũi tên dòng chảy */
+.ce-flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 24px;
+}
+
+.arrow-head-icon {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #BE123C;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(190, 18, 60, 0.2));
+}
+
+/* Các Ngăn Bên Trong Khối 1 & Khối 3 */
+.stage-compartments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.ce-compartment {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(253, 164, 175, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comp-khach-quan {
+  background: #F0F9FF;
+  border-color: #BAE6FD;
+}
+
+.comp-chu-quan {
+  background: #FFFBEB;
+  border-color: #FDE68A;
+}
+
+.comp-direct {
+  background: #FAF5FF;
+  border-color: #E9D5FF;
+}
+
+.comp-viet-nam {
+  background: #FFF5F7;
+  border-color: #FECDD6;
+}
+
+.comp-quoc-te {
+  background: #EEF2FF;
+  border-color: #C7D2FE;
+}
+
+.comp-badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.comp-pill {
+  font-size: 0.72rem;
+  font-weight: 850;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.tag-khach-quan { background: #E0F2FE; color: #0369A1; }
+.tag-chu-quan { background: #FEF3C7; color: #B45309; }
+.tag-direct { background: #F3E8FF; color: #7E22CE; }
+.tag-viet-nam { background: #FFE4E8; color: #BE123C; }
+.tag-quoc-te { background: #E0E7FF; color: #4338CA; }
+
+.comp-bullet-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.83rem;
+  color: #374151;
+  line-height: 1.55;
+}
+
+.comp-bullet-list li {
+  margin-bottom: 4px;
+}
+
+.comp-bullet-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Khối 2: Sự Kiện Trung Tâm */
+.block-center-event {
+  background: linear-gradient(180deg, #FFF0F3 0%, #FFFFFF 100%);
+  border-color: #FDA4AF;
+  text-align: center;
+  justify-content: center;
+}
+
+.block-center-event .stage-block-header {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.center-time-pill {
+  font-size: 0.76rem;
+  font-weight: 800;
+  background: #FFE4E8;
+  color: #881337;
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1px solid #FECDD6;
+}
+
+.center-event-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.center-event-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: #380718;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.center-result-box {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(253, 164, 175, 0.5);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.05);
+}
+
+.res-tag {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 850;
+  color: #BE123C;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.res-text {
+  font-size: 0.85rem;
+  color: #374151;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* 3. Ghim Bẫy Phóng Đại Kết Quả (Red Flag Banner) */
+.ce-red-flag-banner {
+  background: #FEF2F2;
+  border: 1.5px dashed #FCA5A5;
+  border-radius: 18px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.06);
+}
+
+.red-flag-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.flag-icon-anim {
+  font-size: 1.35rem;
+}
+
+.flag-title {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 850;
+  color: #DC2626;
+  margin: 0 0 2px 0;
+}
+
+.flag-sub {
+  font-size: 0.82rem;
+  color: #991B1B;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.flag-count-pill {
+  font-size: 0.72rem;
+  font-weight: 850;
+  background: #FEE2E2;
+  color: #991B1B;
+  padding: 3px 9px;
+  border-radius: 8px;
+  border: 1px solid #FCA5A5;
+  white-space: nowrap;
+}
+
+.red-flag-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.red-flag-item-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid #FECDD3;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.red-flag-bullet {
+  font-size: 0.85rem;
+  margin-top: 1px;
+}
+
+.red-flag-text {
+  font-size: 0.84rem;
+  color: #7F1D1D;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+/* Modal Form Styles */
+.ce-form-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0;
+}

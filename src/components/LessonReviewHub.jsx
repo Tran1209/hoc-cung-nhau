@@ -3,6 +3,7 @@ import { FormDialog } from './Modal';
 import LessonFlashcards from './LessonFlashcards';
 import MilestoneDiagram from './MilestoneDiagram';
 import AxesDiagram from './AxesDiagram';
+import CauseEffectDiagram, { DEFAULT_CAUSE_EFFECT_LIST } from './CauseEffectDiagram';
 
 // Dữ liệu mẫu chuẩn hoá của Bài 1: Liên hợp quốc & ASEAN (Bộ GD&ĐT 2026)
 export const DEFAULT_BAI1_REVIEW_DATA = {
@@ -148,32 +149,7 @@ export const DEFAULT_BAI1_REVIEW_DATA = {
       content: 'Cộng đồng ASEAN (2015) với 3 trụ cột vững chắc, hoàn tất ASEAN 10.',
     },
   ],
-  causeEffects: [
-    {
-      id: 'ce-1',
-      eventTitle: 'Sự ra đời và hoạt động của Liên hợp quốc (1945 – nay)',
-      inputsKhachQuan: [
-        'Chiến tranh thế giới thứ hai tàn phá khốc liệt nhân loại, để lại hậu quả thảm hoạ nặng nề.',
-        'Nguyện vọng tha thiết của nhân dân toàn thế giới là bảo vệ nền hoà bình và an ninh quốc tế bền vững.',
-      ],
-      inputsChuQuan: [
-        'Sự nhất trí và thoả hiệp chiến lược giữa ba cường quốc lớn (Liên Xô, Mỹ, Anh) tại Hội nghị I-an-ta.',
-        'Ý chí và sự phê chuẩn của 50 quốc gia sáng lập viên đối với bản Hiến chương tiến bộ.',
-      ],
-      outputsVietNam: [
-        'Tạo diễn đàn đa phương toàn cầu giúp Việt Nam nâng cao vị thế và tranh thủ nguồn lực phát triển.',
-        'Việt Nam 2 lần đảm nhiệm xuất sắc Uỷ viên không thường trực Hội đồng Bảo an (2008-2009, 2020-2021).',
-      ],
-      outputsQuocTe: [
-        'Ngăn ngừa thành công nguy cơ bùng nổ một cuộc chiến tranh thế giới mới mang tính hủy diệt hạt nhân.',
-        'Thúc đẩy giải trừ chủ nghĩa thực dân, bảo vệ nhân quyền và cứu trợ nhân đạo toàn cầu.',
-      ],
-      exaggerationTraps: [
-        'Bẫy sai: "Liên hợp quốc là chính phủ toàn cầu có quyền can thiệp vào pháp luật nội bộ của các quốc gia". (Sai: Bình đẳng chủ quyền, không can thiệp nội bộ)',
-        'Bẫy phóng đại: "Liên hợp quốc đã ngăn chặn và giải quyết triệt để mọi xung đột vũ trang trên hành tinh". (Sai: Xung đột cục bộ vẫn xảy ra)',
-      ],
-    },
-  ],
+  causeEffects: DEFAULT_CAUSE_EFFECT_LIST,
   comparisons: [
     {
       id: 'cmp-1',
@@ -437,99 +413,25 @@ export default function LessonReviewHub({ lessonId, lessonTitle = 'Bài học', 
           <div className="review-core-pane">
             <div className="core-lead-row">
               <div>
-                <h3 className="core-lead-title">Lõi 3: Sơ đồ Nhân - Quả 3 khối (Trước ➔ Sự kiện ➔ Sau)</h3>
+                <h3 className="core-lead-title">Lõi 3: Sơ Đồ Nhân - Quả 3 Khối (Trước ➔ Sự Kiện ➔ Sau)</h3>
                 <p className="small muted">
-                  Phân tách rạch ròi Khách quan / Chủ quan và Ý nghĩa Việt Nam / Quốc tế kèm nhận diện Bẫy phóng đại.
+                  Phân tích chuẩn xác Bối cảnh (Khách quan / Chủ quan), Kết quả sự kiện và Đầu ra (Thành tựu, Ý nghĩa VN, Quốc tế) kèm <b>Ghim Bẫy phóng đại cờ đỏ 🚩</b>.
                 </p>
               </div>
               <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C' }}>
-                {studyData.causeEffects?.length || 0} sơ đồ nhân quả
+                {(studyData.causeEffects?.length || DEFAULT_CAUSE_EFFECT_LIST.length)} sơ đồ nhân quả
               </span>
             </div>
 
-            {(studyData.causeEffects || []).map((ce) => (
-              <div key={ce.id} className="cause-effect-wrapper">
-                {/* 3 Cột luồng */}
-                <div className="ce-flow-grid">
-                  {/* Cột 1: Đầu vào */}
-                  <div className="ce-col ce-input">
-                    <span className="ce-step-badge">1. ĐẦU VÀO</span>
-                    <h4>Bối cảnh & Nguyên nhân</h4>
-
-                    <div className="ce-sub-compartment">
-                      <span className="comp-title">Khách quan (Bên ngoài):</span>
-                      <ul>
-                        {ce.inputsKhachQuan?.map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="ce-sub-compartment">
-                      <span className="comp-title">Chủ quan (Nội lực quyết định):</span>
-                      <ul>
-                        {ce.inputsChuQuan?.map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Mũi tên */}
-                  <div className="ce-arrow-divider">➔</div>
-
-                  {/* Cột 2: Sự kiện trung tâm */}
-                  <div className="ce-col ce-event">
-                    <span className="ce-step-badge">2. SỰ KIỆN TRUNG TÂM</span>
-                    <h3 className="ce-event-title">{ce.eventTitle}</h3>
-                    <p className="small muted" style={{ marginTop: '6px' }}>
-                      Mốc xác lập trật tự và kiến tạo nền tảng hợp tác an ninh, kinh tế thế giới.
-                    </p>
-                  </div>
-
-                  {/* Mũi tên */}
-                  <div className="ce-arrow-divider">➔</div>
-
-                  {/* Cột 3: Đầu ra */}
-                  <div className="ce-col ce-output">
-                    <span className="ce-step-badge">3. ĐẦU RA</span>
-                    <h4>Ý nghĩa lịch sử</h4>
-
-                    <div className="ce-sub-compartment">
-                      <span className="comp-title">Ý nghĩa đối với Việt Nam:</span>
-                      <ul>
-                        {ce.outputsVietNam?.map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="ce-sub-compartment">
-                      <span className="comp-title">Ý nghĩa Quốc tế:</span>
-                      <ul>
-                        {ce.outputsQuocTe?.map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Hộp bẫy cờ đỏ */}
-                {ce.exaggerationTraps?.length > 0 && (
-                  <div className="ce-redflag-box">
-                    <b style={{ color: '#DC2626', fontSize: '0.86rem' }}>
-                      🚩 Bẫy phóng đại trong đề thi (Tuyệt đối hoá mức độ chưa đạt tới):
-                    </b>
-                    <ul style={{ margin: '6px 0 0 0', paddingLeft: '18px', color: '#991B1B', fontSize: '0.84rem' }}>
-                      {ce.exaggerationTraps.map((tr, idx) => (
-                        <li key={idx}>{tr}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
+            <CauseEffectDiagram
+              causeEffects={studyData.causeEffects?.length > 0 ? studyData.causeEffects : DEFAULT_CAUSE_EFFECT_LIST}
+              onSaveCauseEffects={(newCauseEffects) => {
+                saveStudyData({
+                  ...studyData,
+                  causeEffects: newCauseEffects,
+                });
+              }}
+            />
           </div>
         )}
 
