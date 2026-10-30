@@ -322,7 +322,7 @@ img {
   box-shadow: var(--folio-shadow);
   padding: 40px 48px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
 }
 
@@ -1855,18 +1855,22 @@ a.folio-metric-cell:hover {
   box-shadow: 0 2px 6px rgba(56, 7, 24, 0.2);
 }
 
-/* Mobile-fit 100vh Layout Rules */
+/* Mobile Layout: cuon muot ma tu nhien, khong bao gio bi cat cut noi dung */
 @media (max-width: 768px) {
   html, body {
-    height: 100%;
+    min-height: 100%;
+    height: auto !important;
     overflow-x: hidden;
+    overflow-y: auto !important;
   }
   .app {
+    min-height: 100vh;
     min-height: 100dvh;
-    height: 100dvh;
+    height: auto !important;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible !important;
   }
   .topbar {
     padding: 8px 14px;
@@ -1888,27 +1892,30 @@ a.folio-metric-cell:hover {
   }
 
   .container {
-    padding: 10px 10px;
+    padding: 12px 10px 80px;
     margin: 0;
     max-width: 100%;
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    height: auto !important;
+    overflow: visible !important;
   }
   .page {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    height: auto !important;
+    overflow: visible !important;
   }
   .folio-sheet {
-    padding: 14px 14px;
+    padding: 18px 14px;
     border-radius: 20px;
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    height: auto !important;
+    overflow: visible !important;
     box-shadow: 0 8px 24px rgba(244, 63, 94, 0.08);
   }
 
