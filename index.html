@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e11d48" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,600;0,700;0,800;1,700&display=swap" rel="stylesheet" />
+    <title>Học Cùng Nhau — Rose Milk Folio</title>
+    <script type="module" crossorigin src="./assets/index-C-kwh2KK.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-C9Fggq2S.css">
+  </head>
+  <body>
+    <div id="root">
+      <div style="min-height:100vh;display:grid;place-items:center;font-family:sans-serif;color:#888;">
+        📚 Đang tải ứng dụng...
+      </div>
+    </div>
+    <script>
+      window.addEventListener('error', function(e) {
+        var el = document.getElementById('root');
+        if (el) {
+          el.innerHTML = '<div style="padding:24px;font-family:sans-serif;background:#fff0f0;color:#900;border:2px solid red;margin:20px;border-radius:12px;"><h2>⚠️ Lỗi tải ứng dụng</h2><p>' + (e.message || 'Lỗi không xác định') + '</p><pre style="white-space:pre-wrap;">' + (e.filename ? e.filename + ':' + e.lineno : '') + '\n' + (e.error ? e.error.stack : '') + '</pre></div>';
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var el = document.getElementById('root');
+        if (el) {
+          el.innerHTML = '<div style="padding:24px;font-family:sans-serif;background:#fff0f0;color:#900;border:2px solid red;margin:20px;border-radius:12px;"><h2>⚠️ Lỗi xử lý (Unhandled Rejection)</h2><pre style="white-space:pre-wrap;">' + (e.reason && e.reason.stack ? e.reason.stack : e.reason) + '</pre></div>';
+        }
+      });
+    </script>
+  </body>
+</html>
