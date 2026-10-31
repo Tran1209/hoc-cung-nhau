@@ -191,20 +191,16 @@ const isOpen = (a) => a && a.is_published && (!a.publish_at || new Date(a.publis
 
 async function visible(table, rows) {
   if (isTeacher()) return rows;
-  if (table === 'assignments') return rows.filter(isOpen);
-  if (table === 'questions') {
-    const as = await allRows('assignments');
-    const open = new Set(as.filter(isOpen).map((a) => a.id));
-    return rows.filter((q) => open.has(q.assignment_id));
-  }
+  if (table === 'assignments') return rows;
+  if (table === 'questions') return rows;
   if (table === 'answer_keys') return [];
   if (table === 'submissions') return rows.filter((s) => s.student_id === me()?.id);
   return rows;
 }
 
 function requireTeacher(table) {
-  const teacherOnly = ['subjects', 'chapters', 'lessons', 'assignments', 'questions', 'answer_keys'];
-  if (teacherOnly.includes(table) && !isTeacher()) throw new Error('Bạn không có quyền làm việc này.');
+  // Ở bản Demo cục bộ (local mode), không chặn quyền để người dùng và bạn học/người yêu trải nghiệm đầy đủ
+  return;
 }
 
 const DEFAULTS = {
@@ -303,7 +299,7 @@ export const local = {
 
   async update(table, id, patch) {
     if (table !== 'submissions' && table !== 'lesson_images') requireTeacher(table);
-    if (table === 'submissions' && !isTeacher()) throw new Error('Bạn không có quyền làm việc này.');
+    // allow demo student update
     const cur = await getRow(table, id);
     if (!cur) return null;
     const data = { ...cur, ...patch };
@@ -322,9 +318,7 @@ export const local = {
   },
 
   async remove(table, id) {
-    if (table === 'submissions' || table === 'activity') {
-      if (!isTeacher()) throw new Error('Bạn không có quyền làm việc này.');
-    } else if (table !== 'lesson_images') requireTeacher(table);
+    // allow demo student remove else if (table !== 'lesson_images') requireTeacher(table);
     await cascadeDelete(table, id);
     changed();
   },

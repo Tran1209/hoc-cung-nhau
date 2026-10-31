@@ -500,8 +500,12 @@ export default function LessonPage() {
 
     // Tự động gieo sẵn các bài tập BT1, BT2, BT3 chuẩn Đề thi THPTQG 2026 nếu chưa có
     if (lesson.title.toLowerCase().includes('liên hợp quốc') && !assignments.some((a) => (a.title || '').includes('BT2'))) {
-      await seedBtAssignmentsForLesson(data, lesson.id, lesson.chapter_id);
-      assignments = await data.list('assignments', { where: { lesson_id: id } });
+      try {
+        await seedBtAssignmentsForLesson(data, lesson.id, lesson.chapter_id);
+        assignments = await data.list('assignments', { where: { lesson_id: id } });
+      } catch (e) {
+        console.warn('Auto-seed notice:', e);
+      }
     }
 
     return { lesson, chapter, subject, images, assignments, submissions };
