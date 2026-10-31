@@ -6568,3 +6568,214 @@ a.folio-metric-cell:hover {
   display: flex;
   flex-direction: column;
 }
+
+
+/* ==========================================================================
+   CHAPTER & LESSON CARDS (Bố cục phân chia chuyên đề và bài học rõ ràng)
+   ========================================================================== */
+.chapter-box {
+  background: #FFFDFE;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  border-radius: 22px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.05);
+  transition: all 0.25s ease;
+}
+
+.chapter-box:hover {
+  border-color: rgba(244, 63, 94, 0.45);
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.08);
+}
+
+.chapter-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.chapter-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.chapter-num-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 12px;
+  background: var(--accent-gradient);
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  box-shadow: 0 3px 10px rgba(225, 29, 72, 0.3);
+  flex-shrink: 0;
+}
+
+.chapter-main-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #380718;
+  line-height: 1.35;
+}
+
+.chapter-main-title a {
+  color: #380718;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.chapter-main-title a:hover {
+  color: #E11D48;
+}
+
+.chapter-desc {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  color: #881337;
+  opacity: 0.85;
+  line-height: 1.45;
+}
+
+.chapter-lessons-section {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1.5px dashed rgba(253, 164, 175, 0.5);
+}
+
+.chapter-lessons-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.chapter-lessons-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #9F1239;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chapter-lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.lesson-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(253, 164, 175, 0.5);
+  border-radius: 16px;
+  padding: 16px 18px;
+  text-decoration: none;
+  color: #380718;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.04);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 130px;
+}
+
+.lesson-card:hover {
+  border-color: #E11D48;
+  background: #FFF9FA;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(225, 29, 72, 0.12);
+  text-decoration: none;
+}
+
+.lesson-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.lesson-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: #FFF0F3;
+  color: #BE123C;
+  border: 1px solid #FECDD6;
+}
+
+.lesson-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #BE123C;
+}
+
+.lesson-meta-info {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: #9F1239;
+  opacity: 0.85;
+}
+
+.lesson-card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 750;
+  line-height: 1.4;
+  color: #380718;
+  margin: 0 0 14px;
+  flex: 1;
+}
+
+.lesson-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(253, 164, 175, 0.4);
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: #E11D48;
+}
+
+.lesson-card-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FFF0F3;
+  border: 1px solid #FDA4AF;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.lesson-card:hover .lesson-card-arrow {
+  transform: translateX(4px);
+  background: #E11D48;
+  color: #FFFFFF;
+  border-color: #E11D48;
+}

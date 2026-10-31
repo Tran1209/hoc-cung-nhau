@@ -80,33 +80,79 @@ export default function SubjectPage() {
         {chapters.length === 0 ? (
           <Empty>Chưa có chương nào trong môn học này.</Empty>
         ) : (
-          <div className="stack" style={{ gap: '18px' }}>
+          <div className="stack" style={{ gap: '22px' }}>
             {sortByPos(chapters).map((c, idx) => {
               const ls = sortByPos(lessons.filter((l) => l.chapter_id === c.id));
               const as = assignments.filter((a) => a.chapter_id === c.id);
               const done = as.filter((a) => latest[a.id]?.status === 'graded').length;
               return (
-                <div key={c.id} style={{ background: '#FFFDFE', border: '1.5px solid rgba(253, 164, 175, 0.45)', borderRadius: '20px', padding: '22px 26px', boxShadow: '0 4px 14px rgba(244, 63, 94, 0.05)' }}>
-                  <div className="row between">
-                    <div className="row" style={{ gap: '12px' }}>
-                      <span className="idx-badge">{idx + 1}</span>
-                      <Link to={`/chuong/${c.id}`}>
-                        <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#380718' }}>{c.title}</h2>
-                      </Link>
+                <div key={c.id} className="chapter-box">
+                  {/* Tiêu đề Chuyên đề */}
+                  <div className="chapter-header-row">
+                    <div className="chapter-title-group">
+                      <span className="chapter-num-badge">{idx + 1}</span>
+                      <div>
+                        <h2 className="chapter-main-title">
+                          <Link to={`/chuong/${c.id}`}>{c.title}</Link>
+                        </h2>
+                        {c.description && <p className="chapter-desc">{c.description}</p>}
+                      </div>
                     </div>
-                    <div className="row">
-                      <span className="small muted">{done}/{as.length} bài tập đã chấm</span>
-                      {isTeacher && <button className="ios-btn sm ios-btn-secondary" onClick={() => setDialog({ existing: c })}>Sửa</button>}
+                    <div className="row" style={{ gap: '10px' }}>
+                      <span className="badge" style={{ background: '#FFF0F3', color: '#BE123C', borderColor: '#FDA4AF' }}>
+                        {done}/{as.length} bài tập đã chấm
+                      </span>
+                      <Link to={`/chuong/${c.id}`} className="ios-btn sm ios-btn-secondary" style={{ padding: '6px 12px' }}>
+                        Chi tiết chuyên đề →
+                      </Link>
+                      {isTeacher && (
+                        <button className="ios-btn sm" onClick={() => setDialog({ existing: c })}>
+                          Sửa
+                        </button>
+                      )}
                     </div>
                   </div>
-                  {c.description && <p className="small muted pre" style={{ margin: '10px 0 14px 42px' }}>{c.description}</p>}
-                  <div className="chips" style={{ marginLeft: '42px', marginTop: '12px' }}>
-                    {ls.map((l) => (
-                      <Link key={l.id} to={`/bai/${l.id}`} className="chip">
-                        {l.title}
-                      </Link>
-                    ))}
-                    {ls.length === 0 && <span className="small muted">Chưa có bài học trong chương này.</span>}
+
+                  {/* Phân chia rõ ràng từng Bài học dạng Cards */}
+                  <div className="chapter-lessons-section">
+                    <div className="chapter-lessons-header">
+                      <span className="chapter-lessons-label">
+                        <span>📖</span> DANH MỤC BÀI HỌC ({ls.length} BÀI)
+                      </span>
+                      <span className="small muted">Chọn bài học để vào Sách giáo khoa số & Ôn tập 5 Lõi</span>
+                    </div>
+
+                    <div className="chapter-lessons-grid">
+                      {ls.map((l, lIdx) => {
+                        const lAs = assignments.filter((a) => a.lesson_id === l.id);
+                        const lDone = lAs.filter((a) => latest[a.id]?.status === 'graded').length;
+                        return (
+                          <Link key={l.id} to={`/bai/${l.id}`} className="lesson-card">
+                            <div className="lesson-card-top">
+                              <span className="lesson-tag-pill">
+                                <span className="lesson-tag-dot" />
+                                Bài 0{lIdx + 1}
+                              </span>
+                              <span className="lesson-meta-info">
+                                {lAs.length > 0 ? `${lDone}/${lAs.length} bài tập` : 'SGK số & Ôn tập'}
+                              </span>
+                            </div>
+
+                            <h3 className="lesson-card-title">{l.title}</h3>
+
+                            <div className="lesson-card-footer">
+                              <span>Vào học ngay</span>
+                              <span className="lesson-card-arrow">→</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                      {ls.length === 0 && (
+                        <div className="small muted" style={{ padding: '12px 16px', background: '#FFF0F3', borderRadius: '12px', color: '#9F1239' }}>
+                          Chưa có bài học nào trong chương này.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
