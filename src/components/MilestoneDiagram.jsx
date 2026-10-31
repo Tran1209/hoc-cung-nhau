@@ -26,6 +26,46 @@ export const SUGGESTED_HASHTAGS = [
   '#Chiến_dịch',
 ];
 
+// Phân tách chuỗi mốc thời gian thành [ngày, tháng, năm] hoặc chuỗi tự do
+export function parseTimeString(str) {
+  if (!str) return { day: '', month: '', year: '', isCustom: false, customStr: '' };
+  const s = String(str).trim();
+  
+  // Trường hợp 1: D-M-YYYY hoặc DD-MM-YYYY (VD: 24-10-1945, 7-6-2019, 24/10/1945)
+  const dmyMatch = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{1,4})$/);
+  if (dmyMatch) {
+    return { day: dmyMatch[1], month: dmyMatch[2], year: dmyMatch[3], isCustom: false, customStr: '' };
+  }
+
+  // Trường hợp 2: M-YYYY hoặc MM-YYYY (VD: 2-1945, 12-1946, 2/1945)
+  const myMatch = s.match(/^(\d{1,2})[-/.](\d{1,4})$/);
+  if (myMatch) {
+    return { day: '', month: myMatch[1], year: myMatch[2], isCustom: false, customStr: '' };
+  }
+
+  // Trường hợp 3: Chỉ có năm YYYY (VD: 1967, 1945, 2015)
+  const yMatch = s.match(/^(\d{1,4})$/);
+  if (yMatch) {
+    return { day: '', month: '', year: yMatch[1], isCustom: false, customStr: '' };
+  }
+
+  // Trường hợp 4: Chuỗi kéo dài hoặc đặc biệt (VD: 25-4 đến 26-6-1945, 1945 – 1954)
+  return { day: '', month: '', year: '', isCustom: true, customStr: s };
+}
+
+// Ghép lại thành chuỗi chuẩn để lưu vào sơ đồ
+export function formatTimeString(day, month, year, isCustom, customStr) {
+  if (isCustom) return (customStr || '').trim();
+  const y = (year || '').trim();
+  const m = (month || '').trim();
+  const d = (day || '').trim();
+  if (!y) return '';
+  if (d && m) return `${d}-${m}-${y}`;
+  if (m) return `${m}-${y}`;
+  return y;
+}
+
+
 // Từ điển bẫy nhiễu mẫu thông minh theo chuẩn Bộ GD&ĐT 2026
 const SMART_TRAP_RULES = {
   'Hiến chương Liên hợp quốc': [
@@ -85,7 +125,15 @@ export default function MilestoneDiagram({
   const [openTraps, setOpenTraps] = useState({});
 
   // Form State
-  const [formTime, setFormTime] = useState('');
+  const [formDay, setFormDay] = useState('');
+  const [formMonth, setFormMonth] = useState('');
+  const [formYear, setFormYear] = useState('');
+  const [isCustomTimeMode, setIsCustomTimeMode] = useState(false);
+  const [customTimeString, setCustomTimeString] = useState('');
+
+  const previewTimeString = useMemo(() => {
+    return formatTimeString(formDay, formMonth, formYear, isCustomTimeMode, customTimeString);
+  }, [formDay, formMonth, formYear, isCustomTimeMode, customTimeString]);
   const [formEntity, setFormEntity] = useState('');
   const [formNote, setFormNote] = useState('');
   const [formTypeTag, setFormTypeTag] = useState('#Văn_kiện');
@@ -190,7 +238,11 @@ export default function MilestoneDiagram({
 
   // Mở modal thêm mốc mới (hoặc chèn vào giữa)
   const handleOpenAdd = (insertIndex = null, parentId = null) => {
-    setFormTime('');
+    setFormDay('');
+    setFormMonth('');
+    setFormYear('');
+    setIsCustomTimeMode(false);
+    setCustomTimeString('');
     setFormEntity('');
     setFormNote('');
     setFormTypeTag('#Văn_kiện');
@@ -216,11 +268,15 @@ export default function MilestoneDiagram({
   // Xử lý lưu mốc
   const handleSaveModal = (e) => {
     e?.preventDefault();
-    if (!formTime.trim() || !formEntity.trim()) return;
+    const finalTime = formatTimeString(formDay, formMonth, formYear, isCustomTimeMode, customTimeString);
+    if (!finalTime || !formEntity.trim()) {
+      alert('Vui lòng nhập ít nhất Năm lịch sử (hoặc chuyển sang chế độ tự do).');
+      return;
+    }
 
     const nodeData = {
       id: editModal.mode === 'edit' ? editModal.id : 'ms-' + Date.now(),
-      time: formTime.trim(),
+      time: finalTime,
       entityName: formEntity.trim(),
       note: formNote.trim() || 'Mốc sự kiện được ghi chú trong sổ học tập.',
       typeTag: formTypeTag,
@@ -809,16 +865,102 @@ export default function MilestoneDiagram({
           onClose={() => setEditModal(null)}
         >
           <form onSubmit={handleSaveModal} className="milestone-form-dialog">
-            <label className="field">
-              <span>Mốc thời gian (VD: 2-1945, 24-10-1945, 1967, 2003, 2007) *</span>
-              <input
-                type="text"
-                required
-                value={formTime}
-                onChange={(e) => setFormTime(e.target.value)}
-                placeholder="Nhập mốc thời gian..."
-              />
-            </label>
+            <div className="date-triplet-group" style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <label style={{ margin: 0, fontWeight: 700, color: '#380718', fontSize: '0.92rem' }}>
+                  Mốc thời gian lịch sử *
+                </label>
+                <button
+                  type="button"
+                  className="btn ghost sm"
+                  style={{ fontSize: '0.78rem', color: '#BE123C', padding: '2px 8px', borderRadius: '8px', background: '#FFF0F3' }}
+                  onClick={() => setIsCustomTimeMode(!isCustomTimeMode)}
+                >
+                  {isCustomTimeMode ? '📅 Chuyển sang [Ngày][Tháng][Năm]' : '✏️ Nhập khoảng thời gian tự do (VD: 1945–1954)'}
+                </button>
+              </div>
+
+              {!isCustomTimeMode ? (
+                <div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr', gap: '10px' }}>
+                    {/* Ô NGÀY */}
+                    <label className="field" style={{ margin: 0 }}>
+                      <span style={{ fontSize: '0.8rem', color: '#881337', fontWeight: 600 }}>Ngày (tuỳ chọn)</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        value={formDay}
+                        onChange={(e) => setFormDay(e.target.value)}
+                        placeholder="VD: 24"
+                        style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 700, borderRadius: '12px' }}
+                      />
+                    </label>
+
+                    {/* Ô THÁNG */}
+                    <label className="field" style={{ margin: 0 }}>
+                      <span style={{ fontSize: '0.8rem', color: '#881337', fontWeight: 600 }}>Tháng (tuỳ chọn)</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={formMonth}
+                        onChange={(e) => setFormMonth(e.target.value)}
+                        placeholder="VD: 10"
+                        style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 700, borderRadius: '12px' }}
+                      />
+                    </label>
+
+                    {/* Ô NĂM */}
+                    <label className="field" style={{ margin: 0 }}>
+                      <span style={{ fontSize: '0.8rem', color: '#881337', fontWeight: 700 }}>Năm (bắt buộc) *</span>
+                      <input
+                        type="number"
+                        required
+                        value={formYear}
+                        onChange={(e) => setFormYear(e.target.value)}
+                        placeholder="VD: 1945"
+                        style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 800, color: '#BE123C', borderRadius: '12px' }}
+                      />
+                    </label>
+                  </div>
+
+                  {/* DÒNG XEM TRƯỚC KẾT QUẢ ĐỊNH DẠNG */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '0.82rem', color: '#9F1239' }}>
+                    <span>Hiển thị trên trục:</span>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '3px 12px',
+                        borderRadius: '999px',
+                        background: '#380718',
+                        color: '#FFFFFF',
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      {previewTimeString || 'Chưa nhập năm'}
+                    </span>
+                    <span style={{ fontSize: '0.74rem', opacity: 0.8 }}>(Ô nào không cần thì để trống)</span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <input
+                    type="text"
+                    required
+                    value={customTimeString}
+                    onChange={(e) => setCustomTimeString(e.target.value)}
+                    placeholder="VD: 25-4 đến 26-6-1945 hoặc 1945 – 1954..."
+                    style={{ fontSize: '0.98rem', fontWeight: 700, borderRadius: '12px', padding: '10px 14px' }}
+                  />
+                  <div style={{ marginTop: '6px', fontSize: '0.76rem', color: '#9F1239', opacity: 0.85 }}>
+                    Chế độ chuỗi tự do dành cho sự kiện diễn ra trong thời gian dài hoặc nhiều năm.
+                  </div>
+                </div>
+              )}
+            </div>
 
             <label className="field">
               <span>Tên thực thể / Danh từ đích * (VD: Hội nghị I-an-ta, Liên hợp quốc, Tuyên bố Ba-li II...)</span>
