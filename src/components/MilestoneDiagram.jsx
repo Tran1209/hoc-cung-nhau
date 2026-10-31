@@ -857,35 +857,37 @@ export default function MilestoneDiagram({
       )}
 
       {/* =========================================================================
-          MODAL THÊM / CHỈNH SỬA MỐC VÀ QUẢN LÝ NHÃN ĐA CHIỀU
+          MODAL THÊM / CHỈNH SỬA MỐC VÀ QUẢN LÝ NHÃN ĐA CHIỀU (REDESIGNED)
           ========================================================================= */}
       {editModal && (
         <Modal
           title={editModal.mode === 'edit' ? 'Chỉnh sửa Mốc Lịch Sử' : editModal.parentId ? '+ Thêm Nhánh Sự Kiện Con' : '+ Thêm Mốc Lịch Sử Mới'}
+          wide
           onClose={() => setEditModal(null)}
         >
           <form onSubmit={handleSaveModal} className="milestone-form-dialog">
-            <div className="date-triplet-group" style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <label style={{ margin: 0, fontWeight: 700, color: '#380718', fontSize: '0.92rem' }}>
-                  Mốc thời gian lịch sử *
-                </label>
+            {/* THẺ 1: THỜI GIAN & TÊN SỰ KIỆN */}
+            <div className="modal-section-card">
+              <div className="modal-section-header">
+                <span className="modal-section-title">
+                  <span>🕒</span> Mốc thời gian & Sự kiện
+                </span>
                 <button
                   type="button"
                   className="btn ghost sm"
-                  style={{ fontSize: '0.78rem', color: '#BE123C', padding: '2px 8px', borderRadius: '8px', background: '#FFF0F3' }}
+                  style={{ fontSize: '0.78rem', color: '#BE123C', padding: '2px 10px', borderRadius: '8px', background: '#FFF0F3' }}
                   onClick={() => setIsCustomTimeMode(!isCustomTimeMode)}
                 >
-                  {isCustomTimeMode ? '📅 Chuyển sang [Ngày][Tháng][Năm]' : '✏️ Nhập khoảng thời gian tự do (VD: 1945–1954)'}
+                  {isCustomTimeMode ? '📅 Dùng [Ngày][Tháng][Năm]' : '✏️ Nhập khoảng tự do'}
                 </button>
               </div>
 
               {!isCustomTimeMode ? (
                 <div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr', gap: '10px' }}>
+                  <div className="date-triplet-boxes">
                     {/* Ô NGÀY */}
-                    <label className="field" style={{ margin: 0 }}>
-                      <span style={{ fontSize: '0.8rem', color: '#881337', fontWeight: 600 }}>Ngày (tuỳ chọn)</span>
+                    <div className="triplet-box">
+                      <span className="triplet-label">Ngày (tuỳ chọn)</span>
                       <input
                         type="number"
                         min={1}
@@ -893,13 +895,13 @@ export default function MilestoneDiagram({
                         value={formDay}
                         onChange={(e) => setFormDay(e.target.value)}
                         placeholder="VD: 24"
-                        style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 700, borderRadius: '12px' }}
+                        className="triplet-input"
                       />
-                    </label>
+                    </div>
 
                     {/* Ô THÁNG */}
-                    <label className="field" style={{ margin: 0 }}>
-                      <span style={{ fontSize: '0.8rem', color: '#881337', fontWeight: 600 }}>Tháng (tuỳ chọn)</span>
+                    <div className="triplet-box">
+                      <span className="triplet-label">Tháng (tuỳ chọn)</span>
                       <input
                         type="number"
                         min={1}
@@ -907,39 +909,28 @@ export default function MilestoneDiagram({
                         value={formMonth}
                         onChange={(e) => setFormMonth(e.target.value)}
                         placeholder="VD: 10"
-                        style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 700, borderRadius: '12px' }}
+                        className="triplet-input"
                       />
-                    </label>
+                    </div>
 
                     {/* Ô NĂM */}
-                    <label className="field" style={{ margin: 0 }}>
-                      <span style={{ fontSize: '0.8rem', color: '#881337', fontWeight: 700 }}>Năm (bắt buộc) *</span>
+                    <div className="triplet-box">
+                      <span className="triplet-label">Năm (bắt buộc) *</span>
                       <input
                         type="number"
                         required
                         value={formYear}
                         onChange={(e) => setFormYear(e.target.value)}
                         placeholder="VD: 1945"
-                        style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 800, color: '#BE123C', borderRadius: '12px' }}
+                        className="triplet-input year-input"
                       />
-                    </label>
+                    </div>
                   </div>
 
                   {/* DÒNG XEM TRƯỚC KẾT QUẢ ĐỊNH DẠNG */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '0.82rem', color: '#9F1239' }}>
+                  <div className="modal-date-preview-strip">
                     <span>Hiển thị trên trục:</span>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '3px 12px',
-                        borderRadius: '999px',
-                        background: '#380718',
-                        color: '#FFFFFF',
-                        fontWeight: 800,
-                        fontSize: '0.85rem',
-                        letterSpacing: '0.5px',
-                      }}
-                    >
+                    <span className="modal-date-badge">
                       {previewTimeString || 'Chưa nhập năm'}
                     </span>
                     <span style={{ fontSize: '0.74rem', opacity: 0.8 }}>(Ô nào không cần thì để trống)</span>
@@ -953,165 +944,196 @@ export default function MilestoneDiagram({
                     value={customTimeString}
                     onChange={(e) => setCustomTimeString(e.target.value)}
                     placeholder="VD: 25-4 đến 26-6-1945 hoặc 1945 – 1954..."
-                    style={{ fontSize: '0.98rem', fontWeight: 700, borderRadius: '12px', padding: '10px 14px' }}
+                    className="modal-input-hero"
+                    style={{ fontSize: '0.94rem' }}
                   />
                   <div style={{ marginTop: '6px', fontSize: '0.76rem', color: '#9F1239', opacity: 0.85 }}>
-                    Chế độ chuỗi tự do dành cho sự kiện diễn ra trong thời gian dài hoặc nhiều năm.
+                    Dành cho sự kiện dài hạn hoặc giai đoạn diễn ra nhiều năm.
                   </div>
                 </div>
               )}
+
+              <div style={{ marginTop: '6px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#881337', marginBottom: '4px' }}>
+                  Tên sự kiện / Thực thể lịch sử <span style={{ color: '#E11D48' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formEntity}
+                  onChange={(e) => setFormEntity(e.target.value)}
+                  placeholder="VD: Hội nghị I-an-ta, Liên hợp quốc, Tuyên bố Ba-li..."
+                  className="modal-input-hero"
+                />
+              </div>
             </div>
 
-            <label className="field">
-              <span>Tên thực thể / Danh từ đích * (VD: Hội nghị I-an-ta, Liên hợp quốc, Tuyên bố Ba-li II...)</span>
-              <input
-                type="text"
-                required
-                value={formEntity}
-                onChange={(e) => setFormEntity(e.target.value)}
-                placeholder="Nhập danh từ thực thể..."
-              />
-            </label>
-
-            {/* 3 Nhóm Nhãn Bắt Buộc */}
-            <div className="form-tags-grid">
-              <label className="field">
-                <span>Nhãn Loại thực thể</span>
-                <select value={formTypeTag} onChange={(e) => setFormTypeTag(e.target.value)}>
-                  {STANDARD_TAGS.types.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span>Nhãn Không gian</span>
-                <select value={formSpaceTag} onChange={(e) => setFormSpaceTag(e.target.value)}>
-                  {STANDARD_TAGS.spaces.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span>Nhãn Thời kỳ</span>
-                <select value={formEraTag} onChange={(e) => setFormEraTag(e.target.value)}>
-                  {STANDARD_TAGS.eras.map((er) => (
-                    <option key={er} value={er}>
-                      {er}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="hashtag-manager-group" style={{ marginBottom: '16px' }}>
-              <label className="field" style={{ marginBottom: '8px' }}>
-                <span style={{ fontWeight: 700, color: '#881337' }}>
-                  🏷️ Hệ từ khóa Hashtag (#) phân loại sự kiện:
-                </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    value={tagInputValue}
-                    onChange={(e) => setTagInputValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddCustomTag(tagInputValue);
-                      }
-                    }}
-                    placeholder="Gõ từ khóa rồi ấn Thêm (VD: #HĐBA_LHQ, #Đổi_mới...)"
-                    style={{ flex: 1 }}
-                  />
-                  <button
-                    type="button"
-                    className="ios-btn sm ios-btn-secondary"
-                    onClick={() => handleAddCustomTag(tagInputValue)}
-                  >
-                    + Thêm thẻ
-                  </button>
+            {/* THẺ 2: PHÂN LOẠI 3 CHIỀU CHUẨN THI THPTQG */}
+            <div className="modal-section-card">
+              <div>
+                <div className="modal-section-title">
+                  <span>🏷️</span> Phân loại 3 chiều chuẩn thi
                 </div>
-              </label>
+                <div className="modal-section-subtitle">
+                  Hỗ trợ ma trận câu hỏi và bấm lọc nhanh theo từng chiều không gian - thời gian
+                </div>
+              </div>
 
-              {/* Danh sách hashtag đang có của mốc này */}
+              <div className="modal-selects-row">
+                <div className="modal-select-item">
+                  <label>🏷️ Loại thực thể</label>
+                  <select
+                    className="modal-custom-select"
+                    value={formTypeTag}
+                    onChange={(e) => setFormTypeTag(e.target.value)}
+                  >
+                    {STANDARD_TAGS.types.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="modal-select-item">
+                  <label>🌍 Không gian</label>
+                  <select
+                    className="modal-custom-select"
+                    value={formSpaceTag}
+                    onChange={(e) => setFormSpaceTag(e.target.value)}
+                  >
+                    {STANDARD_TAGS.spaces.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="modal-select-item">
+                  <label>⏳ Thời kỳ</label>
+                  <select
+                    className="modal-custom-select"
+                    value={formEraTag}
+                    onChange={(e) => setFormEraTag(e.target.value)}
+                  >
+                    {STANDARD_TAGS.eras.map((er) => (
+                      <option key={er} value={er}>
+                        {er}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* THẺ 3: HỆ TỪ KHÓA HASHTAG (#) */}
+            <div className="modal-section-card">
+              <div>
+                <div className="modal-section-title">
+                  <span>🔖</span> Bộ từ khóa Hashtag (#) gắn kèm
+                </div>
+                <div className="modal-section-subtitle">
+                  Gắn thêm từ khóa trọng tâm để bấm lọc nhanh các mốc liên quan trên sơ đồ
+                </div>
+              </div>
+
+              {/* Thanh nhập hashtag tự do */}
+              <div className="modal-tag-input-row">
+                <span className="modal-tag-prefix">#</span>
+                <input
+                  type="text"
+                  className="modal-tag-input"
+                  value={tagInputValue}
+                  onChange={(e) => setTagInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomTag(tagInputValue);
+                    }
+                  }}
+                  placeholder="Nhập từ khóa tuỳ ý rồi ấn Thêm (VD: HĐBA_LHQ, Đổi_mới...)"
+                />
+                <button
+                  type="button"
+                  className="modal-tag-add-btn"
+                  onClick={() => handleAddCustomTag(tagInputValue)}
+                >
+                  + Thêm thẻ
+                </button>
+              </div>
+
+              {/* Danh sách hashtag đang có */}
               {formTagsList.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
-                  {formTagsList.map((tag) => (
-                    <span
-                      key={tag}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 10px',
-                        background: '#FFF0F3',
-                        border: '1px solid #FDA4AF',
-                        borderRadius: '8px',
-                        color: '#BE123C',
-                        fontSize: '0.82rem',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {tag}
-                      <span
-                        style={{ cursor: 'pointer', opacity: 0.7, fontWeight: 900 }}
-                        onClick={() => handleRemoveCustomTag(tag)}
-                        title="Xoá nhãn này"
-                      >
-                        ✕
+                <div>
+                  <div className="modal-sub-label" style={{ marginBottom: '6px' }}>
+                    Đang gắn ({formTagsList.length} thẻ):
+                  </div>
+                  <div className="modal-active-tags-strip">
+                    {formTagsList.map((tag) => (
+                      <span key={tag} className="modal-active-tag-chip">
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomTag(tag)}
+                          title="Bỏ thẻ này"
+                        >
+                          ✕
+                        </button>
                       </span>
-                    </span>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* Gợi ý hashtag thông minh để bấm 1-chạm */}
-              <div style={{ fontSize: '0.78rem', color: '#9F1239', fontWeight: 600, marginBottom: '6px' }}>
-                💡 Gợi ý hashtag thường dùng (bấm để gắn nhanh):
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {SUGGESTED_HASHTAGS.map((sug) => {
-                  const isSelected = formTagsList.includes(sug);
-                  return (
-                    <button
-                      key={sug}
-                      type="button"
-                      className={`ios-btn sm ${isSelected ? 'ios-btn-primary' : 'ios-btn-secondary'}`}
-                      style={{ padding: '2px 8px', fontSize: '0.78rem' }}
-                      onClick={() => handleToggleSuggestedTag(sug)}
-                    >
-                      {isSelected ? `✓ ${sug}` : `+ ${sug}`}
-                    </button>
-                  );
-                })}
+              {/* Gợi ý nhanh 1-chạm */}
+              <div>
+                <div className="modal-sub-label" style={{ marginBottom: '6px' }}>
+                  💡 Gợi ý nhanh (chạm để bật / tắt):
+                </div>
+                <div className="modal-suggest-scroll-shelf">
+                  {SUGGESTED_HASHTAGS.map((sug) => {
+                    const isSelected = formTagsList.includes(sug);
+                    return (
+                      <button
+                        key={sug}
+                        type="button"
+                        className={`modal-suggest-pill ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleToggleSuggestedTag(sug)}
+                      >
+                        {isSelected ? `✓ ${sug}` : `+ ${sug}`}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            <label className="field">
-              <span>Ghi chú ngữ cảnh ngắn (Bản chất, mục đích hoặc vai trò lịch sử)</span>
+            {/* THẺ 4: GHI CHÚ BỐI CẢNH / Ý NGHĨA */}
+            <div className="modal-section-card">
+              <div className="modal-section-title">
+                <span>📝</span> Ghi chú bối cảnh & ý nghĩa lịch sử (tuỳ chọn)
+              </div>
               <textarea
-                rows={3}
+                rows={2}
+                className="modal-textarea-clean"
                 value={formNote}
                 onChange={(e) => setFormNote(e.target.value)}
-                placeholder="Tóm tắt ngắn gọn ý nghĩa mốc lịch sử..."
+                placeholder="Tóm tắt ngắn gọn mục tiêu, nguyên nhân hoặc tác động của sự kiện để ôn luyện nhanh..."
               />
-            </label>
+            </div>
 
-            <div className="row between" style={{ marginTop: '14px' }}>
+            {/* FOOTER NÚT BẤM */}
+            <div className="modal-actions-footer">
               <button
                 type="button"
-                className="ios-btn sm ios-btn-secondary"
+                className="modal-btn-cancel"
                 onClick={() => setEditModal(null)}
               >
                 Huỷ bỏ
               </button>
-              <button type="submit" className="ios-btn sm ios-btn-primary">
-                {editModal.mode === 'edit' ? 'Cập nhật Mốc' : 'Lưu vào Sơ đồ'}
+              <button type="submit" className="modal-btn-submit">
+                {editModal.mode === 'edit' ? '✓ Cập nhật Mốc' : '+ Lưu vào Sơ đồ'}
               </button>
             </div>
           </form>

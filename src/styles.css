@@ -1343,6 +1343,10 @@ a.folio-metric-cell:hover {
   border: 1.5px solid rgba(253, 164, 175, 0.55);
 }
 
+.modal.wide {
+  max-width: 660px;
+}
+
 .modal-head {
   display: flex;
   justify-content: space-between;
@@ -3781,24 +3785,381 @@ a.folio-metric-cell:hover {
   gap: 8px;
 }
 
-/* Modal Form Styles */
+/* ==========================================================================
+   ROSE MILK EDITORIAL - MILESTONE MODAL REDESIGN
+   ========================================================================== */
 .milestone-form-dialog {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 4px 0;
 }
 
-.form-tags-grid {
+.modal-section-card {
+  background: #FFFDFE;
+  border: 1.5px solid rgba(253, 164, 175, 0.45);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 16px -6px rgba(190, 18, 60, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-section-title {
+  font-family: var(--font-display, inherit);
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: #380718;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-section-subtitle {
+  font-size: 0.78rem;
+  color: #9F1239;
+  opacity: 0.8;
+  margin-top: -6px;
+}
+
+.modal-input-hero {
+  font-size: 1.02rem !important;
+  font-weight: 700 !important;
+  color: #380718 !important;
+  padding: 11px 15px !important;
+  border-radius: 14px !important;
+  background: #FFFFFF !important;
+  border: 1.5px solid rgba(253, 164, 175, 0.6) !important;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.modal-input-hero:focus {
+  border-color: #BE123C !important;
+  box-shadow: 0 0 0 3px rgba(190, 18, 60, 0.12) !important;
+}
+
+/* 3-Column Select Cards */
+.modal-selects-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
 @media (max-width: 640px) {
-  .form-tags-grid {
+  .modal-selects-row {
     grid-template-columns: 1fr;
   }
+}
+
+.modal-select-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-select-item label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #881337;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.modal-custom-select {
+  appearance: none;
+  background-color: #FFF8FA !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BE123C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 14px !important;
+  border: 1.5px solid rgba(253, 164, 175, 0.65) !important;
+  border-radius: 12px !important;
+  padding: 8px 30px 8px 12px !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #380718 !important;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.modal-custom-select:hover {
+  background-color: #FFFFFF !important;
+  border-color: #FDA4AF !important;
+}
+
+.modal-custom-select:focus {
+  border-color: #BE123C !important;
+  box-shadow: 0 0 0 3px rgba(190, 18, 60, 0.12) !important;
+}
+
+/* Date Triplet */
+.date-triplet-boxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 10px;
+}
+
+.triplet-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.triplet-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #9F1239;
+}
+
+.triplet-input {
+  text-align: center !important;
+  font-size: 0.98rem !important;
+  font-weight: 700 !important;
+  padding: 9px 10px !important;
+  border-radius: 12px !important;
+  background: #FFFBFD !important;
+  border: 1.5px solid rgba(253, 164, 175, 0.6) !important;
+  width: 100%;
+}
+
+.triplet-input.year-input {
+  font-weight: 800 !important;
+  color: #BE123C !important;
+  background: #FFF5F7 !important;
+  border-color: #FDA4AF !important;
+}
+
+.modal-date-preview-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #9F1239;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.modal-date-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: #380718;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 0.84rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(56, 7, 24, 0.2);
+}
+
+/* Hashtag Row & Shelf */
+.modal-tag-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(253, 164, 175, 0.65);
+  border-radius: 14px;
+  padding: 4px 6px 4px 12px;
+  transition: all 0.2s ease;
+}
+
+.modal-tag-input-row:focus-within {
+  border-color: #BE123C;
+  box-shadow: 0 0 0 3px rgba(190, 18, 60, 0.12);
+}
+
+.modal-tag-prefix {
+  font-weight: 800;
+  color: #BE123C;
+  font-size: 1.1rem;
+}
+
+.modal-tag-input {
+  flex: 1;
+  border: none !important;
+  padding: 6px 8px !important;
+  background: transparent !important;
+  font-size: 0.92rem !important;
+  box-shadow: none !important;
+}
+
+.modal-tag-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.modal-tag-add-btn {
+  background: linear-gradient(135deg, #FFE4E8, #FECDD6);
+  color: #BE123C;
+  border: 1px solid #FDA4AF;
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.modal-tag-add-btn:hover {
+  background: #BE123C;
+  color: #FFFFFF;
+  border-color: #BE123C;
+}
+
+.modal-active-tags-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.modal-active-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: #FFF0F3;
+  border: 1px solid #FDA4AF;
+  border-radius: 999px;
+  color: #BE123C;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.modal-active-tag-chip button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #BE123C;
+  font-weight: 900;
+  cursor: pointer;
+  opacity: 0.65;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.modal-active-tag-chip button:hover {
+  opacity: 1;
+}
+
+.modal-sub-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #881337;
+}
+
+.modal-suggest-scroll-shelf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 95px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.modal-suggest-scroll-shelf::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modal-suggest-scroll-shelf::-webkit-scrollbar-thumb {
+  background: rgba(253, 164, 175, 0.6);
+  border-radius: 999px;
+}
+
+.modal-suggest-pill {
+  border: 1px solid rgba(253, 164, 175, 0.6);
+  background: #FFFBFD;
+  color: #881337;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.modal-suggest-pill:hover {
+  background: #FFE4E8;
+  border-color: #FDA4AF;
+  color: #BE123C;
+}
+
+.modal-suggest-pill.selected {
+  background: #BE123C;
+  color: #FFFFFF;
+  border-color: #BE123C;
+  font-weight: 750;
+  box-shadow: 0 2px 6px rgba(190, 18, 60, 0.2);
+}
+
+.modal-textarea-clean {
+  resize: vertical;
+  min-height: 60px;
+  border-radius: 14px !important;
+  font-size: 0.92rem !important;
+  line-height: 1.5 !important;
+  border: 1.5px solid rgba(253, 164, 175, 0.55) !important;
+  background: #FFFFFF !important;
+  padding: 10px 14px !important;
+  width: 100%;
+}
+
+.modal-actions-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(253, 164, 175, 0.3);
+}
+
+.modal-btn-cancel {
+  background: transparent;
+  color: #881337;
+  border: 1px solid transparent;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-btn-cancel:hover {
+  background: #FFF0F3;
+  color: #BE123C;
+}
+
+.modal-btn-submit {
+  background: linear-gradient(135deg, #E11D48, #BE123C);
+  color: #FFFFFF;
+  border: none;
+  padding: 9px 22px;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 4px 14px -3px rgba(190, 18, 60, 0.4);
+  transition: all 0.2s ease;
+}
+
+.modal-btn-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -3px rgba(190, 18, 60, 0.5);
 }
 
 .empty-milestones-notice {
