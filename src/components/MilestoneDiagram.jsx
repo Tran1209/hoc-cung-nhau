@@ -8,6 +8,24 @@ export const STANDARD_TAGS = {
   eras: ['#Phong_kiến', '#1919-1945', '#Chống_Pháp', '#Chống_Mỹ', '#Đổi_mới'],
 };
 
+export const SUGGESTED_HASHTAGS = [
+  '#Hiến_chương',
+  '#Hội_nghị',
+  '#Hiệp_định',
+  '#Hội_nhập',
+  '#Kinh_tế',
+  '#Đối_ngoại',
+  '#Bảo_vệ_chủ_quyền',
+  '#Gìn_giữ_hoà_bình',
+  '#HĐBA_LHQ',
+  '#ASEAN',
+  '#Việt_Nam',
+  '#Đổi_mới',
+  '#Độc_lập_dân_tộc',
+  '#Kháng_chiến',
+  '#Chiến_dịch',
+];
+
 // Từ điển bẫy nhiễu mẫu thông minh theo chuẩn Bộ GD&ĐT 2026
 const SMART_TRAP_RULES = {
   'Hiến chương Liên hợp quốc': [
@@ -73,7 +91,30 @@ export default function MilestoneDiagram({
   const [formTypeTag, setFormTypeTag] = useState('#Văn_kiện');
   const [formSpaceTag, setFormSpaceTag] = useState('#Việt_Nam');
   const [formEraTag, setFormEraTag] = useState('#1919-1945');
-  const [customTagInput, setCustomTagInput] = useState('');
+  const [formTagsList, setFormTagsList] = useState([]);
+  const [tagInputValue, setTagInputValue] = useState('');
+
+  const handleAddCustomTag = (tagStr) => {
+    let clean = (tagStr || '').trim().replace(/^#+/, '');
+    if (!clean) return;
+    clean = '#' + clean.replace(/\s+/g, '_');
+    if (!formTagsList.includes(clean)) {
+      setFormTagsList([...formTagsList, clean]);
+    }
+    setTagInputValue('');
+  };
+
+  const handleRemoveCustomTag = (tag) => {
+    setFormTagsList(formTagsList.filter((t) => t !== tag));
+  };
+
+  const handleToggleSuggestedTag = (tag) => {
+    if (formTagsList.includes(tag)) {
+      handleRemoveCustomTag(tag);
+    } else {
+      setFormTagsList([...formTagsList, tag]);
+    }
+  };
 
   // Drag & Drop state
   const [draggedIndex, setDraggedIndex] = useState(null);
@@ -84,6 +125,20 @@ export default function MilestoneDiagram({
   };
 
   // Lọc danh sách mốc
+  
+  // Tổng hợp tất cả hashtag có trong dữ liệu (chuẩn + tự do của người dùng)
+  const allAvailableTags = useMemo(() => {
+    const counts = {};
+    sourceMilestones.forEach((m) => {
+      [m.typeTag, m.spaceTag, m.eraTag, ...(m.customTags || [])].forEach((tag) => {
+        if (tag && typeof tag === 'string' && tag.startsWith('#')) {
+          counts[tag] = (counts[tag] || 0) + 1;
+        }
+      });
+    });
+    return Object.entries(counts).map(([tag, count]) => ({ tag, count }));
+  }, [sourceMilestones]);
+
   const filteredMilestones = useMemo(() => {
     return sourceMilestones.filter((m) => {
       // 1. Lọc theo Tag
@@ -111,13 +166,24 @@ export default function MilestoneDiagram({
   // Gom cụm cho Cluster View
   const clusters = useMemo(() => {
     const map = {};
-    const keyProp = clusterDimension === 'type' ? 'typeTag' : clusterDimension === 'space' ? 'spaceTag' : 'eraTag';
-
-    filteredMilestones.forEach((m) => {
-      const groupKey = m[keyProp] || '#Khác';
-      if (!map[groupKey]) map[groupKey] = [];
-      map[groupKey].push(m);
-    });
+    if (clusterDimension === 'hashtag') {
+      filteredMilestones.forEach((m) => {
+        const tags = m.customTags && m.customTags.length > 0 ? m.customTags : ['#Chưa_gắn_hashtag'];
+        tags.forEach((tag) => {
+          if (!map[tag]) map[tag] = [];
+          if (!map[tag].some((existing) => existing.id === m.id)) {
+            map[tag].push(m);
+          }
+        });
+      });
+    } else {
+      const keyProp = clusterDimension === 'type' ? 'typeTag' : clusterDimension === 'space' ? 'spaceTag' : 'eraTag';
+      filteredMilestones.forEach((m) => {
+        const groupKey = m[keyProp] || '#Khác';
+        if (!map[groupKey]) map[groupKey] = [];
+        map[groupKey].push(m);
+      });
+    }
 
     return Object.entries(map).map(([tag, items]) => ({ tag, items }));
   }, [filteredMilestones, clusterDimension]);
@@ -130,7 +196,8 @@ export default function MilestoneDiagram({
     setFormTypeTag('#Văn_kiện');
     setFormSpaceTag('#Việt_Nam');
     setFormEraTag('#1919-1945');
-    setCustomTagInput('');
+    setFormTagsList([]);
+    setTagInputValue('');
     setEditModal({ mode: 'add', insertIndex, parentId });
   };
 
@@ -151,11 +218,6 @@ export default function MilestoneDiagram({
     e?.preventDefault();
     if (!formTime.trim() || !formEntity.trim()) return;
 
-    const customTags = customTagInput
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t && t.startsWith('#'));
-
     const nodeData = {
       id: editModal.mode === 'edit' ? editModal.id : 'ms-' + Date.now(),
       time: formTime.trim(),
@@ -164,7 +226,7 @@ export default function MilestoneDiagram({
       typeTag: formTypeTag,
       spaceTag: formSpaceTag,
       eraTag: formEraTag,
-      customTags: customTags.length > 0 ? customTags : undefined,
+      customTags: formTagsList.length > 0 ? formTagsList : undefined,
       parentId: editModal.parentId || null,
     };
 
@@ -341,7 +403,7 @@ export default function MilestoneDiagram({
         </div>
       </div>
 
-      {/* 2. THANH BỘ LỌC NHÃN ĐA CHIỀU (TAG FILTER BAR) */}
+      {/* 2. THANH BỘ LỌC NHÃN ĐA CHIỀU & HASHTAG (#) */}
       <div className="milestone-tag-filter-bar">
         <span className="tag-filter-label">Bộ lọc nhãn:</span>
         <div className="tag-filter-scroll">
@@ -350,53 +412,22 @@ export default function MilestoneDiagram({
             className={`tag-chip-filter ${activeFilterTag === 'ALL' ? 'active' : ''}`}
             onClick={() => setActiveFilterTag('ALL')}
           >
-            Tất cả ({milestones.length})
+            Tất cả ({sourceMilestones.length})
           </button>
 
-          {/* Nhãn loại thực thể */}
-          {STANDARD_TAGS.types.map((t) => {
-            const count = milestones.filter((m) => m.typeTag === t).length;
-            if (count === 0) return null;
+          {allAvailableTags.map(({ tag, count }) => {
+            const isType = STANDARD_TAGS.types.includes(tag);
+            const isSpace = STANDARD_TAGS.spaces.includes(tag);
+            const isEra = STANDARD_TAGS.eras.includes(tag);
+            const chipClass = isType ? 'type-chip' : isSpace ? 'space-chip' : isEra ? 'era-chip' : 'custom-chip';
             return (
               <button
-                key={t}
+                key={tag}
                 type="button"
-                className={`tag-chip-filter type-chip ${activeFilterTag === t ? 'active' : ''}`}
-                onClick={() => setActiveFilterTag(t)}
+                className={`tag-chip-filter ${chipClass} ${activeFilterTag === tag ? 'active' : ''}`}
+                onClick={() => setActiveFilterTag(activeFilterTag === tag ? 'ALL' : tag)}
               >
-                {t} ({count})
-              </button>
-            );
-          })}
-
-          {/* Nhãn không gian */}
-          {STANDARD_TAGS.spaces.map((s) => {
-            const count = milestones.filter((m) => m.spaceTag === s).length;
-            if (count === 0) return null;
-            return (
-              <button
-                key={s}
-                type="button"
-                className={`tag-chip-filter space-chip ${activeFilterTag === s ? 'active' : ''}`}
-                onClick={() => setActiveFilterTag(s)}
-              >
-                {s} ({count})
-              </button>
-            );
-          })}
-
-          {/* Nhãn thời kỳ */}
-          {STANDARD_TAGS.eras.map((er) => {
-            const count = milestones.filter((m) => m.eraTag === er).length;
-            if (count === 0) return null;
-            return (
-              <button
-                key={er}
-                type="button"
-                className={`tag-chip-filter era-chip ${activeFilterTag === er ? 'active' : ''}`}
-                onClick={() => setActiveFilterTag(er)}
-              >
-                {er} ({count})
+                {tag} ({count})
               </button>
             );
           })}
@@ -432,6 +463,13 @@ export default function MilestoneDiagram({
                 onClick={() => setClusterDimension('era')}
               >
                 Giai đoạn thời kỳ
+              </button>
+              <button
+                type="button"
+                className={`dim-pill ${clusterDimension === 'hashtag' ? 'active' : ''}`}
+                onClick={() => setClusterDimension('hashtag')}
+              >
+                Từ khóa Hashtag (#)
               </button>
             </div>
           </div>
@@ -551,34 +589,28 @@ export default function MilestoneDiagram({
            CHẾ ĐỘ TRỤC THỜI GIAN NỐI TIẾP (DỌC HOẶC NGANG CÓ NHÁNH RẼ)
            ========================================================================= */
         <div className={`timeline-diagram-container ${viewMode === 'timeline-horizontal' ? 'is-horizontal' : 'is-vertical'}`}>
-          {milestones.length === 0 ? (
-            <div
-              className="empty-unified-timeline"
-              style={{
-                textAlign: 'center',
-                padding: '48px 24px',
-                background: '#FFF0F3',
-                borderRadius: '24px',
-                border: '2px dashed #FDA4AF',
-                margin: '28px auto',
-                maxWidth: '620px',
-              }}
-            >
-              <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>⏱️</div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#380718', margin: '0 0 8px 0' }}>
-                Trục thời gian Lịch Sử dùng chung (Lớp 10 · 11 · 12)
-              </h3>
-              <p style={{ color: '#4A1D2F', fontSize: '0.92rem', lineHeight: 1.6, margin: '0 0 20px 0' }}>
-                Trục dọc niên biểu này là <b>duy nhất</b> và <b>đồng bộ liên tục</b> xuyên suốt toàn bộ các bài học trong cả 3 khối lớp. Hiện tại chưa có mốc nào. Hãy bấm nút bên dưới hoặc dùng <b>Bút dạ quang</b> tô sáng câu từ trong bài đọc để thêm mốc của bạn vào đây!
-              </p>
-              <button
-                type="button"
-                className="ios-btn md ios-btn-primary"
-                onClick={() => handleOpenAdd()}
-                style={{ padding: '10px 24px', fontSize: '0.95rem' }}
-              >
-                + Thêm Cột Mốc Đầu Tiên Vào Trục
-              </button>
+          {sourceMilestones.length === 0 ? (
+            /* KHI TOÀN BỘ MỐC BỊ XOÁ HẾT: HIỂN THỊ THẺ TRỐNG TRỰC TIẾP TRÊN TRỤC */
+            <div className="timeline-track">
+              <div className="timeline-node-segment empty-placeholder-segment">
+                <div className="timeline-spine-dot placeholder-spine-dot">
+                  <span>+</span>
+                </div>
+                <div
+                  className="milestone-placeholder-card"
+                  onClick={() => handleOpenAdd(0)}
+                  title="Bấm vào thẻ này để thêm mốc lịch sử đầu tiên"
+                >
+                  <div className="placeholder-card-badge">MỐC SỰ KIỆN MỚI</div>
+                  <h3 className="placeholder-card-title">+ Thêm mốc lịch sử đầu tiên vào trục</h3>
+                  <p className="placeholder-card-desc">
+                    Trục thời gian đang trống. Bấm trực tiếp vào thẻ trống này để nhập mốc năm, tên sự kiện, văn kiện và gắn thẻ #hashtag phân loại...
+                  </p>
+                  <div className="placeholder-card-action">
+                    <span className="ios-btn sm ios-btn-primary">+ Nhập thông tin mốc</span>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : filteredMilestones.length === 0 ? (
             <div className="empty-milestones-notice">
@@ -611,55 +643,55 @@ export default function MilestoneDiagram({
                         className="insert-add-btn"
                         onClick={() => handleOpenAdd(idx)}
                       >
-                        + Chèn Mốc vào đây
+                        + Chèn mốc vào đây
                       </button>
                     </div>
 
-                    {/* THẺ MỐC LỊCH SỬ (MILESTONE NODE) */}
-                    <div
-                      className={`milestone-interactive-card ${draggedIndex === idx ? 'is-dragging' : ''}`}
-                      draggable={isDraggable}
-                      onDragStart={(e) => handleDragStart(e, idx)}
-                      onDragOver={(e) => handleDragOver(e, idx)}
-                      onDrop={(e) => handleDrop(e, idx)}
-                    >
-                      {/* Cột mốc và điểm neo trên trục */}
-                      <div className="node-axis-anchor">
-                        <div className="anchor-dot" />
-                        <div className="anchor-stem" />
-                      </div>
+                    {/* ĐIỂM TIMELINE TRÊN TRỤC */}
+                    <div className="timeline-spine-dot" />
 
-                      <div className="node-card-body">
-                        {/* Header Thẻ Mốc: Thời gian + Thao tác */}
+                    {/* HỘP NỘI DUNG THẺ MỐC */}
+                    <div
+                      className={`milestone-card-box ${m.parentId ? 'is-branch-child' : ''} ${isDraggable ? 'is-draggable' : ''}`}
+                      draggable={isDraggable}
+                      onDragStart={(e) => isDraggable && handleDragStart(e, idx)}
+                      onDragOver={(e) => isDraggable && handleDragOver(e, idx)}
+                      onDrop={(e) => isDraggable && handleDrop(e, idx)}
+                    >
+                      <div className="milestone-card-content">
+                        {/* Thanh Tiêu Đề Mốc: Thời gian + Nút hành động */}
                         <div className="node-top-bar">
                           <span className="node-time-badge">{m.time}</span>
 
-                          <div className="node-action-icons">
+                          <div className="node-actions-wrap">
                             {isDraggable && (
                               <span className="drag-handle-pill" title="Kéo thả để đổi thứ tự mốc">
-                                ⠿ Kéo
+                                ⋮⋮ Kéo
                               </span>
                             )}
+
                             <button
                               type="button"
-                              className="node-mini-btn"
-                              title="Thêm nhánh sự kiện con"
+                              className="node-action-btn branch-btn"
+                              title="Tạo nhánh sự kiện con trực thuộc mốc này"
                               onClick={() => handleOpenAdd(idx + 1, m.id)}
                             >
                               + Nhánh con
                             </button>
+
                             <button
                               type="button"
-                              className="node-mini-btn"
-                              title="Chỉnh sửa mốc"
+                              className="node-action-btn edit-btn"
+                              title="Chỉnh sửa thông tin mốc"
                               onClick={() => handleOpenEdit(m, idx)}
                             >
                               ✎ Sửa
                             </button>
+
                             <button
                               type="button"
-                              className="node-mini-btn delete"
-                              title="Xoá mốc"
+                              className="node-action-btn delete-btn"
+                              title="Xoá mốc này khỏi sơ đồ"
                               onClick={() => handleDeleteMilestone(m.id)}
                             >
                               ✕
@@ -673,37 +705,43 @@ export default function MilestoneDiagram({
                         {/* Ghi chú ngữ cảnh ngắn */}
                         <p className="node-note-text">{m.note}</p>
 
-                        {/* 3 Nhóm Nhãn Màu Sắc Phân Biệt */}
+                        {/* HỆ TỪ KHÓA HASHTAG TƯƠNG TÁC */}
                         <div className="node-tags-row">
                           <button
                             type="button"
-                            className="tag-pill tag-type"
-                            title="Lọc thực thể cùng loại"
-                            onClick={() => setActiveFilterTag(m.typeTag)}
+                            className={`tag-pill tag-type ${activeFilterTag === m.typeTag ? 'is-active-filter' : ''}`}
+                            title={`Lọc theo ${m.typeTag}`}
+                            onClick={() => setActiveFilterTag(activeFilterTag === m.typeTag ? 'ALL' : m.typeTag)}
                           >
                             {m.typeTag}
                           </button>
                           <button
                             type="button"
-                            className="tag-pill tag-space"
-                            title="Lọc thực thể cùng không gian"
-                            onClick={() => setActiveFilterTag(m.spaceTag)}
+                            className={`tag-pill tag-space ${activeFilterTag === m.spaceTag ? 'is-active-filter' : ''}`}
+                            title={`Lọc theo ${m.spaceTag}`}
+                            onClick={() => setActiveFilterTag(activeFilterTag === m.spaceTag ? 'ALL' : m.spaceTag)}
                           >
                             {m.spaceTag}
                           </button>
                           <button
                             type="button"
-                            className="tag-pill tag-era"
-                            title="Lọc thực thể cùng thời kỳ"
-                            onClick={() => setActiveFilterTag(m.eraTag)}
+                            className={`tag-pill tag-era ${activeFilterTag === m.eraTag ? 'is-active-filter' : ''}`}
+                            title={`Lọc theo ${m.eraTag}`}
+                            onClick={() => setActiveFilterTag(activeFilterTag === m.eraTag ? 'ALL' : m.eraTag)}
                           >
                             {m.eraTag}
                           </button>
 
                           {m.customTags?.map((ct, ci) => (
-                            <span key={ci} className="tag-pill tag-custom">
+                            <button
+                              key={ci}
+                              type="button"
+                              className={`tag-pill tag-custom ${activeFilterTag === ct ? 'is-active-filter' : ''}`}
+                              title={`Lọc theo ${ct}`}
+                              onClick={() => setActiveFilterTag(activeFilterTag === ct ? 'ALL' : ct)}
+                            >
                               {ct}
-                            </span>
+                            </button>
                           ))}
                         </div>
 
@@ -738,16 +776,24 @@ export default function MilestoneDiagram({
                 );
               })}
 
-              {/* KHU VỰC RÊ CHUỘT Ở CUỐI CÙNG TRỤC SƠ ĐỒ */}
-              <div className="insert-hover-zone last-zone" title="Thêm mốc vào cuối sơ đồ">
-                <div className="insert-line-bar" />
-                <button
-                  type="button"
-                  className="insert-add-btn"
-                  onClick={() => handleOpenAdd(filteredMilestones.length)}
+              {/* THẺ TRỐNG TIẾP THEO Ở CUỐI TRỤC (THAY THẾ NÚT BỊ VÔ DUYÊN) */}
+              <div className="timeline-node-segment end-add-segment">
+                <div className="timeline-spine-dot placeholder-spine-dot">
+                  <span>+</span>
+                </div>
+                <div
+                  className="milestone-placeholder-card"
+                  onClick={() => handleOpenAdd(sourceMilestones.length)}
+                  title="Bấm vào thẻ này để thêm mốc nối tiếp vào trục"
                 >
-                  + Chèn Mốc vào cuối sơ đồ
-                </button>
+                  <div className="placeholder-card-compact">
+                    <span className="placeholder-plus-circle">+</span>
+                    <div className="placeholder-text-group">
+                      <div className="placeholder-compact-title">Thêm mốc sự kiện tiếp theo vào trục thời gian</div>
+                      <div className="placeholder-compact-sub">Bấm vào thẻ trống này để chèn mốc mới kèm nhãn #hashtag phân loại</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -821,15 +867,88 @@ export default function MilestoneDiagram({
               </label>
             </div>
 
-            <label className="field">
-              <span>Nhãn tuỳ chỉnh bổ sung (Cách nhau bởi dấu phẩy, có dấu #)</span>
-              <input
-                type="text"
-                value={customTagInput}
-                onChange={(e) => setCustomTagInput(e.target.value)}
-                placeholder="VD: #Hội_nhập, #Kinh_tế, #Bảo_vệ_chủ_quyền"
-              />
-            </label>
+            <div className="hashtag-manager-group" style={{ marginBottom: '16px' }}>
+              <label className="field" style={{ marginBottom: '8px' }}>
+                <span style={{ fontWeight: 700, color: '#881337' }}>
+                  🏷️ Hệ từ khóa Hashtag (#) phân loại sự kiện:
+                </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    value={tagInputValue}
+                    onChange={(e) => setTagInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomTag(tagInputValue);
+                      }
+                    }}
+                    placeholder="Gõ từ khóa rồi ấn Thêm (VD: #HĐBA_LHQ, #Đổi_mới...)"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="ios-btn sm ios-btn-secondary"
+                    onClick={() => handleAddCustomTag(tagInputValue)}
+                  >
+                    + Thêm thẻ
+                  </button>
+                </div>
+              </label>
+
+              {/* Danh sách hashtag đang có của mốc này */}
+              {formTagsList.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                  {formTagsList.map((tag) => (
+                    <span
+                      key={tag}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '4px 10px',
+                        background: '#FFF0F3',
+                        border: '1px solid #FDA4AF',
+                        borderRadius: '8px',
+                        color: '#BE123C',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {tag}
+                      <span
+                        style={{ cursor: 'pointer', opacity: 0.7, fontWeight: 900 }}
+                        onClick={() => handleRemoveCustomTag(tag)}
+                        title="Xoá nhãn này"
+                      >
+                        ✕
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Gợi ý hashtag thông minh để bấm 1-chạm */}
+              <div style={{ fontSize: '0.78rem', color: '#9F1239', fontWeight: 600, marginBottom: '6px' }}>
+                💡 Gợi ý hashtag thường dùng (bấm để gắn nhanh):
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {SUGGESTED_HASHTAGS.map((sug) => {
+                  const isSelected = formTagsList.includes(sug);
+                  return (
+                    <button
+                      key={sug}
+                      type="button"
+                      className={`ios-btn sm ${isSelected ? 'ios-btn-primary' : 'ios-btn-secondary'}`}
+                      style={{ padding: '2px 8px', fontSize: '0.78rem' }}
+                      onClick={() => handleToggleSuggestedTag(sug)}
+                    >
+                      {isSelected ? `✓ ${sug}` : `+ ${sug}`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <label className="field">
               <span>Ghi chú ngữ cảnh ngắn (Bản chất, mục đích hoặc vai trò lịch sử)</span>

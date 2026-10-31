@@ -95,7 +95,7 @@ export default function LessonReviewHub({
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.milestones?.length > 0) {
+        if (Array.isArray(parsed.milestones)) {
           return parsed;
         }
         return {
@@ -115,9 +115,9 @@ export default function LessonReviewHub({
     }
   });
 
-  // Tự động gán mốc chuẩn có sẵn nếu bài học chưa có
+  // Tự động gán mốc chuẩn có sẵn CHỈ KHI chưa từng khởi tạo (undefined / null)
   useEffect(() => {
-    if ((!studyData.milestones || studyData.milestones.length === 0) && standardMilestones.length > 0) {
+    if (studyData.milestones === undefined || studyData.milestones === null) {
       setStudyData((prev) => ({
         ...prev,
         milestones: standardMilestones,
