@@ -83,16 +83,6 @@ export default function LessonReviewHub({
     return getStandardMilestonesForLesson(lessonTitle, chapterTitle, lessonContent);
   }, [lessonTitle, chapterTitle, lessonContent]);
 
-  // Toàn bộ niên biểu tổng kết: Tích luỹ và gom động từ các mốc bài học
-  const allMilestones = useMemo(() => {
-    return getAggregatedCurriculumMilestones({
-      currentLessonId: lessonId,
-      currentLessonTitle: lessonTitle,
-      currentChapterTitle: chapterTitle,
-      currentMilestones: studyData.milestones || [],
-    });
-  }, [lessonId, lessonTitle, chapterTitle, studyData.milestones]);
-
   // Dữ liệu ôn tập của bài học (Có sẵn mốc chuẩn theo bài học, cho phép người dùng tự do thêm/sửa/xoá)
   const storageKey = `lesson_study_data_${lessonId}`;
   const [studyData, setStudyData] = useState(() => {
@@ -100,12 +90,13 @@ export default function LessonReviewHub({
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.milestones)) {
-          return parsed;
-        }
         return {
+          ...DEFAULT_BAI1_REVIEW_DATA,
           ...parsed,
-          milestones: standardMilestones,
+          milestones: Array.isArray(parsed.milestones) && parsed.milestones.length > 0 ? parsed.milestones : standardMilestones,
+          axes: Array.isArray(parsed.axes) && parsed.axes.length > 0 ? parsed.axes : DEFAULT_BAI1_REVIEW_DATA.axes,
+          causeEffects: Array.isArray(parsed.causeEffects) && parsed.causeEffects.length > 0 ? parsed.causeEffects : DEFAULT_CAUSE_EFFECT_LIST,
+          comparisons: Array.isArray(parsed.comparisons) && parsed.comparisons.length > 0 ? parsed.comparisons : DEFAULT_COMPARISONS_LIST,
         };
       }
       return {
@@ -120,15 +111,27 @@ export default function LessonReviewHub({
     }
   });
 
+  // Toàn bộ niên biểu tổng kết: Tích luỹ và gom động từ các mốc bài học (Khai báo SAU khi studyData đã khởi tạo)
+  const allMilestones = useMemo(() => {
+    return getAggregatedCurriculumMilestones({
+      currentLessonId: lessonId,
+      currentLessonTitle: lessonTitle,
+      currentChapterTitle: chapterTitle,
+      currentMilestones: studyData?.milestones || [],
+    });
+  }, [lessonId, lessonTitle, chapterTitle, studyData?.milestones]);
+
   // Tự động gán mốc chuẩn có sẵn CHỈ KHI chưa từng khởi tạo (undefined / null)
   useEffect(() => {
-    if (studyData.milestones === undefined || studyData.milestones === null) {
-      setStudyData((prev) => ({
-        ...prev,
-        milestones: standardMilestones,
-      }));
+    if (!studyData?.milestones || studyData.milestones.length === 0) {
+      if (standardMilestones && standardMilestones.length > 0) {
+        setStudyData((prev) => ({
+          ...prev,
+          milestones: standardMilestones,
+        }));
+      }
     }
-  }, [standardMilestones, studyData.milestones]);
+  }, [standardMilestones, studyData?.milestones]);
 
   // Tự động tính tổng số mục ôn tập và đẩy lên Badge của Tab Ôn tập cha
   const totalCount = useMemo(() => {
