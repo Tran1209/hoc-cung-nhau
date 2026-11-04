@@ -7,6 +7,7 @@ import { emitDataChange } from './events';
 import { compressImage, fileExt } from '../lib/image';
 import { uid } from '../lib/format';
 import { HISTORY_CURRICULUM } from './historyCurriculum';
+import examBt1 from './exam_bt1_thptqg2026.json';
 
 const DB_NAME = 'hoc-cung-nhau-demo';
 const ME_KEY = 'hcn-demo-me';
@@ -103,6 +104,78 @@ async function cleanDuplicates() {
         }
       }
     }
+  }
+
+  // Tự động nâng cấp đề thi chuẩn mới nhất THPTQG 2026 cho BT1 (24 MCQ + 2 TF)
+  try {
+    const allAs = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('assignments'))).then((rs) => rs.map((r) => r.data));
+    for (const a of allAs) {
+      if (a.title && (a.title.includes('BT1') || a.title.includes('THPT Quốc Gia 2026'))) {
+        const allQs = await tx('rows', 'readonly', (s) => reqP(s.index('table').getAll('questions'))).then((rs) => rs.map((r) => r.data));
+        const aQs = allQs.filter((q) => q.assignment_id === a.id);
+        const isUpToDate = aQs.some((q) => q.prompt && q.prompt.includes('Ngày 1 – 1 – 1942'));
+        if (!isUpToDate) {
+          for (const q of aQs) {
+            await delRow('questions', q.id);
+            await delRow('answer_keys', q.id);
+          }
+          await putRow('assignments', {
+            ...a,
+            title: 'BT1: Đề thi thử THPT Quốc Gia 2026 (24 câu trắc nghiệm + 2 câu Đúng / Sai)',
+            instructions: 'Đề thi trắc nghiệm Lịch Sử 12 - Bài 1: Liên hợp quốc (Bộ Kết nối tri thức với cuộc sống):\n- Phần I: 24 câu trắc nghiệm 4 lựa chọn theo ma trận 5 Lõi kiến thức (0.25đ/câu = 6.0đ)\n- Phần II: 2 câu trắc nghiệm Đúng / Sai theo đoạn tư liệu và bảng thông tin (2.0đ/câu = 4.0đ)\nTổng điểm: 10.0 điểm.',
+            max_score: 10,
+            is_published: true,
+          });
+
+          for (let i = 0; i < examBt1.mcq24.length; i++) {
+            const item = examBt1.mcq24[i];
+            const qId = uid();
+            await putRow('questions', {
+              id: qId,
+              assignment_id: a.id,
+              type: 'mcq',
+              prompt: `Câu ${i + 1}. ${item.prompt}`,
+              options: item.options,
+              points: item.points,
+              position: i + 1,
+              explanation: item.explanation,
+              created_at: new Date().toISOString(),
+            });
+            await putRow('answer_keys', {
+              question_id: qId,
+              correct: item.correct,
+              explanation: item.explanation,
+              created_at: new Date().toISOString(),
+            }, 'question_id');
+          }
+
+          for (let i = 0; i < examBt1.tf2.length; i++) {
+            const item = examBt1.tf2[i];
+            const qId = uid();
+            await putRow('questions', {
+              id: qId,
+              assignment_id: a.id,
+              type: 'tf',
+              prompt: item.prompt,
+              options: item.options,
+              points: item.points,
+              position: 24 + i + 1,
+              explanation: item.explanation,
+              created_at: new Date().toISOString(),
+            });
+            await putRow('answer_keys', {
+              question_id: qId,
+              correct: item.correct,
+              explanation: item.explanation,
+              created_at: new Date().toISOString(),
+            }, 'question_id');
+          }
+          try { localStorage.removeItem(`hcn-draft-${a.id}`); } catch {}
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi đồng bộ đề thi BT1:', err);
   }
 }
 

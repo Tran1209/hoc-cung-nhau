@@ -45,6 +45,8 @@ export default function QuizRunner({
   const [showMap, setShowMap] = useState(false);
   const [activeQIndex, setActiveQIndex] = useState(0);
   const [activeTfItem, setActiveTfItem] = useState({}); // { [questionId]: statementIndex }
+  const [openEvidence, setOpenEvidence] = useState({}); // { [questionId]: boolean }
+  const [autoShowEvidence, setAutoShowEvidence] = useState(false); // Mặc định để "Em" tự bấm trích xuất
 
   const submittedRef = useRef(false);
   const lightbox = useState(null);
@@ -216,6 +218,16 @@ export default function QuizRunner({
           <button
             type="button"
             className="btn-map-toggle"
+            style={{ fontSize: '0.78rem', padding: '4px 9px' }}
+            onClick={() => setAutoShowEvidence((v) => !v)}
+            title="Nhấp để chuyển đổi giữa Em tự bấm trích xuất hoặc Tự động mở"
+          >
+            {autoShowEvidence ? '⚡ Trích xuất: Tự động' : '🖐️ Trích xuất: Em tự bấm'}
+          </button>
+
+          <button
+            type="button"
+            className="btn-map-toggle"
             onClick={() => setShowMap((v) => !v)}
             title="Mở bảng mục lục câu hỏi"
           >
@@ -356,8 +368,27 @@ export default function QuizRunner({
                     })}
                   </div>
 
+                  {/* THANH THAO TÁC: EM TỰ BẤM TRÍCH XUẤT KIẾN THỨC */}
+                  {answers[q.id] !== undefined && (
+                    <div className="quiz-evidence-action-row" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className={`ios-btn sm ${openEvidence[q.id] ? 'ios-btn-secondary' : 'ios-btn-primary'}`}
+                        style={{ borderRadius: '999px', fontSize: '0.8rem', padding: '4px 12px' }}
+                        onClick={() => setOpenEvidence((prev) => ({ ...prev, [q.id]: !prev[q.id] }))}
+                      >
+                        {openEvidence[q.id] ? '📖 Thu gọn trích xuất ▲' : '🔍 Em tự trích xuất dẫn chứng SGK ▼'}
+                      </button>
+                      {!openEvidence[q.id] && (
+                        <span className="small muted">
+                          (Em bấm vào để xem đoạn SGK và lời dặn từ Anh đối chiếu cho phương án đã chọn)
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* TRÍCH XUẤT KIẾN THỨC VỚI BÚT DẠ QUANG HỒNG KHI ĐÃ CHỌN ĐÁP ÁN */}
-                  {answers[q.id] !== undefined && (() => {
+                  {answers[q.id] !== undefined && (autoShowEvidence || openEvidence[q.id]) && (() => {
                     const evidence = extractEvidence({
                       question: q,
                       selectedAnswer: answers[q.id],
@@ -459,8 +490,22 @@ export default function QuizRunner({
                     </div>
                   </div>
 
+                  {/* THANH THAO TÁC: EM TỰ BẤM TRÍCH XUẤT DẪN CHỨNG CHO Ý ĐANG CHỌN */}
+                  {answers[q.id] && Object.keys(answers[q.id]).length > 0 && (
+                    <div className="quiz-evidence-action-row" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className={`ios-btn sm ${openEvidence[q.id] ? 'ios-btn-secondary' : 'ios-btn-primary'}`}
+                        style={{ borderRadius: '999px', fontSize: '0.8rem', padding: '4px 12px' }}
+                        onClick={() => setOpenEvidence((prev) => ({ ...prev, [q.id]: !prev[q.id] }))}
+                      >
+                        {openEvidence[q.id] ? '📖 Thu gọn dẫn chứng tư liệu ▲' : '🔍 Em tự trích xuất dẫn chứng tư liệu cho ý này ▼'}
+                      </button>
+                    </div>
+                  )}
+
                   {/* TRÍCH XUẤT KIẾN THỨC VỚI BÚT DẠ QUANG HỒNG CHO Ý ĐANG CHỌN */}
-                  {answers[q.id] && Object.keys(answers[q.id]).length > 0 && (() => {
+                  {answers[q.id] && Object.keys(answers[q.id]).length > 0 && (autoShowEvidence || openEvidence[q.id]) && (() => {
                     const ansObj = answers[q.id];
                     const keys = Object.keys(ansObj);
                     const focusedIdx = activeTfItem[q.id] !== undefined
