@@ -9,14 +9,25 @@ import Uploader from './Uploader';
 export default function UploadSubmit({ assignment }) {
   const { user } = useAuth();
   const nav = useNavigate();
-  const key = `hcn-draft-${assignment.id}`;
-  const [files, setFiles] = useState(() => JSON.parse(localStorage.getItem(key) || '{}').files || []);
-  const [note, setNote] = useState(() => JSON.parse(localStorage.getItem(key) || '{}').note || '');
+  const key = `hcn-draft-${assignment?.id || 'default'}`;
+  const [draft] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(key) || '{}');
+    } catch {
+      return {};
+    }
+  });
+  const [files, setFiles] = useState(draft.files || []);
+  const [note, setNote] = useState(draft.note || '');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify({ files, note }));
+    try {
+      localStorage.setItem(key, JSON.stringify({ files, note }));
+    } catch (e) {
+      console.warn('Cannot persist upload draft to localStorage:', e);
+    }
   }, [key, files, note]);
 
   const submit = async () => {
@@ -32,7 +43,7 @@ export default function UploadSubmit({ assignment }) {
         note,
         submitted_at: new Date().toISOString(),
       });
-      localStorage.removeItem(key);
+      try { localStorage.removeItem(key); } catch {}
       await logActivity('submission', `Nộp bài: ${assignment.title} (${files.length} ảnh)`, `/nop/${s.id}`);
       nav(`/nop/${s.id}`);
     } catch (e) {

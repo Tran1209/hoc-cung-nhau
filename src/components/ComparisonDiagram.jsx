@@ -131,11 +131,25 @@ export const DEFAULT_COMPARISONS_LIST = [
 ];
 
 export default function ComparisonDiagram({ comparisons = [], onSaveComparisons }) {
-  const list = comparisons.length > 0 ? comparisons : DEFAULT_COMPARISONS_LIST;
+  const list = Array.isArray(comparisons) && comparisons.length > 0 ? comparisons : DEFAULT_COMPARISONS_LIST;
 
   // Bảng đối chiếu đang xem
   const [selectedId, setSelectedId] = useState(list[0]?.id || 'cmp-lhq-asean');
-  const currentCmp = list.find((it) => it.id === selectedId) || list[0];
+  const rawCmp = list.find((it) => it?.id === selectedId) || list[0] || DEFAULT_COMPARISONS_LIST[0];
+
+  const currentCmp = {
+    id: rawCmp?.id || 'cmp-default',
+    title: rawCmp?.title || 'Bảng đối chiếu',
+    columns: Array.isArray(rawCmp?.columns) && rawCmp.columns.length > 0
+      ? rawCmp.columns
+      : [
+          { id: 'col-1', name: 'Đối tượng A', sub: '' },
+          { id: 'col-2', name: 'Đối tượng B', sub: '' },
+        ],
+    rows: Array.isArray(rawCmp?.rows) ? rawCmp.rows : [],
+    lessons: Array.isArray(rawCmp?.lessons) ? rawCmp.lessons : [],
+    wartimeBlacklist: Array.isArray(rawCmp?.wartimeBlacklist) ? rawCmp.wartimeBlacklist : [],
+  };
 
   // Modal thêm / chỉnh sửa bảng đối chiếu
   const [editModal, setEditModal] = useState(null); // { mode: 'add' | 'edit', data?: object }
@@ -153,7 +167,8 @@ export default function ComparisonDiagram({ comparisons = [], onSaveComparisons 
 
   // Chuyển đổi trạng thái Gộp ô (Tương đồng) <-> Tách cột (Khác biệt) của 1 hàng
   const toggleRowMerge = (rowId) => {
-    const updatedRows = currentCmp.rows.map((r) => {
+    const rows = Array.isArray(currentCmp.rows) ? currentCmp.rows : [];
+    const updatedRows = rows.map((r) => {
       if (r.id !== rowId) return r;
       if (r.isMerged) {
         // Đổi từ Gộp -> Tách cột
@@ -161,13 +176,13 @@ export default function ComparisonDiagram({ comparisons = [], onSaveComparisons 
           ...r,
           isMerged: false,
           values: {
-            [currentCmp.columns[0]?.id || 'col-1']: r.mergedValue.replace('✓ ', '') + ' (Đặc điểm A)',
-            [currentCmp.columns[1]?.id || 'col-2']: r.mergedValue.replace('✓ ', '') + ' (Đặc điểm B)',
+            [currentCmp.columns[0]?.id || 'col-1']: (r.mergedValue || '').replace('✓ ', '') + ' (Đặc điểm A)',
+            [currentCmp.columns[1]?.id || 'col-2']: (r.mergedValue || '').replace('✓ ', '') + ' (Đặc điểm B)',
           },
         };
       } else {
         // Đổi từ Tách cột -> Gộp ô xanh
-        const firstVal = Object.values(r.values)[0] || '';
+        const firstVal = Object.values(r.values || {})[0] || '';
         return {
           ...r,
           isMerged: true,
@@ -178,7 +193,7 @@ export default function ComparisonDiagram({ comparisons = [], onSaveComparisons 
 
     const updatedCmp = { ...currentCmp, rows: updatedRows };
     const nextList = list.map((it) => (it.id === currentCmp.id ? updatedCmp : it));
-    onSaveComparisons(nextList);
+    onSaveComparisons?.(nextList);
   };
 
   // Thêm hàng tiêu chí mới
@@ -197,9 +212,10 @@ export default function ComparisonDiagram({ comparisons = [], onSaveComparisons 
       mergedValue: '',
     };
 
-    const updatedCmp = { ...currentCmp, rows: [...currentCmp.rows, newRow] };
+    const rows = Array.isArray(currentCmp.rows) ? currentCmp.rows : [];
+    const updatedCmp = { ...currentCmp, rows: [...rows, newRow] };
     const nextList = list.map((it) => (it.id === currentCmp.id ? updatedCmp : it));
-    onSaveComparisons(nextList);
+    onSaveComparisons?.(nextList);
   };
 
   // Thêm từ khoá blacklist thời chiến
@@ -212,7 +228,7 @@ export default function ComparisonDiagram({ comparisons = [], onSaveComparisons 
     const nextBlacklist = [...(currentCmp.wartimeBlacklist || []), word];
     const updatedCmp = { ...currentCmp, wartimeBlacklist: nextBlacklist };
     const nextList = list.map((it) => (it.id === currentCmp.id ? updatedCmp : it));
-    onSaveComparisons(nextList);
+    onSaveComparisons?.(nextList);
     setNewBlacklistWord('');
   };
 
@@ -221,7 +237,7 @@ export default function ComparisonDiagram({ comparisons = [], onSaveComparisons 
     const nextBlacklist = (currentCmp.wartimeBlacklist || []).filter((item) => item !== w);
     const updatedCmp = { ...currentCmp, wartimeBlacklist: nextBlacklist };
     const nextList = list.map((it) => (it.id === currentCmp.id ? updatedCmp : it));
-    onSaveComparisons(nextList);
+    onSaveComparisons?.(nextList);
   };
 
   // Mở modal thêm bảng đối chiếu mới
@@ -306,15 +322,18 @@ export default function ComparisonDiagram({ comparisons = [], onSaveComparisons 
       setSelectedId(newCmp.id);
     }
 
-    onSaveComparisons(nextList);
+    onSaveComparisons?.(nextList);
     setEditModal(null);
   };
 
   // Xoá bảng đối chiếu
   const handleDelete = (id) => {
     if (window.confirm('Em có chắc chắn muốn xoá bảng đối chiếu này?')) {
-      const nextList = list.filter((it) => it.id !== id);
-      onSaveComparisons(nextList);
+      let nextList = list.filter((it) => it && it.id !== id);
+      if (nextList.length === 0) {
+        nextList = DEFAULT_COMPARISONS_LIST;
+      }
+      onSaveComparisons?.(nextList);
       if (nextList.length > 0) setSelectedId(nextList[0].id);
     }
   };

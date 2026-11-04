@@ -32,12 +32,18 @@ export default function QuizRunner({
   const { user } = useAuth();
   const nav = useNavigate();
   const isExam = assignment.kind === 'exam';
-  const key = `hcn-draft-${assignment.id}`;
-  const saved = JSON.parse(localStorage.getItem(key) || '{}');
+  const key = `hcn-draft-${assignment?.id || 'default'}`;
+  const [savedDraft] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(key) || '{}');
+    } catch {
+      return {};
+    }
+  });
 
-  const [answers, setAnswers] = useState(saved.answers || {});
-  const [files, setFiles] = useState(saved.files || []);
-  const [note, setNote] = useState(saved.note || '');
+  const [answers, setAnswers] = useState(savedDraft.answers || {});
+  const [files, setFiles] = useState(savedDraft.files || []);
+  const [note, setNote] = useState(savedDraft.note || '');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [starting, setStarting] = useState(false);
@@ -52,7 +58,11 @@ export default function QuizRunner({
   const lightbox = useState(null);
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify({ answers, files, note }));
+    try {
+      localStorage.setItem(key, JSON.stringify({ answers, files, note }));
+    } catch (e) {
+      console.warn('Cannot persist quiz draft:', e);
+    }
   }, [key, answers, files, note]);
 
   const deadline =
@@ -118,7 +128,7 @@ export default function QuizRunner({
       setErr('');
       try {
         const s = await data.submitQuiz(assignment.id, answers, files, note);
-        localStorage.removeItem(key);
+        try { localStorage.removeItem(key); } catch {}
         await logActivity(
           'submission',
           `${auto ? 'Hết giờ, tự nộp' : 'Nộp bài'}: ${assignment.title}${
@@ -155,7 +165,7 @@ export default function QuizRunner({
         return;
       setStarting(true);
       try {
-        localStorage.removeItem(key);
+        try { localStorage.removeItem(key); } catch {}
         setAnswers({});
         setFiles([]);
         await data.insert('submissions', {

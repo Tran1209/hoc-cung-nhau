@@ -145,7 +145,15 @@ export default function LessonNotesHub({
   const [radarData, setRadarData] = useState(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_RADAR_DATA,
+          ...parsed,
+          conceptPairs: Array.isArray(parsed?.conceptPairs) ? parsed.conceptPairs : DEFAULT_RADAR_DATA.conceptPairs,
+          sensitiveWords: Array.isArray(parsed?.sensitiveWords) ? parsed.sensitiveWords : DEFAULT_RADAR_DATA.sensitiveWords,
+        };
+      }
       return DEFAULT_RADAR_DATA;
     } catch {
       return DEFAULT_RADAR_DATA;
@@ -154,7 +162,11 @@ export default function LessonNotesHub({
 
   const saveRadar = (nextData) => {
     setRadarData(nextData);
-    localStorage.setItem(storageKey, JSON.stringify(nextData));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(nextData));
+    } catch (e) {
+      console.warn('Cannot persist radar data:', e);
+    }
   };
 
   // State Modal thêm cặp khái niệm
@@ -212,9 +224,10 @@ export default function LessonNotesHub({
   // Xoá cặp khái niệm
   const handleDeletePair = (id) => {
     if (window.confirm('Em có chắc chắn muốn xoá cặp khái niệm này?')) {
+      const currentList = Array.isArray(radarData.conceptPairs) ? radarData.conceptPairs : [];
       saveRadar({
         ...radarData,
-        conceptPairs: radarData.conceptPairs.filter((p) => p.id !== id),
+        conceptPairs: currentList.filter((p) => p && p.id !== id),
       });
     }
   };
@@ -248,9 +261,10 @@ export default function LessonNotesHub({
   // Xoá từ khoá nhạy cảm
   const handleDeleteWord = (id) => {
     if (window.confirm('Em có chắc muốn xoá từ khoá cảnh báo này?')) {
+      const currentList = Array.isArray(radarData.sensitiveWords) ? radarData.sensitiveWords : [];
       saveRadar({
         ...radarData,
-        sensitiveWords: radarData.sensitiveWords.filter((w) => w.id !== id),
+        sensitiveWords: currentList.filter((w) => w && w.id !== id),
       });
     }
   };

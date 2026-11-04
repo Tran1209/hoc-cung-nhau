@@ -105,9 +105,12 @@ export default function MilestoneDiagram({
   // Phạm vi hiển thị: 'lesson' (Mốc bài này) | 'all' (Niên biểu toàn diện 10·11·12)
   const [timelineScope, setTimelineScope] = useState('lesson');
 
-  const sourceMilestones = timelineScope === 'all' && allCurriculumMilestones.length > 0
-    ? allCurriculumMilestones
-    : milestones;
+  const sourceMilestones = useMemo(() => {
+    if (timelineScope === 'all' && Array.isArray(allCurriculumMilestones) && allCurriculumMilestones.length > 0) {
+      return allCurriculumMilestones;
+    }
+    return Array.isArray(milestones) ? milestones : [];
+  }, [timelineScope, allCurriculumMilestones, milestones]);
 
   // Chế độ hiển thị: 'timeline-vertical' | 'timeline-horizontal' | 'cluster'
   const [viewMode, setViewMode] = useState('timeline-vertical');
@@ -307,63 +310,78 @@ export default function MilestoneDiagram({
       }
     }
 
-    onSaveMilestones(nextList);
+    onSaveMilestones?.(nextList);
     setEditModal(null);
   };
 
   // Xoá mốc
   const handleDeleteMilestone = (id) => {
     if (timelineScope === 'all') {
-      const target = sourceMilestones.find((m) => m.id === id);
+      const target = sourceMilestones.find((m) => m?.id === id);
       if (target && !target.isCurrentLesson) {
         alert(`Mốc này thuộc bài "${target.lessonTitle || 'bài học khác'}". Hãy mở bài học đó để xoá mốc này!`);
         return;
       }
     }
     if (window.confirm('Em có chắc chắn muốn xoá mốc sự kiện này khỏi sơ đồ?')) {
-      const nextList = milestones.filter((m) => m.id !== id && m.parentId !== id);
-      onSaveMilestones(nextList);
+      const currentList = Array.isArray(milestones) ? milestones : [];
+      const nextList = currentList.filter((m) => m && m.id !== id && m.parentId !== id);
+      onSaveMilestones?.(nextList);
     }
   };
 
   // Kéo thả đổi vị trí (HTML5 Drag & Drop)
+  const isDraggableGlobal = timelineScope === 'lesson' && activeFilterTag === 'ALL' && !searchQuery.trim();
+
   const handleDragStart = (e, index) => {
+    if (!isDraggableGlobal) return;
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragOver = (e, index) => {
+    if (!isDraggableGlobal) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = (e, targetIndex) => {
     e.preventDefault();
+    if (!isDraggableGlobal) return;
     if (draggedIndex === null || draggedIndex === targetIndex) return;
 
-    const listCopy = [...milestones];
+    const listCopy = [...(Array.isArray(milestones) ? milestones : [])];
+    if (draggedIndex < 0 || draggedIndex >= listCopy.length || targetIndex < 0 || targetIndex >= listCopy.length) return;
     const [moved] = listCopy.splice(draggedIndex, 1);
+    if (!moved) return;
     listCopy.splice(targetIndex, 0, moved);
 
-    onSaveMilestones(listCopy);
+    onSaveMilestones?.(listCopy);
     setDraggedIndex(null);
   };
 
   // Tự động tìm bẫy nhiễu cho mốc
   const getTrapsForMilestone = (m) => {
+    if (!m || !m.entityName || typeof m.entityName !== 'string' || !m.entityName.trim()) {
+      return [];
+    }
+    const entityLower = m.entityName.toLowerCase().trim();
+
     // 1. Kiểm tra từ điển bẫy mẫu
     for (const [key, list] of Object.entries(SMART_TRAP_RULES)) {
-      if (m.entityName?.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(m.entityName?.toLowerCase())) {
+      const keyLower = key.toLowerCase().trim();
+      if (keyLower && (entityLower.includes(keyLower) || keyLower.includes(entityLower))) {
         return list;
       }
     }
     // 2. Tự động suy luận bẫy từ các mốc khác trong dữ liệu cùng loại thực thể nhưng khác không gian hoặc thời kỳ
-    const autoTraps = milestones
-      .filter((other) => other.id !== m.id && other.typeTag === m.typeTag && (other.spaceTag !== m.spaceTag || other.eraTag !== m.eraTag))
+    const safeMilestones = Array.isArray(milestones) ? milestones : [];
+    const autoTraps = safeMilestones
+      .filter((other) => other && other.id !== m.id && other.typeTag === m.typeTag && (other.spaceTag !== m.spaceTag || other.eraTag !== m.eraTag))
       .slice(0, 3)
       .map((other) => ({
-        name: `${other.entityName} (${other.time})`,
-        note: `Cùng là ${other.typeTag} nhưng thuộc ${other.spaceTag} · Thời kỳ ${other.eraTag}. Chú ý phân biệt!`
+        name: `${other.entityName || 'Sự kiện liên quan'} (${other.time || 'Thời điểm khác'})`,
+        note: `Cùng là ${other.typeTag || 'chủ đề'} nhưng thuộc ${other.spaceTag || 'không gian khác'} · Thời kỳ ${other.eraTag || 'khác'}. Chú ý phân biệt!`
       }));
 
     if (autoTraps.length > 0) return autoTraps;
@@ -720,7 +738,7 @@ export default function MilestoneDiagram({
               {filteredMilestones.map((m, idx) => {
                 const traps = getTrapsForMilestone(m);
                 const isTrapOpen = !!openTraps[m.id];
-                const isDraggable = activeFilterTag === 'ALL' && !searchQuery.trim();
+                const isDraggable = isDraggableGlobal;
 
                 return (
                   <div key={m.id} className="timeline-node-segment">

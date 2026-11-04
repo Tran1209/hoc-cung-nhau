@@ -333,7 +333,11 @@ export default function LessonPage() {
   const saveHighlightTag = (snippet, tag) => {
     setHighlightTags((prev) => {
       const next = { ...prev, [snippet]: tag };
-      localStorage.setItem(`lesson_highlight_tags_${id}`, JSON.stringify(next));
+      try {
+        localStorage.setItem(`lesson_highlight_tags_${id}`, JSON.stringify(next));
+      } catch (e) {
+        console.warn('Cannot persist highlight tags:', e);
+      }
       return next;
     });
     if (!userHighlights.includes(snippet)) {
@@ -363,7 +367,11 @@ export default function LessonPage() {
   const updateHighlightsWithHistory = (nextList, actionMsg) => {
     setUndoStack((prev) => [...prev, userHighlights]);
     setUserHighlights(nextList);
-    localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(nextList));
+    try {
+      localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(nextList));
+    } catch (e) {
+      console.warn('Cannot persist user highlights:', e);
+    }
     if (actionMsg) showToast(actionMsg);
   };
 
@@ -373,7 +381,11 @@ export default function LessonPage() {
     const previous = undoStack[undoStack.length - 1];
     setUndoStack((prev) => prev.slice(0, -1));
     setUserHighlights(previous);
-    localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(previous));
+    try {
+      localStorage.setItem(`lesson_user_highlights_${id}`, JSON.stringify(previous));
+    } catch (e) {
+      console.warn('Cannot persist undo highlights:', e);
+    }
     showToast('Đã hoàn tác thao tác tô bút dạ quang ↺');
   };
 
@@ -482,7 +494,11 @@ export default function LessonPage() {
   const progressPct = Math.min(100, Math.round((wordCount / targetWords) * 100));
 
   const saveEssay = () => {
-    localStorage.setItem(`folio_essay_${id}`, essayText);
+    try {
+      localStorage.setItem(`folio_essay_${id}`, essayText);
+    } catch (e) {
+      console.warn('Cannot persist essay draft:', e);
+    }
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 2500);
   };
@@ -999,7 +1015,15 @@ export default function LessonPage() {
                             existing.causeEffects = existing.causeEffects || [];
                             existing.causeEffects.push({
                               id: 'ce-' + Date.now(),
-                              content: extractedData.content || selectedSnippet,
+                              eventTitle: lesson?.title || 'Sự kiện trích xuất',
+                              time: extractedData.time || 'Thời kỳ hiện đại',
+                              coreResult: extractedData.content || selectedSnippet,
+                              inputsKhachQuan: [],
+                              inputsChuQuan: [],
+                              outputsDirect: [],
+                              outputsVietNam: [extractedData.content || selectedSnippet],
+                              outputsQuocTe: [],
+                              exaggerationTraps: [],
                             });
                           }
                           localStorage.setItem(studyKey, JSON.stringify(existing));

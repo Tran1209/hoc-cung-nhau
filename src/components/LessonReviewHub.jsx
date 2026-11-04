@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Modal } from './Modal';
+import { ErrorBoundary } from './ui';
 import LessonFlashcards from './LessonFlashcards';
 import MilestoneDiagram from './MilestoneDiagram';
 import AxesDiagram from './AxesDiagram';
@@ -151,7 +152,11 @@ export default function LessonReviewHub({
   // Lưu thay đổi vào localStorage
   const saveStudyData = (nextData) => {
     setStudyData(nextData);
-    localStorage.setItem(storageKey, JSON.stringify(nextData));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(nextData));
+    } catch (e) {
+      console.warn('Cannot persist review study data:', e);
+    }
   };
 
   // State form thêm Mốc mới
@@ -292,25 +297,27 @@ export default function LessonReviewHub({
               </span>
             </div>
 
-            <MilestoneDiagram
-              milestones={studyData.milestones || standardMilestones}
-              allCurriculumMilestones={allMilestones}
-              onSaveMilestones={(newMilestones) => {
-                saveStudyData({
-                  ...studyData,
-                  milestones: newMilestones,
-                });
-              }}
-              onResetToStandard={() => {
-                if (confirm(`Khôi phục lại toàn bộ cột mốc chuẩn có sẵn của bài "${lessonTitle}"?`)) {
+            <ErrorBoundary title="Lỗi hiển thị Mốc thời gian (Lõi 1)">
+              <MilestoneDiagram
+                milestones={studyData.milestones || standardMilestones}
+                allCurriculumMilestones={allMilestones}
+                onSaveMilestones={(newMilestones) => {
                   saveStudyData({
                     ...studyData,
-                    milestones: standardMilestones,
+                    milestones: newMilestones,
                   });
-                }
-              }}
-              lessonTitle={lessonTitle}
-            />
+                }}
+                onResetToStandard={() => {
+                  if (confirm(`Khôi phục lại toàn bộ cột mốc chuẩn có sẵn của bài "${lessonTitle}"?`)) {
+                    saveStudyData({
+                      ...studyData,
+                      milestones: standardMilestones,
+                    });
+                  }
+                }}
+                lessonTitle={lessonTitle}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -331,15 +338,17 @@ export default function LessonReviewHub({
               </span>
             </div>
 
-            <AxesDiagram
-              axes={studyData.axes || []}
-              onSaveAxes={(newAxes) => {
-                saveStudyData({
-                  ...studyData,
-                  axes: newAxes,
-                });
-              }}
-            />
+            <ErrorBoundary title="Lỗi hiển thị Trục chủ thể (Lõi 2 & 4)">
+              <AxesDiagram
+                axes={studyData.axes || []}
+                onSaveAxes={(newAxes) => {
+                  saveStudyData({
+                    ...studyData,
+                    axes: newAxes,
+                  });
+                }}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -360,15 +369,17 @@ export default function LessonReviewHub({
               </span>
             </div>
 
-            <CauseEffectDiagram
-              causeEffects={studyData.causeEffects?.length > 0 ? studyData.causeEffects : DEFAULT_CAUSE_EFFECT_LIST}
-              onSaveCauseEffects={(newCauseEffects) => {
-                saveStudyData({
-                  ...studyData,
-                  causeEffects: newCauseEffects,
-                });
-              }}
-            />
+            <ErrorBoundary title="Lỗi hiển thị Sơ đồ Nhân - Quả (Lõi 3)">
+              <CauseEffectDiagram
+                causeEffects={studyData.causeEffects?.length > 0 ? studyData.causeEffects : DEFAULT_CAUSE_EFFECT_LIST}
+                onSaveCauseEffects={(newCauseEffects) => {
+                  saveStudyData({
+                    ...studyData,
+                    causeEffects: newCauseEffects,
+                  });
+                }}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -389,15 +400,17 @@ export default function LessonReviewHub({
               </span>
             </div>
 
-            <ComparisonDiagram
-              comparisons={studyData.comparisons?.length > 0 ? studyData.comparisons : DEFAULT_COMPARISONS_LIST}
-              onSaveComparisons={(newComparisons) => {
-                saveStudyData({
-                  ...studyData,
-                  comparisons: newComparisons,
-                });
-              }}
-            />
+            <ErrorBoundary title="Lỗi hiển thị Bàn cân đối chiếu (Lõi 5)">
+              <ComparisonDiagram
+                comparisons={studyData.comparisons?.length > 0 ? studyData.comparisons : DEFAULT_COMPARISONS_LIST}
+                onSaveComparisons={(newComparisons) => {
+                  saveStudyData({
+                    ...studyData,
+                    comparisons: newComparisons,
+                  });
+                }}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -406,7 +419,9 @@ export default function LessonReviewHub({
             --------------------------------------------------------------------- */}
         {subTab === 'flashcards' && flashcards.length > 0 && (
           <div className="review-core-pane">
-            <LessonFlashcards cards={flashcards} />
+            <ErrorBoundary title="Lỗi hiển thị Thẻ lật 3D">
+              <LessonFlashcards cards={flashcards} />
+            </ErrorBoundary>
           </div>
         )}
       </div>

@@ -73,11 +73,24 @@ export const DEFAULT_CAUSE_EFFECT_LIST = [
 
 export default function CauseEffectDiagram({ causeEffects = [], onSaveCauseEffects }) {
   // Danh sách sơ đồ nhân quả đang dùng (lấy từ props hoặc mặc định)
-  const list = causeEffects.length > 0 ? causeEffects : DEFAULT_CAUSE_EFFECT_LIST;
+  const list = Array.isArray(causeEffects) && causeEffects.length > 0 ? causeEffects : DEFAULT_CAUSE_EFFECT_LIST;
 
   // Sơ đồ đang chọn để xem/tương tác
   const [selectedId, setSelectedId] = useState(list[0]?.id || 'ce-un');
-  const currentCE = list.find((item) => item.id === selectedId) || list[0];
+  const rawCE = list.find((item) => item?.id === selectedId) || list[0] || DEFAULT_CAUSE_EFFECT_LIST[0];
+
+  const currentCE = {
+    id: rawCE?.id || 'ce-default',
+    eventTitle: rawCE?.eventTitle || rawCE?.content || 'Sự kiện lịch sử',
+    time: rawCE?.time || 'Thời kỳ hiện đại',
+    coreResult: rawCE?.coreResult || rawCE?.content || 'Sự kiện tạo ra chuyển biến to lớn trong tiến trình lịch sử.',
+    inputsKhachQuan: Array.isArray(rawCE?.inputsKhachQuan) ? rawCE.inputsKhachQuan : [],
+    inputsChuQuan: Array.isArray(rawCE?.inputsChuQuan) ? rawCE.inputsChuQuan : [],
+    outputsDirect: Array.isArray(rawCE?.outputsDirect) ? rawCE.outputsDirect : [],
+    outputsVietNam: Array.isArray(rawCE?.outputsVietNam) ? rawCE.outputsVietNam : [],
+    outputsQuocTe: Array.isArray(rawCE?.outputsQuocTe) ? rawCE.outputsQuocTe : [],
+    exaggerationTraps: Array.isArray(rawCE?.exaggerationTraps) ? rawCE.exaggerationTraps : [],
+  };
 
   // Modal thêm / sửa sơ đồ
   const [editModal, setEditModal] = useState(null); // { mode: 'add' | 'edit', data?: object }
@@ -109,16 +122,16 @@ export default function CauseEffectDiagram({ causeEffects = [], onSaveCauseEffec
 
   // Mở modal chỉnh sửa sơ đồ hiện tại
   const handleOpenEdit = (item) => {
-    setFormTitle(item.eventTitle || '');
-    setFormTime(item.time || '');
-    setFormCoreResult(item.coreResult || '');
-    setFormInputsKhachQuan(item.inputsKhachQuan?.join('\n') || '');
-    setFormInputsChuQuan(item.inputsChuQuan?.join('\n') || '');
-    setFormOutputsDirect(item.outputsDirect?.join('\n') || '');
-    setFormOutputsVietNam(item.outputsVietNam?.join('\n') || '');
-    setFormOutputsQuocTe(item.outputsQuocTe?.join('\n') || '');
-    setFormTraps(item.exaggerationTraps?.join('\n') || '');
-    setEditModal({ mode: 'edit', id: item.id });
+    setFormTitle(item?.eventTitle || '');
+    setFormTime(item?.time || '');
+    setFormCoreResult(item?.coreResult || '');
+    setFormInputsKhachQuan(item?.inputsKhachQuan?.join('\n') || '');
+    setFormInputsChuQuan(item?.inputsChuQuan?.join('\n') || '');
+    setFormOutputsDirect(item?.outputsDirect?.join('\n') || '');
+    setFormOutputsVietNam(item?.outputsVietNam?.join('\n') || '');
+    setFormOutputsQuocTe(item?.outputsQuocTe?.join('\n') || '');
+    setFormTraps(item?.exaggerationTraps?.join('\n') || '');
+    setEditModal({ mode: 'edit', id: item?.id });
   };
 
   // Lưu sơ đồ
@@ -153,15 +166,18 @@ export default function CauseEffectDiagram({ causeEffects = [], onSaveCauseEffec
       setSelectedId(newItem.id);
     }
 
-    onSaveCauseEffects(nextList);
+    onSaveCauseEffects?.(nextList);
     setEditModal(null);
   };
 
   // Xoá sơ đồ
   const handleDelete = (id) => {
     if (window.confirm('Em có chắc chắn muốn xoá sơ đồ nhân quả này?')) {
-      const nextList = list.filter((it) => it.id !== id);
-      onSaveCauseEffects(nextList);
+      let nextList = list.filter((it) => it && it.id !== id);
+      if (nextList.length === 0) {
+        nextList = DEFAULT_CAUSE_EFFECT_LIST;
+      }
+      onSaveCauseEffects?.(nextList);
       if (nextList.length > 0) setSelectedId(nextList[0].id);
     }
   };

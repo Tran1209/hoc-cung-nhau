@@ -149,9 +149,11 @@ export default function AxesDiagram({ axes = [], onSaveAxes }) {
   // Danh sách chủ thể độc nhất
   const uniqueSubjects = useMemo(() => {
     const set = new Set(['Liên hợp quốc', 'ASEAN', 'Việt Nam']);
-    axes.forEach((ax) => {
-      if (ax.subject) set.add(ax.subject.trim());
-    });
+    if (Array.isArray(axes)) {
+      axes.forEach((ax) => {
+        if (ax && ax.subject) set.add(ax.subject.trim());
+      });
+    }
     return Array.from(set);
   }, [axes]);
 
@@ -167,12 +169,12 @@ export default function AxesDiagram({ axes = [], onSaveAxes }) {
 
   // Mở modal sửa thẻ
   const handleOpenEdit = (item) => {
-    setFormSubject(item.subject || 'Liên hợp quốc');
-    setFormPeriod(item.period || timelineLanes[0]?.title || '1945 – 1975');
-    setFormProgressBadge(item.progressBadge || 'Hoàn thành');
-    setFormVerb(item.verb || '');
-    setFormContent(item.content || '');
-    setEditModal({ mode: 'edit', id: item.id });
+    setFormSubject(item?.subject || 'Liên hợp quốc');
+    setFormPeriod(item?.period || timelineLanes[0]?.title || '1945 – 1975');
+    setFormProgressBadge(item?.progressBadge || 'Hoàn thành');
+    setFormVerb(item?.verb || '');
+    setFormContent(item?.content || '');
+    setEditModal({ mode: 'edit', id: item?.id });
   };
 
   // Lưu thẻ
@@ -189,22 +191,24 @@ export default function AxesDiagram({ axes = [], onSaveAxes }) {
       content: formContent.trim(),
     };
 
-    let nextList = [...axes];
+    const currentList = Array.isArray(axes) ? axes : [];
+    let nextList = [...currentList];
     if (editModal.mode === 'edit') {
       nextList = nextList.map((ax) => (ax.id === editModal.id ? { ...ax, ...itemData } : ax));
     } else {
       nextList.push(itemData);
     }
 
-    onSaveAxes(nextList);
+    onSaveAxes?.(nextList);
     setEditModal(null);
   };
 
   // Xoá thẻ
   const handleDeleteItem = (id) => {
     if (window.confirm('Em có chắc muốn xoá hành động này khỏi trục?')) {
-      const nextList = axes.filter((ax) => ax.id !== id);
-      onSaveAxes(nextList);
+      const currentList = Array.isArray(axes) ? axes : [];
+      const nextList = currentList.filter((ax) => ax && ax.id !== id);
+      onSaveAxes?.(nextList);
     }
   };
 
