@@ -304,7 +304,7 @@ export default function QuizRunner({
 
                 <div className="row" style={{ gap: '8px' }}>
                   <span className="quiz-points-tag">
-                    {q.type === 'tf' ? '1.0 điểm (4 ý)' : `${q.points || 0.25} điểm`}
+                    {q.type === 'tf' ? `${q.points || 1.0} điểm (4 ý)` : `${q.points || 0.25} điểm`}
                   </span>
                   {isDone ? (
                     <span className="badge" style={{ background: '#DCFCE7', color: '#15803D' }}>
@@ -405,7 +405,9 @@ export default function QuizRunner({
                 <>
                   <div className="tf-question-box">
                     <div className="tf-guideline-badge">
-                      Thang điểm Bộ GD&ĐT 2026: Đúng 1 ý = 0.1đ · 2 ý = 0.25đ · 3 ý = 0.5đ · 4 ý = 1.0đ
+                      {Number(q.points) === 2
+                        ? 'Thang điểm: Đúng 1 ý = 0.2đ · 2 ý = 0.5đ · 3 ý = 1.0đ · 4 ý = 2.0đ'
+                        : 'Thang điểm Bộ GD&ĐT 2026: Đúng 1 ý = 0.1đ · 2 ý = 0.25đ · 3 ý = 0.5đ · 4 ý = 1.0đ'}
                     </div>
 
                     <div className="tf-table">

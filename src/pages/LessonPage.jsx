@@ -498,8 +498,8 @@ export default function LessonPage() {
       data.list('submissions'),
     ]);
 
-    // Tự động gieo sẵn các bài tập BT1, BT2, BT3 chuẩn Đề thi THPTQG 2026 nếu chưa có
-    if (lesson.title.toLowerCase().includes('liên hợp quốc') && !assignments.some((a) => (a.title || '').includes('BT2'))) {
+    // Tự động gieo sẵn các bài tập BT1 chuẩn Đề thi THPTQG 2026 (24 MCQ + 2 Đúng/Sai ma trận 5 Lõi) nếu chưa có
+    if (lesson.title.toLowerCase().includes('liên hợp quốc') && !assignments.some((a) => (a.title || '').includes('2 câu Đúng / Sai'))) {
       try {
         await seedBtAssignmentsForLesson(data, lesson.id, lesson.chapter_id);
         assignments = await data.list('assignments', { where: { lesson_id: id } });

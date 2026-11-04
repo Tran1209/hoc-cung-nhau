@@ -274,13 +274,13 @@ export async function seedBtAssignmentsForLesson(dataApi, lessonId, chapterId) {
     for (const q of oldQs) await dataApi.remove('questions', q.id);
   }
 
-  // 1. BT1: ĐỀ THI CHUẨN THPTQG 2026 (24 CÂU TRẮC NGHIỆM + 4 CÂU ĐÚNG/SAI)
+  // 1. BT1: ĐỀ THI CHUẨN THPTQG 2026 (24 CÂU TRẮC NGHIỆM + 2 CÂU ĐÚNG/SAI)
   const a1 = await dataApi.insert('assignments', {
     chapter_id: chapterId,
     lesson_id: lessonId,
-    title: 'BT1: Đề thi thử THPT Quốc Gia 2026 (24 câu trắc nghiệm + 4 câu Đúng / Sai)',
+    title: 'BT1: Đề thi thử THPT Quốc Gia 2026 (24 câu trắc nghiệm + 2 câu Đúng / Sai)',
     kind: 'quiz',
-    instructions: 'Cấu trúc bám sát 100% định dạng Đề thi Tốt nghiệp THPT Quốc Gia 2026 của Bộ GD&ĐT:\n- Phần I: 24 câu trắc nghiệm 4 lựa chọn (0.25đ/câu = 6.0đ)\n- Phần II: 4 câu trắc nghiệm Đúng/Sai (1.0đ/câu = 4.0đ)\nTổng điểm: 10.0 điểm.',
+    instructions: 'Đề thi trắc nghiệm Lịch Sử 12 - Bài 1: Liên hợp quốc (Bộ Kết nối tri thức với cuộc sống):\n- Phần I: 24 câu trắc nghiệm 4 lựa chọn theo ma trận 5 Lõi kiến thức (0.25đ/câu = 6.0đ)\n- Phần II: 2 câu trắc nghiệm Đúng / Sai theo đoạn tư liệu và bảng thông tin (2.0đ/câu = 4.0đ)\nTổng điểm: 10.0 điểm.',
     max_score: 10,
     position: 1,
     is_published: true,
@@ -288,200 +288,319 @@ export async function seedBtAssignmentsForLesson(dataApi, lessonId, chapterId) {
 
   // 24 CÂU TRẮC NGHIỆM PHẦN I (0.25đ / câu = 6.0đ)
   const mcq24 = [
-    {
-      prompt: 'Bản Hiến chương Liên hợp quốc chính thức có hiệu lực vào ngày tháng năm nào?',
-      options: ['24 - 10 - 1945', '02 - 09 - 1945', '08 - 08 - 1967', '20 - 09 - 1977'],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Ngày 24-10-1945, Hiến chương Liên hợp quốc chính thức có hiệu lực. Ngày 24-10 hàng năm là "Ngày Liên hợp quốc".',
-    },
-    {
-      prompt: 'Trụ sở chính thức của tổ chức Liên hợp quốc hiện nay đặt tại thành phố nào?',
-      options: ['Giơ-ne-vơ (Thuỵ Sĩ)', 'Niu Oóc (New York, Mỹ)', 'Pa-ri (Pháp)', 'Luân Đôn (Anh)'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Trụ sở chính của Liên hợp quốc đặt tại thành phố Niu Oóc (Mỹ).',
-    },
-    {
-      prompt: 'Hội nghị quyết định thành lập một tổ chức quốc tế để duy trì trật tự thế giới sau Chiến tranh thế giới thứ hai diễn ra tại I-an-ta vào thời gian nào?',
-      options: ['Tháng 2 - 1945', 'Tháng 4 - 1945', 'Tháng 8 - 1945', 'Tháng 10 - 1945'],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Hội nghị I-an-ta (Liên Xô) diễn ra từ ngày 4 đến 12-2-1945.',
-    },
-    {
-      prompt: 'Hội nghị quốc tế thảo luận và thông qua bản Hiến chương Liên hợp quốc diễn ra tại thành phố nào?',
-      options: ['Xan Phran-xi-xcô (Mỹ)', 'Oa-sinh-tơn (Mỹ)', 'Mát-xcơ-va (Liên Xô)', 'Béc-lin (Đức)'],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Hội nghị Xan Phran-xi-xcô diễn ra từ 25-4 đến 26-6-1945.',
-    },
-    {
-      prompt: 'Có bao nhiêu quốc gia ban đầu tham gia thảo luận và ký bản Hiến chương Liên hợp quốc năm 1945?',
-      options: ['50 quốc gia', '51 quốc gia', '149 quốc gia', '193 quốc gia'],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Đại biểu của 50 quốc gia đã tham gia Hội nghị Xan Phran-xi-xcô (sau đó Ba Lan ký bổ sung là nước thứ 51).',
-    },
-    {
-      prompt: 'Ngày 24-10 hàng năm được chọn làm ngày kỷ niệm gì của cộng đồng quốc tế?',
-      options: ['Ngày Hoà bình Thế giới', 'Ngày Liên hợp quốc', 'Ngày Nhân quyền Quốc tế', 'Ngày Quốc tế Lao động'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Ngày 24-10 hàng năm được chọn là "Ngày Liên hợp quốc".',
-    },
-    {
-      prompt: 'Cơ quan nào của Liên hợp quốc giữ vai trò trọng yếu nhất trong việc duy trì hoà bình và an ninh quốc tế?',
-      options: ['Đại hội đồng', 'Ban Thư ký', 'Hội đồng Bảo an', 'Toà án Công lý Quốc tế'],
-      correct: 2,
-      points: 0.25,
-      explanation: 'Hội đồng Bảo an là cơ quan chịu trách nhiệm chính về an ninh và hoà bình quốc tế.',
-    },
-    {
-      prompt: 'Năm quốc gia uỷ viên thường trực của Hội đồng Bảo an Liên hợp quốc gồm những nước nào?',
-      options: [
-        'Liên Xô (Nga), Mỹ, Anh, Pháp, Trung Quốc',
-        'Mỹ, Anh, Pháp, Đức, Nhật Bản',
-        'Liên Xô (Nga), Mỹ, Anh, Pháp, Đức',
-        'Mỹ, Trung Quốc, Nhật Bản, Ấn Độ, Anh',
-      ],
-      correct: 0,
-      points: 0.25,
-      explanation: '5 nước thường trực là Liên Xô (nay là Nga), Mỹ, Anh, Pháp, Trung Quốc.',
-    },
-    {
-      prompt: 'Nguyên tắc biểu quyết mang tính quyết định của 5 nước uỷ viên thường trực Hội đồng Bảo an là gì?',
-      options: ['Nguyên tắc đa số giản đơn', 'Nguyên tắc nhất trí giữa 5 nước lớn', 'Nguyên tắc 2/3 số phiếu', 'Nguyên tắc luân phiên'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Chỉ cần 1 nước thường trực bỏ phiếu chống thì nghị quyết sẽ không được thông qua (quyền phủ quyết).',
-    },
-    {
-      prompt: 'Cơ quan nào của Liên hợp quốc bao gồm đại biểu của tất cả các quốc gia thành viên và họp thường niên vào tháng 9 hàng năm?',
-      options: ['Đại hội đồng', 'Hội đồng Quản thác', 'Hội đồng Bảo an', 'Ban Thư ký'],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Đại hội đồng gồm đại biểu của toàn bộ 193 nước thành viên.',
-    },
-    {
-      prompt: 'Cơ quan xét xử và giải quyết các tranh chấp pháp lý quốc tế của Liên hợp quốc có trụ sở tại La Hay (Hà Lan) là?',
-      options: ['Toà án Hình sự Quốc tế', 'Toà án Công lý Quốc tế (ICJ)', 'Uỷ ban Luật pháp Quốc tế', 'Hội đồng Nhân quyền'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Toà án Công lý Quốc tế là cơ quan tư pháp chính của Liên hợp quốc.',
-    },
-    {
-      prompt: 'Người đứng đầu cơ quan hành chính của Liên hợp quốc giữ chức vụ gì?',
-      options: ['Chủ tịch Đại hội đồng', 'Tổng Thư ký Liên hợp quốc', 'Chủ tịch Hội đồng Bảo an', 'Thủ tướng Liên hợp quốc'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Ban Thư ký do Tổng Thư ký đứng đầu, nhiệm kỳ 5 năm.',
-    },
-    {
-      prompt: 'Theo Điều 1 Hiến chương Liên hợp quốc, mục tiêu hàng đầu và xuyên suốt của tổ chức là gì?',
-      options: [
-        'Duy trì hoà bình và an ninh quốc tế',
-        'Thúc đẩy thương mại tự do toàn cầu',
-        'Xoá bỏ các rào cản tiền tệ quốc tế',
-        'Phát triển khoa học công nghệ vũ trụ',
-      ],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Mục tiêu số 1 là duy trì hoà bình và an ninh quốc tế.',
-    },
-    {
-      prompt: 'Nguyên tắc hoạt động cốt lõi đầu tiên được ghi nhận tại Điều 2 Hiến chương Liên hợp quốc là?',
-      options: [
-        'Bình đẳng về chủ quyền giữa tất cả các quốc gia thành viên',
-        'Ưu tiên quyền lợi cho các cường quốc kinh tế',
-        'Giải quyết tranh chấp bằng biện pháp quân sự',
-        'Các nước nhỏ phải phục tùng quyết định của các nước lớn',
-      ],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Bình đẳng về chủ quyền giữa tất cả các quốc gia là nguyên tắc nền tảng.',
-    },
-    {
-      prompt: 'Về phương thức giải quyết các tranh chấp quốc tế, Hiến chương Liên hợp quốc quy định phải:',
-      options: [
-        'Giải quyết bằng biện pháp hoà bình, không dùng vũ lực hoặc đe doạ dùng vũ lực',
-        'Sử dụng sức mạnh quân sự áp đảo để chấm dứt xung đột',
-        'Uỷ quyền cho các liên minh quân sự khu vực can thiệp',
-        'Cô lập kinh tế và phong toả biên giới vô điều kiện',
-      ],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Hiến chương nghiêm cấm đe doạ sử dụng vũ lực hoặc dùng vũ lực.',
-    },
-    {
-      prompt: 'Nguyên tắc nào sau đây của Liên hợp quốc đóng vai trò then chốt bảo vệ nền độc lập tự chủ của các quốc gia?',
-      options: [
-        'Không can thiệp vào công việc nội bộ của bất kỳ quốc gia nào',
-        'Mở cửa biên giới cho các lực lượng gìn giữ hoà bình',
-        'Tự do thành lập các căn cứ quân sự ở nước ngoài',
-        'Tự do thay đổi đường biên giới lãnh thổ',
-      ],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Nguyên tắc tôn trọng chủ quyền và không can thiệp nội bộ.',
-    },
-    {
-      prompt: 'Việt Nam chính thức được kết nạp làm thành viên thứ 149 của Liên hợp quốc vào ngày tháng năm nào?',
-      options: ['30 - 04 - 1975', '20 - 09 - 1977', '28 - 07 - 1995', '11 - 01 - 2007'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Ngày 20-9-1977, tại khoá họp 32 Đại hội đồng LHQ, Việt Nam chính thức trở thành thành viên thứ 149.',
-    },
-    {
-      prompt: 'Sự kiện lá cờ đỏ sao vàng của Việt Nam được thượng cờ tại trụ sở Liên hợp quốc diễn ra tại khoá họp thứ mấy của Đại hội đồng?',
-      options: ['Khoá họp thứ 30', 'Khoá họp thứ 32', 'Khoá họp thứ 35', 'Khoá họp thứ 40'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Khoá họp thứ 32 của Đại hội đồng Liên hợp quốc.',
-    },
-    {
-      prompt: 'Lần đầu tiên Việt Nam được tín nhiệm bầu làm Uỷ viên không thường trực Hội đồng Bảo an Liên hợp quốc vào nhiệm kỳ nào?',
-      options: ['Nhiệm kỳ 1995 - 1996', 'Nhiệm kỳ 2008 - 2009', 'Nhiệm kỳ 2014 - 2015', 'Nhiệm kỳ 2020 - 2021'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Nhiệm kỳ đầu tiên của Việt Nam là 2008 - 2009.',
-    },
-    {
-      prompt: 'Trong lần thứ hai trúng cử Uỷ viên không thường trực HĐBA (nhiệm kỳ 2020 - 2021), Việt Nam đạt số phiếu ủng hộ kỷ lục là bao nhiêu?',
-      options: ['150 / 193 phiếu', '175 / 193 phiếu', '185 / 193 phiếu', '192 / 193 phiếu'],
-      correct: 3,
-      points: 0.25,
-      explanation: 'Việt Nam trúng cử với số phiếu kỷ lục 192 trên tổng số 193 quốc gia bỏ phiếu.',
-    },
-    {
-      prompt: 'Việt Nam chính thức cử lực lượng tham gia hoạt động Gìn giữ hoà bình của Liên hợp quốc từ năm nào?',
-      options: ['Năm 1977', 'Năm 1995', 'Năm 2014', 'Năm 2020'],
-      correct: 2,
-      points: 0.25,
-      explanation: 'Năm 2014, Việt Nam chính thức cử các sĩ quan đầu tiên tham gia phái bộ gìn giữ hoà bình.',
-    },
-    {
-      prompt: 'Lực lượng quân y chuyên trách của Việt Nam đã nhiều lần cử đến thực hiện nhiệm vụ gìn giữ hoà bình tại phái bộ UNMISS (Nam Xu-đăng) là?',
-      options: ['Bệnh viện dã chiến cấp 1', 'Bệnh viện dã chiến cấp 2', 'Bệnh viện dã chiến cấp 3', 'Đội cứu hộ nhân đạo quốc tế'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'Bệnh viện dã chiến cấp 2 của Việt Nam tại Nam Xu-đăng được quốc tế đánh giá rất cao.',
-    },
-    {
-      prompt: 'Tại phái bộ UNISFA ở khu vực Abyei, Việt Nam đã cử đơn vị quân đội nào tham gia hỗ trợ tái thiết hạ tầng và hỗ trợ nhân đạo?',
-      options: ['Đội công binh số 1 và số 2', 'Lực lượng đặc công', 'Không quân vận tải', 'Đội cảnh vệ biển'],
-      correct: 0,
-      points: 0.25,
-      explanation: 'Đội công binh Việt Nam đã tham gia phái bộ UNISFA tại khu vực Abyei.',
-    },
-    {
-      prompt: 'Tổ chức chuyên môn nào của Liên hợp quốc có chức năng bảo tồn Di sản văn hoá, thúc đẩy giáo dục và khoa học toàn cầu?',
-      options: ['UNICEF', 'UNESCO', 'WHO', 'UNDP'],
-      correct: 1,
-      points: 0.25,
-      explanation: 'UNESCO là Tổ chức Giáo dục, Khoa học và Văn hoá của Liên hợp quốc.',
-    },
-  ];
+  {
+    "prompt": "Ngày 1 – 1 – 1942, đại diện 26 nước chống phát xít đã kí văn kiện nào sau đây, cam kết thành lập một tổ chức quốc tế vì hòa bình và an ninh sau chiến tranh?",
+    "options": [
+      "Hiệp ước Véc-xai năm 1919.",
+      "Tuyên bố về Liên hợp quốc.",
+      "Hiến chương Đại Tây Dương.",
+      "Tuyên ngôn Độc lập của Hoa Kỳ."
+    ],
+    "correct": 1,
+    "points": 0.25,
+    "explanation": "Mốc 1 – 1 – 1942 gắn với bản Tuyên bố về Liên hợp quốc do 26 nước chống phát xít kí tại Oa-sinh-tơn (Mỹ). [Nhiễu]: A (Véc-xai 1919) thuộc CTTG I. C (Hiến chương Đại Tây Dương) là văn kiện năm 1941 của Mỹ và Anh. D thuộc thời kỳ khác.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Từ ngày 25 – 4 đến ngày 26 – 6 – 1945, hội nghị quốc tế nào sau đây đã thông qua bản Hiến chương Liên hợp quốc?",
+    "options": [
+      "Hội nghị Pốt-xđam.",
+      "Hội nghị I-an-ta.",
+      "Hội nghị Xan Phran-xi-xcô.",
+      "Hội nghị Á – Phi Băng-đung."
+    ],
+    "correct": 2,
+    "points": 0.25,
+    "explanation": "Hội nghị Xan Phran-xi-xcô (Mỹ, 25-4 đến 26-6-1945) với đại biểu 50 nước đã thảo luận và thông qua bản Hiến chương Liên hợp quốc. [Nhiễu]: B (I-an-ta) chỉ quyết định thành lập và triệu tập hội nghị. A (Pốt-xđam) bàn về nước Đức. D (Băng-đung 1955) ngoài bài.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Năm 1948, Đại hội đồng Liên hợp quốc thông qua văn kiện nào sau đây, đưa ra những quyền và tự do cơ bản của con người?",
+    "options": [
+      "Tuyên ngôn Nhân quyền của Liên hợp quốc.",
+      "Hiệp ước cấm phổ biến vũ khí hạt nhân.",
+      "Công ước cấm vũ khí hóa học.",
+      "Mục tiêu phát triển Thiên niên kỉ."
+    ],
+    "correct": 0,
+    "points": 0.25,
+    "explanation": "Năm 1948, Đại hội đồng Liên hợp quốc đã thông qua Tuyên ngôn Nhân quyền thế giới (UDHR). [Nhiễu]: B (1968), C (1992) thuộc giải trừ quân bị. D (2000) là chương trình phát triển.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Từ ngày 28 – 11 đến ngày 1 – 12 – 1943, hội nghị nào sau đây đã khẳng định quyết tâm thành lập Liên hợp quốc của ba nước Liên Xô, Mỹ, Anh?",
+    "options": [
+      "Hội nghị I-an-ta.",
+      "Hội nghị Gio-ne-vơ.",
+      "Hội nghị Véc-xai – Oa-sinh-tơn.",
+      "Hội nghị Tê-hê-ran."
+    ],
+    "correct": 3,
+    "points": 0.25,
+    "explanation": "Hội nghị Tê-hê-ran (I-ran, từ 28-11 đến 1-12-1943) là nơi ba cường quốc Liên Xô, Mỹ, Anh khẳng định quyết tâm thành lập Liên hợp quốc. [Nhiễu]: A (I-an-ta) diễn ra vào tháng 2-1945. B và C thuộc bối cảnh khác.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Ngày 24 – 10 – 1945, tổ chức quốc tế nào sau đây chính thức được thành lập với 51 nước thành viên?",
+    "options": [
+      "Hội Quốc liên.",
+      "Liên hợp quốc.",
+      "Liên minh châu Âu.",
+      "Tổ chức Hiệp ước Bắc Đại Tây Dương."
+    ],
+    "correct": 1,
+    "points": 0.25,
+    "explanation": "Ngày 24-10-1945, Hiến chương chính thức có hiệu lực sau khi được các nước phê chuẩn, Liên hợp quốc chính thức thành lập với 51 thành viên sáng lập (Ba Lan ký bổ sung). [Nhiễu]: A (Hội Quốc liên 1920-1946). C (EU) và D (NATO) thuộc các thời kỳ khác.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Năm 2015, Liên hợp quốc thông qua văn kiện nào sau đây, đặt ra 17 mục tiêu mang tính toàn cầu đến năm 2030?",
+    "options": [
+      "Hiệp ước cấm phổ biến vũ khí hạt nhân.",
+      "Tuyên ngôn Nhân quyền của Liên hợp quốc.",
+      "Chương trình nghị sự vì phát triển bền vững.",
+      "Công ước cấm vũ khí hạt nhân."
+    ],
+    "correct": 2,
+    "points": 0.25,
+    "explanation": "Năm 2015, Liên hợp quốc thông qua Chương trình nghị sự 2030 vì sự phát triển bền vững với 17 mục tiêu toàn cầu (SDGs). [Nhiễu]: A (1968), B (1948), D (2017) khác năm và khác lĩnh vực.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Liên hợp quốc có hoạt động nào sau đây nhằm duy trì hòa bình, an ninh quốc tế?",
+    "options": [
+      "Triển khai hoạt động gìn giữ hòa bình ở nhiều khu vực.",
+      "Điều hành trực tiếp công việc quản lý nội bộ các nước.",
+      "Thành lập liên minh quân sự phòng thủ toàn cầu.",
+      "Xây dựng thể chế chính trị chung cho các thành viên."
+    ],
+    "correct": 0,
+    "points": 0.25,
+    "explanation": "Liên hợp quốc triển khai hoạt động gìn giữ hòa bình ở En Xan-va-đo, Goa-tê-ma-la, Mô-dăm-bích, Nam Xu-đăng,... [Nhiễu]: B và D vi phạm nguyên tắc chủ quyền và không can thiệp nội bộ. C gán bản chất liên minh quân sự.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Nội dung nào sau đây không phải là nguyên tắc hoạt động của Liên hợp quốc?",
+    "options": [
+      "Bình đẳng về chủ quyền giữa các quốc gia.",
+      "Không can thiệp vào công việc nội bộ các nước.",
+      "Giải quyết tranh chấp quốc tế bằng biện pháp hòa bình.",
+      "Sử dụng vũ lực để giải quyết tranh chấp quốc tế."
+    ],
+    "correct": 3,
+    "points": 0.25,
+    "explanation": "Điều 2 Hiến chương quy định từ bỏ đe dọa hoặc sử dụng vũ lực trong quan hệ quốc tế, nên phương án D trái với nguyên tắc cơ bản của Liên hợp quốc. [Nhiễu]: A, B, C đều là các nguyên tắc cốt lõi.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Liên hợp quốc có hoạt động nào sau đây nhằm thúc đẩy phát triển kinh tế, thương mại quốc tế?",
+    "options": [
+      "Trực tiếp điều hành hoạt động thương mại của các nước thành viên.",
+      "Thống nhất đồng tiền chung cho tất cả các quốc gia thành viên.",
+      "Đề ra chiến lược phát triển cho từng thập kỉ từ năm 1960.",
+      "Thành lập khu vực thương mại tự do trên phạm vi toàn cầu."
+    ],
+    "correct": 2,
+    "points": 0.25,
+    "explanation": "Từ năm 1960, Đại hội đồng Liên hợp quốc đã đề ra các chiến lược phát triển kinh tế - xã hội cho từng thập kỉ nhằm huy động hợp tác quốc tế. [Nhiễu]: A bóp méo vai trò điều hòa. B và D là mô hình liên kết khu vực, không phải của Liên hợp quốc.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Liên hợp quốc không có hoạt động nào sau đây trong lĩnh vực đảm bảo quyền con người, phát triển văn hóa, xã hội?",
+    "options": [
+      "Thông qua Tuyên ngôn Nhân quyền vào năm 1948.",
+      "Trực tiếp điều hành hệ thống giáo dục của các nước.",
+      "Lập quỹ tài trợ quốc tế để phát triển giáo dục.",
+      "Công nhận và hỗ trợ bảo tồn di sản văn hóa thế giới."
+    ],
+    "correct": 1,
+    "points": 0.25,
+    "explanation": "Liên hợp quốc hỗ trợ, tài trợ giáo dục (thông qua UNESCO, UNICEF) chứ không can thiệp hay trực tiếp điều hành hệ thống giáo dục của các quốc gia. [Nhiễu]: A (UDHR 1948), C (quỹ tài trợ giáo dục), D (di sản UNESCO) đều là hoạt động có thật.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Liên hợp quốc ra đời trong bối cảnh nào sau đây?",
+    "options": [
+      "Chiến tranh lạnh bùng nổ, hai phe đối đầu căng thẳng về quân sự.",
+      "Phe phát xít chiếm ưu thế, việc thành lập tổ chức mới bị trì hoãn.",
+      "Phe Đồng minh chiếm ưu thế, việc tổ chức lại thế giới càng cấp bách.",
+      "Hệ thống thuộc địa sụp đổ hoàn toàn, nhiều quốc gia mới đòi hỏi tổ chức chung."
+    ],
+    "correct": 2,
+    "points": 0.25,
+    "explanation": "Đầu năm 1945, Chiến tranh thế giới thứ hai bước vào giai đoạn kết thúc, phe Đồng minh chiếm ưu thế áp đảo nên việc tổ chức lại thế giới sau chiến tranh trở nên hết sức cấp bách. [Nhiễu]: A lệch thời kỳ (sau 1947). B đảo ngược tương quan. D phóng đại thuộc địa sụp đổ hoàn toàn.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Nội dung nào sau đây là nguyên nhân thúc đẩy các nước Đồng minh chống phát xít mong muốn thành lập Liên hợp quốc?",
+    "options": [
+      "Hội Quốc liên không đủ sức mạnh để bảo vệ hòa bình thế giới.",
+      "Các nước phát xít đã bị đánh bại hoàn toàn trên mọi mặt trận.",
+      "Chiến tranh lạnh đã bùng nổ, chia thế giới thành hai phe.",
+      "Các nước thuộc địa đồng loạt giành độc lập trên phạm vi toàn cầu."
+    ],
+    "correct": 0,
+    "points": 0.25,
+    "explanation": "Sự bất lực và sụp đổ của Hội Quốc liên (không ngăn chặn được CTTG II) là nguyên nhân thúc đẩy các nước Đồng minh mong muốn thành lập một tổ chức quốc tế mới đủ năng lực và cơ chế bảo vệ hòa bình bền vững. [Nhiễu]: B, C, D đều lệch pha hoặc phóng đại.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Nội dung nào sau đây là thành tựu của Liên hợp quốc trong lĩnh vực duy trì hòa bình, an ninh quốc tế?",
+    "options": [
+      "Chấm dứt hoàn toàn mọi cuộc xung đột vũ trang trên thế giới.",
+      "Xóa bỏ triệt để các loại vũ khí hủy diệt hàng loạt.",
+      "Giải quyết ngay lập tức mọi tranh chấp giữa các quốc gia.",
+      "Góp phần ngăn ngừa không để xảy ra chiến tranh thế giới mới."
+    ],
+    "correct": 3,
+    "points": 0.25,
+    "explanation": "Thành tựu nổi bật và trước hết của Liên hợp quốc từ năm 1945 đến nay là góp phần ngăn ngừa, không để bùng nổ một cuộc chiến tranh thế giới mới giữa các siêu cường. [Nhiễu]: A, B, C dùng các từ tuyệt đối hóa sai thực tế.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Việc Liên hợp quốc triển khai hoạt động gìn giữ hòa bình ở nhiều khu vực đã",
+    "options": [
+      "ngăn chặn hoàn toàn mọi cuộc chiến tranh cục bộ trên thế giới.",
+      "góp phần chấm dứt nhiều xung đột và hỗ trợ tái thiết ở nhiều quốc gia.",
+      "xóa bỏ triệt để nguy cơ xung đột tại tất cả các khu vực.",
+      "buộc ngay lập tức mọi lực lượng vũ trang phải giải giáp."
+    ],
+    "correct": 1,
+    "points": 0.25,
+    "explanation": "Hoạt động gìn giữ hòa bình (gửi phái bộ gìn giữ hòa bình) đã góp phần chấm dứt nhiều cuộc xung đột vũ trang, giám sát ngừng bắn và hỗ trợ tái thiết sau chiến tranh ở nhiều quốc gia. [Nhiễu]: A, C, D phóng đại tuyệt đối.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Việc Liên hợp quốc thúc đẩy quá trình giành độc lập dân tộc của các nước thuộc địa và phụ thuộc đã",
+    "options": [
+      "góp phần làm gia tăng số lượng thành viên của Liên hợp quốc.",
+      "chấm dứt hoàn toàn mọi hình thức thống trị của chủ nghĩa thực dân.",
+      "xóa bỏ mọi sự bất bình đẳng giữa các quốc gia thành viên.",
+      "giúp các nước mới độc lập thoát khỏi đói nghèo ngay lập tức."
+    ],
+    "correct": 0,
+    "points": 0.25,
+    "explanation": "Quá trình phi thực dân hóa mạnh mẽ được Liên hợp quốc ủng hộ đã giúp hàng trăm quốc gia giành độc lập và gia nhập tổ chức, nâng tổng số thành viên từ 51 lên 193 nước. [Nhiễu]: B, C, D phóng đại hoặc đánh tráo kết quả kinh tế.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Nội dung nào sau đây là thành tựu của Liên hợp quốc trong việc nâng cao đời sống người dân?",
+    "options": [
+      "Xóa bỏ hoàn toàn tình trạng đói nghèo ở các nước đang phát triển.",
+      "Điều hòa ngay lập tức sự chênh lệch giàu nghèo giữa các nước.",
+      "Thực hiện nhiều dự án hỗ trợ xóa đói, giảm nghèo ở các nước đang phát triển.",
+      "Thay thế mọi chính sách kinh tế của các chính phủ thành viên."
+    ],
+    "correct": 2,
+    "points": 0.25,
+    "explanation": "Thông qua các tổ chức chuyên môn (FAO, UNDP, WB, IMF), Liên hợp quốc triển khai hàng nghìn dự án hỗ trợ phát triển, xóa đói giảm nghèo tại các nước đang phát triển. [Nhiễu]: A, B cài tuyệt đối hóa; D vi phạm chủ quyền quốc gia.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Mục tiêu của Liên hợp quốc có đặc điểm nào sau đây?",
+    "options": [
+      "Đặt phát triển kinh tế lên trên mục tiêu duy trì hòa bình, an ninh.",
+      "Lấy duy trì hòa bình, an ninh quốc tế làm cơ sở cho các mục tiêu khác.",
+      "Tách biệt hoàn toàn mục tiêu chính trị với các mục tiêu xã hội.",
+      "Ưu tiên tuyệt đối lợi ích của các nước thành viên thường trực."
+    ],
+    "correct": 1,
+    "points": 0.25,
+    "explanation": "Hiến chương khẳng định mục tiêu duy trì hòa bình và an ninh quốc tế là ưu tiên hàng đầu, đồng thời là cơ sở nền tảng để thực hiện các mục tiêu hợp tác kinh tế, văn hóa, xã hội và nhân đạo. [Nhiễu]: A đảo thứ tự ưu tiên. C và D sai bản chất tổ chức.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Nhận định nào sau đây đúng về vai trò của Liên hợp quốc từ năm 1945 đến nay?",
+    "options": [
+      "Giới hạn hoạt động trong lĩnh vực an ninh, quân sự giữa các nước lớn.",
+      "Thay thế vai trò quản lý của chính phủ các quốc gia thành viên.",
+      "Nhanh chóng xây dựng thể chế chính trị thống nhất toàn thế giới.",
+      "Mở rộng hoạt động từ duy trì hòa bình sang phát triển, quyền con người."
+    ],
+    "correct": 3,
+    "points": 0.25,
+    "explanation": "Qua hơn 7 thập kỷ, vai trò của Liên hợp quốc không ngừng mở rộng: từ trọng tâm duy trì hòa bình, an ninh ban đầu sang các lĩnh vực toàn cầu như phát triển bền vững, ứng phó biến đổi khí hậu, quyền con người và y tế giáo dục. [Nhiễu]: A thu hẹp. B, C bóp méo quyền hạn.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Nội dung nào sau đây phản ánh đúng về nguyên tắc hoạt động của Liên hợp quốc?",
+    "options": [
+      "Cho phép các nước lớn quyết định công việc nội bộ của nước nhỏ.",
+      "Dựa trên sức mạnh quân sự của các thành viên thường trực.",
+      "Đặt trên cơ sở tôn trọng chủ quyền và độc lập chính trị của mọi quốc gia.",
+      "Lấy việc thành lập liên minh quân sự làm cơ sở hoạt động."
+    ],
+    "correct": 2,
+    "points": 0.25,
+    "explanation": "Điều 2 Hiến chương quy định các nguyên tắc: Bình đẳng về chủ quyền, tôn trọng toàn vẹn lãnh thổ và độc lập chính trị, không can thiệp nội bộ, giải quyết hòa bình các tranh chấp. [Nhiễu]: A, B, D trái với nguyên tắc Hiến chương.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Nội dung nào sau đây phản ánh đúng quá trình hình thành Liên hợp quốc?",
+    "options": [
+      "Diễn ra từng bước từ cam kết năm 1942 đến thông qua Hiến chương năm 1945.",
+      "Hoàn tất ngay trong năm 1942 nhờ sự thống nhất của 26 nước.",
+      "Khởi đầu sau Chiến tranh lạnh bằng thỏa thuận giữa các cường quốc.",
+      "Được quyết định đồng thời tại một hội nghị duy nhất ở Xan Phran-xi-xcô."
+    ],
+    "correct": 0,
+    "points": 0.25,
+    "explanation": "Liên hợp quốc được hình thành qua một quá trình chuẩn bị từng bước: Tuyên bố 26 nước (1-1942), Tuyên bố Mát-xcơ-va (10-1943), Hội nghị Tê-hê-ran (12-1943), Hội nghị I-an-ta (2-1945) và hoàn tất tại Xan Phran-xi-xcô (6-1945). [Nhiễu]: B, C, D sai tiến trình lịch sử.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "So với Hội Quốc liên (thành lập năm 1920), Liên hợp quốc có điểm mới nào sau đây?",
+    "options": [
+      "Được lập ra để duy trì trật tự sau Chiến tranh thế giới thứ nhất.",
+      "Chỉ gồm các nước thắng trận trong Chiến tranh thế giới thứ hai.",
+      "Chính thức giải thể năm 1946 vì không bảo vệ được hòa bình.",
+      "Tồn tại và phát huy vai trò duy trì hòa bình đến ngày nay."
+    ],
+    "correct": 3,
+    "points": 0.25,
+    "explanation": "Điểm khác biệt căn bản là Hội Quốc liên đã bất lực và tan rã năm 1946, trong khi Liên hợp quốc tiếp tục tồn tại vững chắc và phát huy vai trò duy trì hòa bình, an ninh quốc tế đến ngày nay. [Nhiễu]: A, C là của Hội Quốc liên. B sai thành phần thành viên.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Hội Quốc liên và Liên hợp quốc có điểm tương đồng nào sau đây?",
+    "options": [
+      "Đều giải thể do không đủ sức mạnh bảo vệ hòa bình thế giới.",
+      "Đều ra đời nhằm duy trì hòa bình, an ninh sau chiến tranh thế giới.",
+      "Đều có số lượng thành viên lên đến 193 quốc gia hiện nay.",
+      "Đều thành lập sau khi Chiến tranh lạnh đã kết thúc ở châu Âu."
+    ],
+    "correct": 1,
+    "points": 0.25,
+    "explanation": "Cả Hội Quốc liên (sau CTTG I) và Liên hợp quốc (sau CTTG II) đều ra đời từ sáng kiến của các cường quốc với mục tiêu chung là duy trì hòa bình và an ninh quốc tế sau thảm họa chiến tranh thế giới. [Nhiễu]: A, C, D đều chỉ đúng với một bên hoặc sai thời kỳ.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Hoạt động của Liên hợp quốc đã để lại bài học kinh nghiệm nào sau đây cho Việt Nam trong hợp tác quốc tế hiện nay?",
+    "options": [
+      "Tham gia các liên minh quân sự phòng thủ để bảo đảm an ninh quốc gia.",
+      "Giải quyết triệt để lợi ích của tất cả các nước tham gia tổ chức.",
+      "Ưu tiên sử dụng sức mạnh quân sự để bảo vệ chủ quyền lãnh thổ.",
+      "Đề cao hợp tác đa phương, tôn trọng luật pháp quốc tế, giải quyết tranh chấp hòa bình."
+    ],
+    "correct": 3,
+    "points": 0.25,
+    "explanation": "Nguyên tắc tôn trọng luật pháp quốc tế, giải quyết hòa bình các tranh chấp và tăng cường hợp tác đa phương là bài học sâu sắc, đồng thời là kim chỉ nam cho đường lối đối ngoại độc lập, tự chủ và hội nhập quốc tế của Việt Nam. [Nhiễu]: A, C trái với chính sách quốc phòng \"4 không\" của Việt Nam.",
+    "type": "mcq"
+  },
+  {
+    "prompt": "Việc Liên hợp quốc thúc đẩy Chương trình nghị sự 2030 vì phát triển bền vững để lại bài học kinh nghiệm nào sau đây cho Việt Nam hiện nay?",
+    "options": [
+      "Chủ động hợp tác quốc tế, gắn tăng trưởng kinh tế với bảo vệ môi trường.",
+      "Tách biệt hoàn toàn phát triển kinh tế khỏi các mục tiêu xã hội.",
+      "Dựa hoàn toàn vào viện trợ quốc tế để xóa đói, giảm nghèo.",
+      "Ưu tiên khai thác tài nguyên để đạt tăng trưởng nhanh trước mắt."
+    ],
+    "correct": 0,
+    "points": 0.25,
+    "explanation": "Chương trình nghị sự 2030 nhấn mạnh sự kết hợp hài hòa giữa tăng trưởng kinh tế, tiến bộ xã hội và bảo vệ môi trường, mang lại bài học quý giá cho chiến lược phát triển bền vững, kinh tế xanh và chuyển đổi số của Việt Nam. [Nhiễu]: B, C, D đi ngược nguyên lý phát triển bền vững.",
+    "type": "mcq"
+  }
+];
 
   for (let idx = 0; idx < mcq24.length; idx++) {
     const q = mcq24[idx];
@@ -501,60 +620,48 @@ export async function seedBtAssignmentsForLesson(dataApi, lessonId, chapterId) {
     );
   }
 
-  // 4 CÂU ĐÚNG / SAI PHẦN II (1.0đ / câu = 4.0đ)
-  const tf4 = [
-    {
-      prompt: 'Câu 1. Đọc đoạn tư liệu sau đây về sự hình thành và mục tiêu của Liên hợp quốc:\n\n"Tại Hội nghị Xan Phran-xi-xcô (Mỹ, từ ngày 25-4 đến 26-6-1945), đại biểu của 50 quốc gia đã thông qua bản Hiến chương Liên hợp quốc. Ngày 24-10-1945, Hiến chương chính thức có hiệu lực sau khi được các nước phê chuẩn. Mục tiêu hàng đầu của tổ chức là duy trì hoà bình và an ninh quốc tế; phát triển mối quan hệ hữu nghị giữa các dân tộc trên cơ sở tôn trọng quyền bình đẳng và quyền tự quyết của các dân tộc; thực hiện hợp tác quốc tế trong việc giải quyết các vấn đề toàn cầu."\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:',
-      options: [
-        'Hội nghị Xan Phran-xi-xcô (1945) có sự tham gia thảo luận của đại biểu 193 quốc gia trên toàn thế giới.',
-        'Ngày 24-10 hàng năm được chọn làm "Ngày Liên hợp quốc" vì đây là thời điểm bản Hiến chương chính thức có hiệu lực.',
-        'Mục tiêu duy trì hoà bình của Liên hợp quốc cho phép các cường quốc can thiệp quân sự vào công việc nội bộ của các quốc gia nhỏ mà không cần sự đồng thuận.',
-        'Đoạn tư liệu khẳng định việc tôn trọng quyền bình đẳng và quyền tự quyết của các dân tộc là cơ sở cốt lõi để phát triển quan hệ hữu nghị giữa các quốc gia.',
-      ],
-      correct: { 0: false, 1: true, 2: false, 3: true },
-      points: 1.0,
-      explanation: 'Ý a) Sai vì năm 1945 chỉ có đại biểu 50 nước tham gia; Ý b) Đúng; Ý c) Sai vì nguyên tắc Hiến chương nghiêm cấm can thiệp nội bộ; Ý d) Đúng theo Điều 1 Hiến chương.',
+  // 2 CÂU ĐÚNG / SAI PHẦN II (2.0đ / câu = 4.0đ)
+  const tf2 = [
+  {
+    "type": "tf",
+    "prompt": "Câu 1. Đọc đoạn tư liệu sau đây:\n\n\"Liên hợp quốc được thành lập nhằm bốn mục tiêu: duy trì hòa bình và an ninh quốc tế; thúc đẩy quan hệ hữu nghị giữa các dân tộc trên cơ sở tôn trọng quyền bình đẳng và quyền tự quyết dân tộc; thúc đẩy hợp tác quốc tế để giải quyết các vấn đề kinh tế, xã hội, văn hóa, nhân đạo, đảm bảo quyền con người; và đóng vai trò là trung tâm điều hòa các nỗ lực quốc tế vì những mục tiêu trên. Tổ chức này hoạt động trên các nguyên tắc: bình đẳng về chủ quyền quốc gia, từ bỏ đe dọa hoặc sử dụng vũ lực, không can thiệp vào công việc nội bộ các nước, giải quyết tranh chấp bằng biện pháp hòa bình.\"\n\n(Theo Điều 1 và Điều 2, Hiến chương Liên hợp quốc năm 1945, trích có lược bớt từ Tư liệu 1, 2 trong SGK Lịch sử 12, bộ Kết nối tri thức với cuộc sống, tr. 8 – 9)\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:",
+    "options": [
+      "Theo đoạn tư liệu, Hội đồng Bảo an giữ vai trò là trung tâm điều hòa các nỗ lực quốc tế, đồng thời thúc đẩy hợp tác giải quyết các vấn đề kinh tế, xã hội, văn hóa và nhân đạo.",
+      "Thực tiễn hoạt động của Liên hợp quốc cho thấy tổ chức này lấy hòa bình, an ninh làm trọng tâm theo Hiến chương, đồng thời khẳng định quyền can thiệp vào công việc nội bộ các nước.",
+      "Ba nước Liên Xô, Mỹ, Anh khẳng định quyết tâm thành lập Liên hợp quốc tại Hội nghị Tê-hê-ran năm 1943, rồi quyết định triệu tập hội nghị thông qua Hiến chương tại Hội nghị I-an-ta năm 1945.",
+      "Trong các mục tiêu của Hiến chương, thúc đẩy hợp tác kinh tế, xã hội mới là cơ sở quyết định để thực hiện các mục tiêu khác, còn duy trì hòa bình chỉ giữ vai trò hỗ trợ."
+    ],
+    "correct": {
+      "0": false,
+      "1": false,
+      "2": true,
+      "3": false
     },
-    {
-      prompt: 'Câu 2. Đọc đoạn tư liệu sau đây về cơ cấu tổ chức và nguyên tắc hoạt động của Hội đồng Bảo an:\n\n"Hội đồng Bảo an là cơ quan giữ vai trò trọng yếu trong việc duy trì hoà bình và an ninh quốc tế. Mọi quyết định quan trọng của Hội đồng Bảo an chỉ được thông qua khi có sự nhất trí của 5 nước uỷ viên thường trực (Liên Xô/Nga, Mỹ, Anh, Pháp, Trung Quốc). Chỉ cần một nước thường trực bỏ phiếu chống thì nghị quyết sẽ không được thông qua."\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:',
-      options: [
-        'Hội đồng Bảo an là cơ quan duy nhất của Liên hợp quốc có quyền xem xét mọi vấn đề phát triển kinh tế, y tế và văn hoá xã hội.',
-        'Nguyên tắc nhất trí giữa 5 nước lớn nhằm bảo đảm không xảy ra xung đột quân sự trực tiếp giữa các siêu cường hạt nhân sau Chiến tranh thế giới thứ hai.',
-        'Nếu 4 nước uỷ viên thường trực bỏ phiếu thuận và 1 nước thường trực bỏ phiếu chống, nghị quyết của Hội đồng Bảo an vẫn được thông qua theo nguyên tắc đa số.',
-        'Cơ chế biểu quyết đặc biệt của 5 nước uỷ viên thường trực tại Hội đồng Bảo an thường được gọi là quyền phủ quyết (veto).',
-      ],
-      correct: { 0: false, 1: true, 2: false, 3: true },
-      points: 1.0,
-      explanation: 'Ý a) Sai vì các vấn đề kinh tế xã hội thuộc chức năng của ECOSOC và Đại hội đồng; Ý b) Đúng; Ý c) Sai vì chỉ cần 1 phiếu chống là nghị quyết bị phủ quyết ngay; Ý d) Đúng.',
+    "points": 2,
+    "explanation": "Ý a) Sai: Tư liệu nêu rõ chủ thể là Liên hợp quốc, không phải Hội đồng Bảo an; Ý b) Sai: Vế sau trái nguyên tắc \"không can thiệp vào công việc nội bộ các nước\"; Ý c) Đúng: Tê-hê-ran (1943) khẳng định quyết tâm, I-an-ta (1945) quyết định triệu tập hội nghị; Ý d) Sai: Duy trì hòa bình, an ninh mới là cơ sở quyết định để thực hiện các mục tiêu khác."
+  },
+  {
+    "type": "tf",
+    "prompt": "Câu 2. Cho bảng thông tin sau đây:\n\n| Thời gian | Nội dung |\n|---|---|\n| 1 – 1 – 1942 | Đại diện 26 nước chống phát xít kí bản Tuyên bố về Liên hợp quốc, cam kết thành lập tổ chức quốc tế vì hòa bình, an ninh sau chiến tranh. |\n| Tháng 2 – 1945 | Tại Hội nghị I-an-ta, Liên Xô, Mỹ, Anh quyết định thành lập Liên hợp quốc và đồng ý triệu tập hội nghị để thông qua Hiến chương. |\n| 25 – 4 đến 26 – 6 – 1945 | Hội nghị Xan Phran-xi-xcô với đại biểu 50 nước thông qua bản Hiến chương Liên hợp quốc. |\n| 24 – 10 – 1945 | Liên hợp quốc chính thức được thành lập với 51 nước thành viên. |\n| 1948 | Đại hội đồng Liên hợp quốc thông qua Tuyên ngôn Nhân quyền. |\n| 2015 | Liên hợp quốc thông qua Chương trình nghị sự 2030 vì sự phát triển bền vững, đặt ra 17 mục tiêu toàn cầu. |\n\n(Nguồn: tổng hợp từ SGK Lịch sử 12, bộ Kết nối tri thức với cuộc sống, Bài 1)\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:",
+    "options": [
+      "Quá trình từ Tuyên bố năm 1942 đến Hiến chương năm 1945 phản ánh mối quan hệ giữa nhu cầu bảo vệ hòa bình sau chiến tranh với sự thống nhất hành động của các nước chống phát xít.",
+      "Theo bảng thông tin, Hội nghị I-an-ta tháng 2-1945 của ba nước Liên Xô, Mỹ, Anh đã thông qua Hiến chương, qua đó hoàn thành toàn bộ quá trình thành lập Liên hợp quốc.",
+      "Do Hội Quốc liên không đủ sức mạnh bảo vệ hòa bình, các nước Đồng minh chống phát xít mong muốn lập tổ chức mới, nên Tuyên bố năm 1942 là cam kết chính trị ban đầu.",
+      "Năm 2015, Chương trình nghị sự 2030 khởi đầu cho việc Liên hợp quốc huy động hợp tác quốc tế vì các mục tiêu phát triển chung, đồng thời đặt ra 17 mục tiêu mang tính toàn cầu."
+    ],
+    "correct": {
+      "0": true,
+      "1": false,
+      "2": true,
+      "3": false
     },
-    {
-      prompt: 'Câu 3. Đọc đoạn tư liệu sau đây về các nguyên tắc hoạt động cốt lõi của Liên hợp quốc:\n\n"Điều 2 Hiến chương Liên hợp quốc quy định các nguyên tắc hoạt động cơ bản bao gồm: Bình đẳng về chủ quyền quốc gia; Tôn trọng toàn vẹn lãnh thổ và độc lập chính trị; Giải quyết các tranh chấp quốc tế bằng biện pháp hoà bình; Không can thiệp vào công việc nội bộ của bất kỳ quốc gia nào; Tôn trọng các nghĩa vụ quốc tế và luật pháp quốc tế."\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:',
-      options: [
-        'Nguyên tắc bình đẳng chủ quyền thừa nhận mọi quốc gia thành viên đều có vị thế pháp lý ngang nhau trong khuôn khổ Hiến chương.',
-        'Hiến chương cho phép các nước thành viên sử dụng vũ lực đơn phương để giải quyết tranh chấp biên giới nếu thấy cần thiết.',
-        'Tôn trọng luật pháp quốc tế là nghĩa vụ bắt buộc đối với tất cả các quốc gia khi tham gia Liên hợp quốc.',
-        'Nguyên tắc không can thiệp nội bộ đồng nghĩa với việc Liên hợp quốc không có quyền can thiệp vào chế độ chính trị của các nước thành viên.',
-      ],
-      correct: { 0: true, 1: false, 2: true, 3: true },
-      points: 1.0,
-      explanation: 'Ý a) Đúng; Ý b) Sai vì Điều 2 cấm dùng vũ lực hoặc đe doạ dùng vũ lực; Ý c) Đúng; Ý d) Đúng.',
-    },
-    {
-      prompt: 'Câu 4. Đọc đoạn tư liệu sau đây về quan hệ Việt Nam - Liên hợp quốc:\n\n"Ngày 20-9-1977, Việt Nam chính thức trở thành thành viên thứ 149 của Liên hợp quốc. Trong hơn 4 thập kỷ qua, Việt Nam từ một nước tiếp nhận viện trợ nhân đạo sau chiến tranh đã vươn lên trở thành đối tác tích cực, đóng góp trách nhiệm vào các vấn đề toàn cầu: 2 lần đảm nhiệm Uỷ viên không thường trực HĐBA (2008-2009 và 2020-2021), cử lực lượng tham gia Gìn giữ hoà bình tại Nam Xu-đăng và Abyei."\n\nTrong mỗi ý a), b), c), d), thí sinh chọn đúng hoặc sai:',
-      options: [
-        'Việt Nam gia nhập Liên hợp quốc ngay sau khi bản Hiến chương được ký kết năm 1945 tại Xan Phran-xi-xcô.',
-        'Việt Nam là thành viên thứ 149 của tổ chức quốc tế lớn nhất hành tinh này.',
-        'Việc cử bệnh viện dã chiến và công binh tham gia gìn giữ hoà bình thể hiện đường lối đối ngoại độc lập, tự chủ, đa phương hoá và trách nhiệm quốc tế của Việt Nam.',
-        'Việt Nam đã 2 lần đảm nhiệm xuất sắc cương vị Uỷ viên không thường trực Hội đồng Bảo an Liên hợp quốc.',
-      ],
-      correct: { 0: false, 1: true, 2: true, 3: true },
-      points: 1.0,
-      explanation: 'Ý a) Sai vì Việt Nam gia nhập năm 1977 sau ngày đất nước thống nhất; Ý b) Đúng; Ý c) Đúng; Ý d) Đúng.',
-    },
-  ];
+    "points": 2,
+    "explanation": "Ý a) Đúng: Quá trình 1942–1945 phản ánh nhu cầu hòa bình và sự thống nhất của phe chống phát xít; Ý b) Sai: I-an-ta chỉ quyết định thành lập và triệu tập, việc thông qua Hiến chương thuộc về Hội nghị Xan Phran-xi-xcô; Ý c) Đúng: Hội Quốc liên thất bại nên Tuyên bố 1942 là cam kết ban đầu lập tổ chức mới; Ý d) Sai: Từ năm 1960 đã có chiến lược phát triển từng thập kỉ, năm 2000 có Mục tiêu Thiên niên kỉ nên 2015 không phải \"khởi đầu\"."
+  }
+];
 
-  for (let idx = 0; idx < tf4.length; idx++) {
-    const q = tf4[idx];
+  for (let idx = 0; idx < tf2.length; idx++) {
+    const q = tf2[idx];
     const createdQ = await dataApi.insert('questions', {
       assignment_id: a1.id,
       type: 'tf',
