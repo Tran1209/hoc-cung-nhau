@@ -996,19 +996,231 @@ export function getStandardMilestonesForLesson(lessonTitle = '', chapterTitle = 
   return CURRICULUM_MILESTONES_DB['liên hợp quốc'];
 }
 
+export const TOPIC_LESSON_INFO = {
+  'liên hợp quốc': {
+    topicKey: 'liên hợp quốc',
+    lessonTitle: 'Bài 1: Liên hợp quốc',
+    chapterTitle: 'Chủ đề 1: Thế giới trong và sau Chiến tranh lạnh',
+    grade: 'Lớp 12',
+    aliases: ['liên hợp quốc', 'lhq', 'bài 1', 'hiến chương liên hợp quốc'],
+  },
+  'chiến tranh lạnh': {
+    topicKey: 'chiến tranh lạnh',
+    lessonTitle: 'Bài 2: Trật tự thế giới trong Chiến tranh lạnh',
+    chapterTitle: 'Chủ đề 1: Thế giới trong và sau Chiến tranh lạnh',
+    grade: 'Lớp 12',
+    aliases: ['chiến tranh lạnh', 'bài 2', 'bài 3', 'hai cực', 'i-an-ta'],
+  },
+  'asean': {
+    topicKey: 'asean',
+    lessonTitle: 'Bài 4: Sự ra đời và phát triển của ASEAN',
+    chapterTitle: 'Chủ đề 2: ASEAN: Những chặng đường lịch sử',
+    grade: 'Lớp 12',
+    aliases: ['asean', 'bài 4', 'bài 5', 'đông nam á'],
+  },
+  'cách mạng tháng tám': {
+    topicKey: 'cách mạng tháng tám',
+    lessonTitle: 'Bài 6: Cách mạng tháng Tám năm 1945',
+    chapterTitle: 'Chủ đề 3: Kháng chiến và bảo vệ Tổ quốc',
+    grade: 'Lớp 12',
+    aliases: ['cách mạng tháng tám', 'bài 6', 'tháng 8 năm 1945'],
+  },
+  'kháng chiến chống thực dân pháp': {
+    topicKey: 'kháng chiến chống thực dân pháp',
+    lessonTitle: 'Bài 7: Kháng chiến chống thực dân Pháp (1945 – 1954)',
+    chapterTitle: 'Chủ đề 3: Kháng chiến và bảo vệ Tổ quốc',
+    grade: 'Lớp 12',
+    aliases: ['chống pháp', 'bài 7', 'thực dân pháp', 'điện biên phủ'],
+  },
+  'kháng chiến chống mỹ': {
+    topicKey: 'kháng chiến chống mỹ',
+    lessonTitle: 'Bài 8: Kháng chiến chống Mỹ, cứu nước (1954 – 1975)',
+    chapterTitle: 'Chủ đề 3: Kháng chiến và bảo vệ Tổ quốc',
+    grade: 'Lớp 12',
+    aliases: ['chống mỹ', 'bài 8', 'xuân 1975', 'giải phóng miền nam'],
+  },
+  'bảo vệ tổ quốc sau 1975': {
+    topicKey: 'bảo vệ tổ quốc sau 1975',
+    lessonTitle: 'Bài 9: Đấu tranh bảo vệ Tổ quốc sau 1975',
+    chapterTitle: 'Chủ đề 3: Kháng chiến và bảo vệ Tổ quốc',
+    grade: 'Lớp 12',
+    aliases: ['bảo vệ tổ quốc sau 1975', 'bài 9', 'tây nam', 'biên giới phía bắc', 'gạc ma'],
+  },
+  'công cuộc đổi mới': {
+    topicKey: 'công cuộc đổi mới',
+    lessonTitle: 'Bài 10: Khái quát về công cuộc Đổi mới',
+    chapterTitle: 'Chủ đề 4: Công cuộc Đổi mới ở Việt Nam',
+    grade: 'Lớp 12',
+    aliases: ['đổi mới', 'bài 10', 'bài 11', '1986'],
+  },
+  'đối ngoại việt nam': {
+    topicKey: 'đối ngoại việt nam',
+    lessonTitle: 'Bài 12: Hoạt động đối ngoại của Việt Nam',
+    chapterTitle: 'Chủ đề 5: Lịch sử đối ngoại của Việt Nam',
+    grade: 'Lớp 12',
+    aliases: ['đối ngoại', 'bài 12', 'bài 13', 'bài 14'],
+  },
+  'hồ chí minh': {
+    topicKey: 'hồ chí minh',
+    lessonTitle: 'Bài 15: Hồ Chí Minh trong lịch sử Việt Nam',
+    chapterTitle: 'Chủ đề 6: Hồ Chí Minh trong lịch sử Việt Nam',
+    grade: 'Lớp 12',
+    aliases: ['hồ chí minh', 'bài 15', 'bài 16', 'bài 17'],
+  },
+  'cách mạng tư sản': {
+    topicKey: 'cách mạng tư sản',
+    lessonTitle: 'Lớp 11 — Cách mạng tư sản thời cận đại',
+    chapterTitle: 'Chủ đề 1: Cách mạng tư sản',
+    grade: 'Lớp 11',
+    aliases: ['cách mạng tư sản'],
+  },
+  'liên bang xô viết': {
+    topicKey: 'liên bang xô viết',
+    lessonTitle: 'Lớp 11 — Sự thành lập Liên bang Xô viết',
+    chapterTitle: 'Chủ đề 2: Chủ nghĩa xã hội',
+    grade: 'Lớp 11',
+    aliases: ['xô viết', 'liên xô', 'chủ nghĩa xã hội'],
+  },
+  'chiến tranh bảo vệ tổ quốc': {
+    topicKey: 'chiến tranh bảo vệ tổ quốc',
+    lessonTitle: 'Lớp 11 — Chiến tranh bảo vệ Tổ quốc trong lịch sử',
+    chapterTitle: 'Chủ đề 4: Chiến tranh bảo vệ Tổ quốc',
+    grade: 'Lớp 11',
+    aliases: ['chiến tranh bảo vệ tổ quốc', 'khởi nghĩa lam sơn', 'bạch đằng', 'như nguyệt'],
+  },
+  'cải cách lớn': {
+    topicKey: 'cải cách lớn',
+    lessonTitle: 'Lớp 11 — Các cuộc cải cách lớn trong lịch sử Việt Nam',
+    chapterTitle: 'Chủ đề 5: Một số cuộc cải cách lớn',
+    grade: 'Lớp 11',
+    aliases: ['cải cách', 'hồ quý ly', 'lê thánh tông', 'minh mạng'],
+  },
+  'biển đông': {
+    topicKey: 'biển đông',
+    lessonTitle: 'Lớp 11 — Vị trí địa lí và tầm quan trọng của Biển Đông',
+    chapterTitle: 'Chủ đề 6: Lịch sử bảo vệ chủ quyền Biển Đông',
+    grade: 'Lớp 11',
+    aliases: ['biển đông', 'hoàng sa', 'trường sa'],
+  },
+  'văn minh phương đông': {
+    topicKey: 'văn minh phương đông',
+    lessonTitle: 'Lớp 10 — Văn minh phương Đông thời cổ – trung đại',
+    chapterTitle: 'Chủ đề 3: Văn minh thế giới',
+    grade: 'Lớp 10',
+    aliases: ['văn minh phương đông', 'ai cập', 'lưỡng hà', 'ấn độ', 'trung hoa'],
+  },
+  'cách mạng công nghiệp': {
+    topicKey: 'cách mạng công nghiệp',
+    lessonTitle: 'Lớp 10 — Các cuộc cách mạng công nghiệp',
+    chapterTitle: 'Chủ đề 4: Cách mạng công nghiệp',
+    grade: 'Lớp 10',
+    aliases: ['cách mạng công nghiệp', 'máy hơi nước'],
+  },
+  'văn minh đại việt': {
+    topicKey: 'văn minh đại việt',
+    lessonTitle: 'Lớp 10 — Văn minh Đại Việt',
+    chapterTitle: 'Chủ đề 6: Văn minh trên đất nước Việt Nam',
+    grade: 'Lớp 10',
+    aliases: ['đại việt', 'văn minh đại việt', 'thăng long'],
+  },
+};
+
+export function getMilestoneSortKey(m) {
+  if (!m || !m.time) return 99999999;
+  const s = String(m.time).trim();
+  const yearMatch = s.match(/\b(\d{4})\b/) || s.match(/(\d{3,4})/);
+  const year = yearMatch ? parseInt(yearMatch[1], 10) : 9999;
+
+  const dmyMatch = s.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+  if (dmyMatch) {
+    const day = parseInt(dmyMatch[1], 10);
+    const month = parseInt(dmyMatch[2], 10);
+    return year * 10000 + month * 100 + day;
+  }
+  const myMatch = s.match(/(\d{1,2})[-/.](\d{4})/);
+  if (myMatch) {
+    const month = parseInt(myMatch[1], 10);
+    return year * 10000 + month * 100;
+  }
+  return year * 10000;
+}
+
 /**
- * Lấy toàn bộ các mốc lịch sử chuẩn hoá của cả 3 khối lớp 10, 11, 12 gom thành 1 trục niên biểu toàn diện
+ * Tổng hợp Niên biểu ĐỘNG từ các bài học thực tế trong chương trình.
+ * Đồng bộ hai chiều với bài học hiện tại:
+ * - Nếu bài học hiện tại có 0 mốc (người dùng đã xoá hết), bài học này đóng góp ĐÚNG 0 MỐC vào Niên biểu!
+ * - Nếu bài học hiện tại thêm/sửa mốc, Niên biểu cập nhật ngay lập tức.
+ * - Mỗi mốc đều được gắn thẻ nguồn bài học để phân biệt rõ ràng.
  */
-export function getAllCurriculumMilestones() {
-  const all = [];
-  const seenEntities = new Set();
-  for (const list of Object.values(CURRICULUM_MILESTONES_DB)) {
-    for (const m of list) {
-      if (!seenEntities.has(m.entityName)) {
-        seenEntities.add(m.entityName);
-        all.push(m);
+export function getAggregatedCurriculumMilestones({
+  currentLessonId = '',
+  currentLessonTitle = '',
+  currentChapterTitle = '',
+  currentMilestones = null,
+} = {}) {
+  const aggregated = [];
+  const normCurrent = (currentLessonTitle + ' ' + currentChapterTitle).toLowerCase();
+
+  for (const [topicKey, info] of Object.entries(TOPIC_LESSON_INFO)) {
+    // Kiểm tra xem topic này có trùng với bài học đang mở hay không
+    const isCurrent =
+      (currentLessonId && info.lessonId === currentLessonId) ||
+      normCurrent.includes(topicKey) ||
+      (info.aliases && info.aliases.some((a) => normCurrent.includes(a)));
+
+    let topicMilestones = [];
+
+    if (isCurrent) {
+      // 1. VỚI BÀI HỌC HIỆN TẠI: Lấy chính xác mảng mốc live từ state bài học!
+      // Nếu bài học có 0 mốc (đã xoá hết), đóng góp ĐÚNG 0 MỐC!
+      if (Array.isArray(currentMilestones)) {
+        topicMilestones = currentMilestones.map((m) => ({
+          ...m,
+          lessonTitle: currentLessonTitle || info.lessonTitle,
+          chapterTitle: currentChapterTitle || info.chapterTitle,
+          grade: info.grade,
+          isCurrentLesson: true,
+        }));
+      }
+    } else {
+      // 2. VỚI CÁC BÀI HỌC KHÁC:
+      const storageKey = info.lessonId ? `lesson_study_data_${info.lessonId}` : null;
+      let saved = null;
+      if (storageKey && typeof localStorage !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          if (raw) saved = JSON.parse(raw);
+        } catch {}
+      }
+
+      if (saved && Array.isArray(saved.milestones)) {
+        topicMilestones = saved.milestones.map((m) => ({
+          ...m,
+          lessonTitle: info.lessonTitle,
+          chapterTitle: info.chapterTitle,
+          grade: info.grade,
+          isCurrentLesson: false,
+        }));
+      } else {
+        // Mốc chuẩn của bài học
+        const list = CURRICULUM_MILESTONES_DB[topicKey] || [];
+        topicMilestones = list.map((m) => ({
+          ...m,
+          lessonTitle: info.lessonTitle,
+          chapterTitle: info.chapterTitle,
+          grade: info.grade,
+          isCurrentLesson: false,
+        }));
       }
     }
+
+    aggregated.push(...topicMilestones);
   }
-  return all;
+
+  // Sắp xếp tăng dần theo thời gian
+  return aggregated.sort((a, b) => getMilestoneSortKey(a) - getMilestoneSortKey(b));
+}
+
+export function getAllCurriculumMilestones() {
+  return getAggregatedCurriculumMilestones({});
 }

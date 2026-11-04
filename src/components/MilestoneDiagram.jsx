@@ -255,13 +255,23 @@ export default function MilestoneDiagram({
 
   // Mở modal chỉnh sửa mốc
   const handleOpenEdit = (m, idx) => {
-    setFormTime(m.time || '');
+    if (timelineScope === 'all' && !m.isCurrentLesson) {
+      alert(`Mốc này thuộc bài "${m.lessonTitle || 'bài học khác'}". Hãy mở bài học đó để chỉnh sửa nhé!`);
+      return;
+    }
+    const parsed = parseTimeString(m.time || '');
+    setFormDay(parsed.day || '');
+    setFormMonth(parsed.month || '');
+    setFormYear(parsed.year || '');
+    setIsCustomTimeMode(parsed.isCustom);
+    setCustomTimeString(parsed.customStr || '');
     setFormEntity(m.entityName || '');
     setFormNote(m.note || '');
     setFormTypeTag(m.typeTag || '#Văn_kiện');
     setFormSpaceTag(m.spaceTag || '#Việt_Nam');
     setFormEraTag(m.eraTag || '#1919-1945');
-    setCustomTagInput(m.customTags ? m.customTags.join(', ') : '');
+    setFormTagsList(m.customTags || []);
+    setTagInputValue('');
     setEditModal({ mode: 'edit', index: idx, id: m.id, data: m });
   };
 
@@ -303,6 +313,13 @@ export default function MilestoneDiagram({
 
   // Xoá mốc
   const handleDeleteMilestone = (id) => {
+    if (timelineScope === 'all') {
+      const target = sourceMilestones.find((m) => m.id === id);
+      if (target && !target.isCurrentLesson) {
+        alert(`Mốc này thuộc bài "${target.lessonTitle || 'bài học khác'}". Hãy mở bài học đó để xoá mốc này!`);
+        return;
+      }
+    }
     if (window.confirm('Em có chắc chắn muốn xoá mốc sự kiện này khỏi sơ đồ?')) {
       const nextList = milestones.filter((m) => m.id !== id && m.parentId !== id);
       onSaveMilestones(nextList);
@@ -368,7 +385,7 @@ export default function MilestoneDiagram({
               type="button"
               className={`view-pill-btn ${timelineScope === 'lesson' ? 'active' : ''}`}
               onClick={() => setTimelineScope('lesson')}
-              title="Các mốc trọng tâm có sẵn của bài học này"
+              title="Chỉ hiển thị các mốc sự kiện thuộc bài học này"
             >
               <span>📖 Mốc bài này ({milestones.length})</span>
             </button>
@@ -376,9 +393,9 @@ export default function MilestoneDiagram({
               type="button"
               className={`view-pill-btn ${timelineScope === 'all' ? 'active' : ''}`}
               onClick={() => setTimelineScope('all')}
-              title="Trục niên biểu lịch sử toàn diện xuyên suốt Lớp 10 · 11 · 12"
+              title="Niên biểu lịch sử tổng hợp gom từ mốc của các bài học"
             >
-              <span>🌐 Niên biểu 10·11·12 ({allCurriculumMilestones.length})</span>
+              <span>🌐 Niên biểu tổng hợp ({allCurriculumMilestones.length})</span>
             </button>
           </div>
         )}
@@ -491,6 +508,22 @@ export default function MilestoneDiagram({
       </div>
 
       {/* 3. KHÔNG GIAN HIỂN THỊ CHÍNH (CANVAS THEO TỪNG CHẾ ĐỘ VIEW) */}
+      {timelineScope === 'all' && (
+        <div className="aggregated-timeline-notice">
+          <span style={{ fontSize: '1.25rem' }}>🌐</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 750, color: '#380718', fontSize: '0.88rem' }}>
+              Niên biểu lịch sử tổng hợp — Gom lại từ các mốc bài học
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#881337', marginTop: '2px', opacity: 0.85 }}>
+              Niên biểu được tự động đồng bộ hai chiều từ mốc sự kiện của từng bài. Bài nào chưa có mốc hoặc đã xoá mốc thì không xuất hiện ở đây.
+            </div>
+          </div>
+          <span className="aggregated-count-chip">
+            {allCurriculumMilestones.length} mốc tích luỹ
+          </span>
+        </div>
+      )}
       {viewMode === 'cluster' ? (
         /* =========================================================================
            CHẾ ĐỘ CỤM NHÃN (CLUSTER VIEW)
@@ -717,7 +750,17 @@ export default function MilestoneDiagram({
                       <div className="milestone-card-content">
                         {/* Thanh Tiêu Đề Mốc: Thời gian + Nút hành động */}
                         <div className="node-top-bar">
-                          <span className="node-time-badge">{m.time}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span className="node-time-badge">{m.time}</span>
+                            {timelineScope === 'all' && m.lessonTitle && (
+                              <span
+                                className={`node-lesson-source-pill ${m.isCurrentLesson ? 'is-current' : ''}`}
+                                title={m.isCurrentLesson ? 'Mốc thuộc bài học đang mở' : `Thuộc ${m.lessonTitle}`}
+                              >
+                                📚 {m.lessonTitle} {m.isCurrentLesson ? '★ (Bài này)' : ''}
+                              </span>
+                            )}
+                          </div>
 
                           <div className="node-actions-wrap">
                             {isDraggable && (

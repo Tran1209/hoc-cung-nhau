@@ -3168,6 +3168,52 @@ a.folio-metric-cell:hover {
   gap: 4px;
 }
 
+/* Banner thông báo Niên biểu tổng hợp gom từ các bài học */
+.aggregated-timeline-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #FFF5F7;
+  border: 1.5px solid rgba(253, 164, 175, 0.65);
+  border-radius: 16px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(190, 18, 60, 0.04);
+}
+
+.aggregated-count-chip {
+  font-size: 0.78rem;
+  font-weight: 750;
+  color: #BE123C;
+  background: #FFE4E8;
+  border: 1px solid #FDA4AF;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.node-lesson-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.node-lesson-source-pill.is-current {
+  background: #FFF0F3;
+  color: #BE123C;
+  border-color: #FDA4AF;
+  box-shadow: 0 1px 4px rgba(190, 18, 60, 0.1);
+}
+
 .view-pill-btn {
   border: none;
   background: transparent;

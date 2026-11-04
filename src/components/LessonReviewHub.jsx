@@ -5,7 +5,7 @@ import MilestoneDiagram from './MilestoneDiagram';
 import AxesDiagram from './AxesDiagram';
 import CauseEffectDiagram, { DEFAULT_CAUSE_EFFECT_LIST } from './CauseEffectDiagram';
 import ComparisonDiagram, { DEFAULT_COMPARISONS_LIST } from './ComparisonDiagram';
-import { getStandardMilestonesForLesson, getAllCurriculumMilestones } from '../data/curriculumMilestones';
+import { getStandardMilestonesForLesson, getAllCurriculumMilestones, getAggregatedCurriculumMilestones } from '../data/curriculumMilestones';
 
 export const DEFAULT_BAI1_REVIEW_DATA = {
   milestones: [],
@@ -83,10 +83,15 @@ export default function LessonReviewHub({
     return getStandardMilestonesForLesson(lessonTitle, chapterTitle, lessonContent);
   }, [lessonTitle, chapterTitle, lessonContent]);
 
-  // Toàn bộ niên biểu Lớp 10, 11, 12 xuyên suốt
+  // Toàn bộ niên biểu tổng kết: Tích luỹ và gom động từ các mốc bài học
   const allMilestones = useMemo(() => {
-    return getAllCurriculumMilestones();
-  }, []);
+    return getAggregatedCurriculumMilestones({
+      currentLessonId: lessonId,
+      currentLessonTitle: lessonTitle,
+      currentChapterTitle: chapterTitle,
+      currentMilestones: studyData.milestones || [],
+    });
+  }, [lessonId, lessonTitle, chapterTitle, studyData.milestones]);
 
   // Dữ liệu ôn tập của bài học (Có sẵn mốc chuẩn theo bài học, cho phép người dùng tự do thêm/sửa/xoá)
   const storageKey = `lesson_study_data_${lessonId}`;
