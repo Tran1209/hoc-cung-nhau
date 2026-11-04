@@ -184,87 +184,88 @@ export default function LessonReviewHub({
   return (
     <div className="review-hub-container">
       {/* =========================================================================
-          THANH CHUYỂN ĐỔI 4 CHẾ ĐỘ SƠ ĐỒ (SUB-TABS) PHONG CÁCH PILL HỒNG/ĐỎ
+          BỘ CHỌN CHẾ ĐỘ ÔN TẬP GỌN GÀNG, DỄ CHỌN (KHÔNG BỊ CUỘN ẨN)
           ========================================================================= */}
-      <div className="review-subtabs-bar">
-        <div className="subtabs-pill-group">
-          {/* 1. Sơ đồ Mốc & Nhãn (Lõi 1) */}
+      <div className="review-subtabs-nav-wrapper">
+        <div className="review-subtabs-grid">
+          {/* 1. Mốc thời gian */}
           <button
             type="button"
-            className={`review-subtab-pill ${subTab === 'milestones' ? 'active' : ''}`}
+            className={`review-mode-btn ${subTab === 'milestones' ? 'active' : ''}`}
             onClick={() => setSubTab('milestones')}
           >
-            <span className="pill-prefix">Lõi 1</span>
-            <span>Sơ đồ Mốc & Nhãn</span>
-            <span className="pill-count">{studyData.milestones?.length || 0}</span>
+            <span className="mode-btn-icon">⏱️</span>
+            <span className="mode-btn-label">Mốc thời gian</span>
+            <span className="mode-btn-badge">{studyData.milestones?.length || 0}</span>
           </button>
 
-          {/* 2. Chia trục Chủ thể & Giai đoạn (Lõi 2 & 4) */}
+          {/* 2. Trục chủ thể */}
           <button
             type="button"
-            className={`review-subtab-pill ${subTab === 'axes' ? 'active' : ''}`}
+            className={`review-mode-btn ${subTab === 'axes' ? 'active' : ''}`}
             onClick={() => setSubTab('axes')}
           >
-            <span className="pill-prefix">Lõi 2 & 4</span>
-            <span>Chia trục Chủ thể & Giai đoạn</span>
-            <span className="pill-count">{studyData.axes?.length || 0}</span>
+            <span className="mode-btn-icon">🎯</span>
+            <span className="mode-btn-label">Trục chủ thể</span>
+            <span className="mode-btn-badge">{studyData.axes?.length || 0}</span>
           </button>
 
-          {/* 3. Sơ đồ Nhân - Quả (Lõi 3) */}
+          {/* 3. Sơ đồ Nhân - Quả */}
           <button
             type="button"
-            className={`review-subtab-pill ${subTab === 'causeEffects' ? 'active' : ''}`}
+            className={`review-mode-btn ${subTab === 'causeEffects' ? 'active' : ''}`}
             onClick={() => setSubTab('causeEffects')}
           >
-            <span className="pill-prefix">Lõi 3</span>
-            <span>Sơ đồ Nhân - Quả</span>
-            <span className="pill-count">{studyData.causeEffects?.length || 0}</span>
+            <span className="mode-btn-icon">⚖️</span>
+            <span className="mode-btn-label">Nhân – Quả</span>
+            <span className="mode-btn-badge">{studyData.causeEffects?.length || 0}</span>
           </button>
 
-          {/* 4. Bàn cân Đối chiếu & Bài học (Lõi 5) */}
+          {/* 4. So sánh đối chiếu */}
           <button
             type="button"
-            className={`review-subtab-pill ${subTab === 'comparisons' ? 'active' : ''}`}
+            className={`review-mode-btn ${subTab === 'comparisons' ? 'active' : ''}`}
             onClick={() => setSubTab('comparisons')}
           >
-            <span className="pill-prefix">Lõi 5</span>
-            <span>Bàn cân Đối chiếu & Bài học</span>
-            <span className="pill-count">{studyData.comparisons?.length || 0}</span>
+            <span className="mode-btn-icon">🔍</span>
+            <span className="mode-btn-label">So sánh đối chiếu</span>
+            <span className="mode-btn-badge">{studyData.comparisons?.length || 0}</span>
           </button>
 
-          {/* Phụ trợ: Thẻ lật phản xạ 3D */}
+          {/* 5. Thẻ lật 3D */}
           {flashcards.length > 0 && (
             <button
               type="button"
-              className={`review-subtab-pill ${subTab === 'flashcards' ? 'active' : ''}`}
+              className={`review-mode-btn ${subTab === 'flashcards' ? 'active' : ''}`}
               onClick={() => setSubTab('flashcards')}
             >
-              <span>Thẻ lật 3D</span>
-              <span className="pill-count">{flashcards.length}</span>
+              <span className="mode-btn-icon">🎴</span>
+              <span className="mode-btn-label">Thẻ lật 3D</span>
+              <span className="mode-btn-badge">{flashcards.length}</span>
             </button>
           )}
         </div>
 
-        <div className="subtabs-action-group">
-          <button
-            type="button"
-            className="ios-btn sm ios-btn-primary"
-            onClick={() => {
-              setAddType(
-                subTab === 'milestones'
-                  ? 'milestone'
-                  : subTab === 'axes'
-                  ? 'axis'
-                  : subTab === 'causeEffects'
-                  ? 'causeEffect'
-                  : 'comparison'
-              );
-              setAddModal(true);
-            }}
-          >
-            + Thêm mục ôn tập
-          </button>
-        </div>
+        {/* Nút thêm nhanh */}
+        <button
+          type="button"
+          className="ios-btn sm ios-btn-primary review-add-btn"
+          onClick={() => {
+            setAddType(
+              subTab === 'milestones'
+                ? 'milestone'
+                : subTab === 'axes'
+                ? 'axis'
+                : subTab === 'causeEffects'
+                ? 'causeEffect'
+                : 'comparison'
+            );
+            setAddModal(true);
+          }}
+          title="Thêm mục ôn tập mới vào sơ đồ đang xem"
+        >
+          + Thêm mục mới
+        </button>
       </div>
 
       {/* =========================================================================

@@ -2652,86 +2652,103 @@ a.folio-metric-cell:hover {
   gap: 16px;
 }
 
-.review-subtabs-bar {
+/* ==========================================================================
+   REVIEW SUBTABS NAV REDESIGN (XẾP GỌN, DỄ CHỌN, KHÔNG BỊ TRÀN CUỘN)
+   ========================================================================== */
+.review-subtabs-nav-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
-  padding-bottom: 4px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
-.subtabs-pill-group {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(255, 240, 243, 0.85);
-  padding: 4px;
-  border-radius: 999px;
-  border: 1.5px solid rgba(253, 164, 175, 0.45);
-  gap: 4px;
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.review-subtab-pill {
-  display: inline-flex;
+.review-subtabs-grid {
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  border-radius: 999px;
+  background: #FFF0F3;
+  border: 1.5px solid rgba(253, 164, 175, 0.5);
+  border-radius: 16px;
+  padding: 4px;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .review-subtabs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+}
+
+.review-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
   border: none;
   background: transparent;
   color: #881337;
-  font-family: var(--font-body);
-  font-size: 0.82rem;
+  font-family: var(--font-body, inherit);
+  font-size: 0.84rem;
   font-weight: 750;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   white-space: nowrap;
+  flex: 1;
 }
 
-.review-subtab-pill:hover {
-  background: rgba(255, 255, 255, 0.8);
+.review-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
   color: #BE123C;
 }
 
-.review-subtab-pill.active {
-  background: #BE123C;
+.review-mode-btn.active {
+  background: linear-gradient(135deg, #E11D48, #BE123C);
   color: #FFFFFF;
   box-shadow: 0 4px 14px rgba(190, 18, 60, 0.25);
 }
 
-.pill-prefix {
-  font-size: 0.68rem;
+.mode-btn-icon {
+  font-size: 0.95rem;
+}
+
+.mode-btn-label {
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.mode-btn-badge {
+  font-size: 0.72rem;
   font-weight: 800;
-  padding: 1px 6px;
-  border-radius: 8px;
-  background: rgba(190, 18, 60, 0.1);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #FFE4E8;
   color: #BE123C;
 }
 
-.review-subtab-pill.active .pill-prefix {
-  background: rgba(255, 255, 255, 0.25);
-  color: #FFFFFF;
-}
-
-.pill-count {
-  font-size: 0.72rem;
-  font-weight: 850;
-  padding: 1px 7px;
-  border-radius: 10px;
-  background: #FFE4E8;
-  color: #881337;
-}
-
-.review-subtab-pill.active .pill-count {
+.review-mode-btn.active .mode-btn-badge {
   background: #FFFFFF;
   color: #BE123C;
 }
 
-.subtabs-action-group {
-  display: flex;
-  align-items: center;
+.review-add-btn {
+  padding: 8px 16px !important;
+  font-size: 0.84rem !important;
+  font-weight: 750 !important;
+  white-space: nowrap;
+  border-radius: 12px !important;
+}
+
+@media (max-width: 768px) {
+  .review-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .review-core-pane {

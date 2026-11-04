@@ -603,47 +603,37 @@ export default function LessonPage() {
               </div>
             )}
           </div>
-
-          <div className="folio-meta-bar">
-            <span className="badge">Chương trình Lịch Sử 12</span>
-            <span className="badge in_progress">Thời lượng đọc: ~15 phút</span>
-            <span className="badge">Bộ Kết Nối Tri Thức</span>
-          </div>
-
-          <div className="folio-progress-bar">
-            <div className="folio-progress-fill" style={{ width: '100%' }} />
-          </div>
         </header>
 
         {/* BỘ CHUYỂN TAB CHUẨN APPLE: PHÂN TÁCH RÕ RÀNG KIẾN THỨC, BÀI TẬP, ÔN TẬP, LƯU Ý */}
-        <div className="folio-segmented-tabs" style={{ marginBottom: '22px' }}>
+        <div className="folio-segmented-tabs" style={{ marginBottom: '20px' }}>
           <button
             type="button"
             className={`segmented-tab-btn ${activeTab === 'theory' ? 'active' : ''}`}
             onClick={() => switchTab('theory')}
           >
-            Kiến thức
+            📖 Kiến thức
           </button>
           <button
             type="button"
             className={`segmented-tab-btn ${activeTab === 'exercises' ? 'active' : ''}`}
             onClick={() => switchTab('exercises')}
           >
-            Bài tập {assignments.length > 0 && <span className="tab-badge">{assignments.length}</span>}
+            📝 Bài tập {assignments.length > 0 && <span className="tab-badge">{assignments.length}</span>}
           </button>
           <button
             type="button"
             className={`segmented-tab-btn ${activeTab === 'review' ? 'active' : ''}`}
             onClick={() => switchTab('review')}
           >
-            Ôn tập {reviewCount > 0 && <span className="tab-badge">{reviewCount}</span>}
+            🎯 Ôn tập {reviewCount > 0 && <span className="tab-badge">{reviewCount}</span>}
           </button>
           <button
             type="button"
             className={`segmented-tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
             onClick={() => switchTab('notes')}
           >
-            Lưu ý {images.length > 0 && <span className="tab-badge">{images.length}</span>}
+            💡 Lưu ý {images.length > 0 && <span className="tab-badge">{images.length}</span>}
           </button>
         </div>
 
