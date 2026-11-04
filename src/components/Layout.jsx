@@ -6,7 +6,7 @@ import { useLive } from '../data/useLive';
 import { APP_SCHEMA_VERSION, IS_CLOUD } from '../config';
 
 export default function Layout({ children }) {
-  const { user, isTeacher } = useAuth();
+  const { user, isTeacher, switchDemoRole } = useAuth();
   const nav = useNavigate();
   const [dbVersion, setDbVersion] = useState(null);
 
@@ -47,6 +47,14 @@ export default function Layout({ children }) {
         <div className="me">
           <span className={`role-dot ${user.role}`} title={isTeacher ? 'Quản lý' : 'Học viên'} />
           <span className="me-name">{user.display_name}</span>
+          <button
+            type="button"
+            className="ios-role-switcher"
+            onClick={switchDemoRole}
+            title="Đổi nhanh vai: Anh (Quản lý) ⇄ Em (Học viên)"
+          >
+            {isTeacher ? '👦 Anh' : '👧 Em'} ⇄
+          </button>
           <button className="btn ghost sm" onClick={logout}>Đăng xuất</button>
         </div>
       </header>

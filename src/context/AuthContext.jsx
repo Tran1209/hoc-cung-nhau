@@ -39,6 +39,20 @@ export function AuthProvider({ children }) {
     return () => { off1(); off2(); };
   }, [refresh]);
 
+  const switchDemoRole = useCallback(async () => {
+    try {
+      const nextRole = user?.role === 'teacher' ? 'student' : 'teacher';
+      if (data.auth?.signInDemo) {
+        await data.auth.signInDemo(nextRole);
+      } else {
+        localStorage.setItem('hcn-local-me', nextRole === 'teacher' ? 'demo-teacher' : 'demo-student');
+      }
+      await refresh();
+    } catch (e) {
+      console.error('Lỗi đổi vai demo:', e);
+    }
+  }, [user, refresh]);
+
   const value = {
     user,
     people,
@@ -46,6 +60,7 @@ export function AuthProvider({ children }) {
     partner: people.find((p) => p.id !== user?.id) || null,
     nameOf: (id) => people.find((p) => p.id === id)?.display_name || 'Ai đó',
     refresh,
+    switchDemoRole,
   };
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }

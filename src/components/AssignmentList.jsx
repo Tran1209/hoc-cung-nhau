@@ -20,7 +20,7 @@ export default function AssignmentList({
   emptyText,
   defaultTitle,
 }) {
-  const { user, isTeacher } = useAuth();
+  const { user, isTeacher, switchDemoRole } = useAuth();
   const nav = useNavigate();
   const docxInputRef = useRef(null);
 
@@ -218,6 +218,31 @@ export default function AssignmentList({
 
   return (
     <div>
+      {/* KHÔNG GIAN BÀI TẬP ĐÔI: ANH ĐƯA ĐỀ - EM LÀM BÀI */}
+      <div className="couple-assignment-banner">
+        <div className="couple-banner-left">
+          <span className="couple-heart-badge">💌</span>
+          <div>
+            <div className="couple-banner-title">
+              {isTeacher ? 'Góc ra đề của Anh · Chuẩn bị cho Em' : 'Bài tập Anh giao cho Em · Em làm bài nhé!'}
+            </div>
+            <div className="couple-banner-sub">
+              {isTeacher
+                ? 'Anh đang ở vai Thầy giáo / Người yêu. Em sẽ làm các bài tập này và nộp lại cho Anh chấm.'
+                : 'Anh đã chuẩn bị sẵn các đề luyện thi chất lượng. Khi làm bài, Em chọn đáp án sẽ thấy trích xuất kiến thức dạ quang hồng!'}
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="ios-btn sm ios-btn-secondary role-swap-btn"
+          onClick={switchDemoRole}
+          title="Đổi vai để kiểm tra thử nghiệm"
+        >
+          🔄 Đổi sang vai {isTeacher ? 'Em (Làm bài)' : 'Anh (Ra đề)'}
+        </button>
+      </div>
+
       {sorted.length === 0 ? (
         <Empty>{emptyText || 'Chưa có bài tập nào được giao cho bài này.'}</Empty>
       ) : (
@@ -257,12 +282,14 @@ export default function AssignmentList({
                     {a.due_at && <DueBadge due={a.due_at} />}
                     {isGraded ? (
                       <span style={{ color: '#059669', fontWeight: 700 }}>
-                        Đã nộp · Đạt {scoreText(s.score)}
+                        {isTeacher ? 'Em đã hoàn thành · Đạt ' : 'Đã nộp cho Anh · Đạt '} {scoreText(s.score)}
                       </span>
                     ) : s?.status === 'submitted' ? (
-                      <span style={{ color: '#E11D48', fontWeight: 700 }}>Đã nộp · Chờ giáo viên chấm</span>
+                      <span style={{ color: '#E11D48', fontWeight: 700 }}>
+                        {isTeacher ? 'Em đã nộp bài · Chờ Anh chấm' : 'Đã nộp bài cho Anh · Chờ chấm'}
+                      </span>
                     ) : (
-                      <span className="muted">Chưa làm bài</span>
+                      <span className="muted">{isTeacher ? 'Anh đã giao · Chờ Em làm' : 'Em chưa làm bài này'}</span>
                     )}
                   </div>
                 </div>
@@ -282,7 +309,7 @@ export default function AssignmentList({
                     to={`/bt/${a.id}`}
                     className={`ios-btn sm ${isGraded ? 'ios-btn-secondary' : 'ios-btn-primary'}`}
                   >
-                    {isGraded ? 'Xem kết quả' : 'Làm bài ' + btCode + ' →'}
+                    {isGraded ? 'Xem kết quả' : (isTeacher ? 'Làm thử ' + btCode + ' →' : 'Làm bài ' + btCode + ' →')}
                   </Link>
                 </div>
               </div>

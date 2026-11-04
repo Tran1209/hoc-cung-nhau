@@ -7341,3 +7341,238 @@ a.folio-metric-cell:hover {
   color: #FFFFFF;
   border-color: #7E22CE;
 }
+
+
+/* ==========================================================================
+   7. GÓC HỌC ĐÔI & TRÍCH XUẤT KIẾN THỨC DẠ QUANG HỒNG (APPLE HIG FOLIO)
+   ========================================================================== */
+
+/* Nút chuyển đổi nhanh vai Anh ⇄ Em trên thanh Topbar */
+.ios-role-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 228, 232, 0.7);
+  color: #BE123C;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 6px;
+}
+.ios-role-switcher:hover {
+  background: #FFE4E8;
+  border-color: #E11D48;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.18);
+}
+.ios-role-switcher:active {
+  transform: scale(0.96);
+}
+
+/* Banner không gian học đôi: Anh đưa đề - Em làm bài */
+.couple-assignment-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F3 50%, #FFE4E8 100%);
+  border: 1.5px solid rgba(253, 164, 175, 0.55);
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(244, 63, 94, 0.08);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.couple-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.couple-heart-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  font-size: 1.35rem;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.12);
+  border: 1px solid rgba(254, 205, 214, 0.6);
+  flex-shrink: 0;
+}
+
+.couple-banner-title {
+  font-family: var(--font-display, inherit);
+  font-size: 1.02rem;
+  font-weight: 750;
+  color: #881337;
+  margin-bottom: 2px;
+}
+
+.couple-banner-sub {
+  font-size: 0.83rem;
+  color: #9F1239;
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
+.role-swap-btn {
+  white-space: nowrap;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: #FFFFFF !important;
+  color: #BE123C !important;
+  border: 1.5px solid rgba(244, 63, 94, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.08);
+  transition: all 0.2s ease;
+}
+.role-swap-btn:hover {
+  background: #FFF1F2 !important;
+  border-color: #E11D48 !important;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   THẺ TRÍCH XUẤT KIẾN THỨC VỚI BÚT DẠ QUANG HỒNG (QUIZ EVIDENCE CARD)
+   ========================================================================== */
+.quiz-evidence-card {
+  margin-top: 14px;
+  background: linear-gradient(180deg, #FFFDFE 0%, #FFF5F7 100%);
+  border: 1.5px solid #FECDD6;
+  border-left: 4.5px solid #E11D48;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.06);
+  animation: evidenceSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes evidenceSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quiz-evidence-card.tf-evidence {
+  border-left-color: #9333EA;
+  background: linear-gradient(180deg, #FDFAFF 0%, #FAF5FF 100%);
+  border-color: #E9D5FF;
+}
+
+.quiz-evidence-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(253, 164, 175, 0.5);
+}
+
+.quiz-evidence-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.quiz-evidence-title-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.quiz-evidence-title {
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: #881337;
+  letter-spacing: -0.01em;
+}
+
+.quiz-evidence-src {
+  font-size: 0.75rem;
+  color: #9F1239;
+  opacity: 0.8;
+}
+
+.quiz-evidence-badge {
+  background: #FFF0F3;
+  color: #BE123C;
+  border: 1px solid #FECDD6;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.quiz-evidence-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-evidence-snippet {
+  font-size: 0.93rem;
+  line-height: 1.68;
+  color: #4C0519;
+  font-family: var(--font-body, inherit);
+  background: rgba(255, 255, 255, 0.65);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(254, 205, 214, 0.45);
+}
+
+.quiz-evidence-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.87rem;
+  line-height: 1.58;
+  color: #9F1239;
+  background: rgba(255, 241, 242, 0.7);
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(253, 164, 175, 0.4);
+}
+
+.quiz-note-tag {
+  font-weight: 750;
+  color: #BE123C;
+  white-space: nowrap;
+}
+
+.quiz-note-content {
+  flex: 1;
+}
+
+/* Đảm bảo highlight-tape bên trong quiz-evidence sáng bừng chuẩn dạ quang hồng */
+.quiz-evidence-card mark.highlight-tape,
+.quiz-evidence-card .highlight-tape {
+  background: #FFE4E8 !important;
+  color: #BE123C !important;
+  box-shadow: inset 0 -2px 0 rgba(244, 63, 94, 0.28) !important;
+  padding: 1.5px 6.5px !important;
+  border-radius: 5px !important;
+  font-weight: 700 !important;
+  display: inline-block;
+  line-height: 1.35;
+}
+
+/* Hiệu ứng focus khi bấm vào ý trong câu hỏi Đúng / Sai */
+.tf-row.is-focused {
+  background: #FFF1F2 !important;
+  border-color: #FDA4AF !important;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.15);
+}

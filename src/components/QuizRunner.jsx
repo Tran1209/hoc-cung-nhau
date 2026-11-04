@@ -4,6 +4,7 @@ import { data, logActivity } from '../data';
 import { useAuth } from '../context/AuthContext';
 import { Gallery, FileThumb } from './Gallery';
 import Uploader from './Uploader';
+import { extractEvidence } from '../lib/knowledgeExtractor';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
@@ -20,7 +21,14 @@ function cleanQuestionPrompt(prompt, index) {
  * Giao diện làm bài thi & bài tập trắc nghiệm THPT Quốc Gia 2026
  * Chuẩn Rose Milk Editorial Folio (Apple HIG)
  */
-export default function QuizRunner({ assignment, questions = [], inProgress }) {
+export default function QuizRunner({
+  assignment,
+  questions = [],
+  inProgress,
+  lesson = null,
+  explanations = {},
+  isPreview = false,
+}) {
   const { user } = useAuth();
   const nav = useNavigate();
   const isExam = assignment.kind === 'exam';
@@ -36,6 +44,7 @@ export default function QuizRunner({ assignment, questions = [], inProgress }) {
   const [now, setNow] = useState(Date.now());
   const [showMap, setShowMap] = useState(false);
   const [activeQIndex, setActiveQIndex] = useState(0);
+  const [activeTfItem, setActiveTfItem] = useState({}); // { [questionId]: statementIndex }
 
   const submittedRef = useRef(false);
   const lightbox = useState(null);
@@ -97,6 +106,10 @@ export default function QuizRunner({ assignment, questions = [], inProgress }) {
         ) {
           return;
         }
+      }
+      if (isPreview) {
+        alert('Anh đã hoàn thành lượt làm thử nghiệm! Em sẽ nhìn thấy giao diện và trích xuất dạ quang y hệt khi làm bài.');
+        return;
       }
       submittedRef.current = true;
       setBusy(true);
@@ -317,77 +330,184 @@ export default function QuizRunner({ assignment, questions = [], inProgress }) {
 
               {/* PHẦN I: TRẮC NGHIỆM 4 LỰA CHỌN (MCQ) */}
               {q.type === 'mcq' && (
-                <div className="quiz-mcq-grid">
-                  {q.options.map((optText, k) => {
-                    const isSelected = answers[q.id] === k;
-                    const letter = LETTERS[k] || String.fromCharCode(65 + k);
-                    if (!optText || !optText.trim()) return null;
+                <>
+                  <div className="quiz-mcq-grid">
+                    {q.options.map((optText, k) => {
+                      const isSelected = answers[q.id] === k;
+                      const letter = LETTERS[k] || String.fromCharCode(65 + k);
+                      if (!optText || !optText.trim()) return null;
 
-                    return (
-                      <div
-                        key={k}
-                        className={`quiz-choice-item ${isSelected ? 'is-selected' : ''}`}
-                        onClick={() => setA(q.id, k)}
-                      >
-                        <input
-                          type="radio"
-                          name={`q_radio_${q.id}`}
-                          checked={isSelected}
-                          onChange={() => setA(q.id, k)}
-                        />
-                        <span className="quiz-choice-letter">{letter}</span>
-                        <span className="quiz-choice-label">{optText}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* PHẦN II: TRẮC NGHIỆM ĐÚNG / SAI 4 Ý (TF) */}
-              {q.type === 'tf' && (
-                <div className="tf-question-box">
-                  <div className="tf-guideline-badge">
-                    Thang điểm Bộ GD&ĐT 2026: Đúng 1 ý = 0.1đ · 2 ý = 0.25đ · 3 ý = 0.5đ · 4 ý = 1.0đ
-                  </div>
-
-                  <div className="tf-table">
-                    {q.options.map((stmt, k) => {
-                      const letter = ['a', 'b', 'c', 'd'][k] || String.fromCharCode(97 + k);
-                      const currentVal = answers[q.id]?.[k];
                       return (
-                        <div key={k} className="tf-row">
-                          <div className="tf-stmt-text">
-                            <span className="tf-letter-badge">{letter})</span>
-                            <span>{stmt}</span>
-                          </div>
-
-                          <div className="tf-actions-group">
-                            <button
-                              type="button"
-                              className={`tf-choice-btn btn-true ${currentVal === true ? 'selected' : ''}`}
-                              onClick={() => {
-                                const prev = answers[q.id] || {};
-                                setA(q.id, { ...prev, [k]: true });
-                              }}
-                            >
-                              {currentVal === true ? '✓ Đúng' : 'Đúng'}
-                            </button>
-                            <button
-                              type="button"
-                              className={`tf-choice-btn btn-false ${currentVal === false ? 'selected' : ''}`}
-                              onClick={() => {
-                                const prev = answers[q.id] || {};
-                                setA(q.id, { ...prev, [k]: false });
-                              }}
-                            >
-                              {currentVal === false ? '✕ Sai' : 'Sai'}
-                            </button>
-                          </div>
+                        <div
+                          key={k}
+                          className={`quiz-choice-item ${isSelected ? 'is-selected' : ''}`}
+                          onClick={() => setA(q.id, k)}
+                        >
+                          <input
+                            type="radio"
+                            name={`q_radio_${q.id}`}
+                            checked={isSelected}
+                            onChange={() => setA(q.id, k)}
+                          />
+                          <span className="quiz-choice-letter">{letter}</span>
+                          <span className="quiz-choice-label">{optText}</span>
                         </div>
                       );
                     })}
                   </div>
-                </div>
+
+                  {/* TRÍCH XUẤT KIẾN THỨC VỚI BÚT DẠ QUANG HỒNG KHI ĐÃ CHỌN ĐÁP ÁN */}
+                  {answers[q.id] !== undefined && (() => {
+                    const evidence = extractEvidence({
+                      question: q,
+                      selectedAnswer: answers[q.id],
+                      lessonContent: lesson?.content || '',
+                      studyHint: explanations[q.id],
+                    });
+                    if (!evidence) return null;
+
+                    return (
+                      <div className="quiz-evidence-card">
+                        <div className="quiz-evidence-header">
+                          <span className="quiz-evidence-icon">📖</span>
+                          <div className="quiz-evidence-title-wrap">
+                            <span className="quiz-evidence-title">Trích xuất từ Kiến thức (Bút dạ quang hồng)</span>
+                            <span className="quiz-evidence-src">{evidence.sourceTitle}</span>
+                          </div>
+                          <span className="quiz-evidence-badge">
+                            {evidence.isDirectSgk ? '✨ Căn cứ SGK' : '💡 Trọng tâm bài'}
+                          </span>
+                        </div>
+
+                        <div className="quiz-evidence-body">
+                          <div
+                            className="quiz-evidence-snippet"
+                            dangerouslySetInnerHTML={{ __html: evidence.excerptHtml }}
+                          />
+                          {evidence.noteHtml && (
+                            <div className="quiz-evidence-note">
+                              <span className="quiz-note-tag">💌 Lời dặn từ Anh:</span>
+                              <span
+                                className="quiz-note-content"
+                                dangerouslySetInnerHTML={{ __html: evidence.noteHtml }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+
+              {/* PHẦN II: TRẮC NGHIỆM ĐÚNG / SAI 4 Ý (TF) */}
+              {q.type === 'tf' && (
+                <>
+                  <div className="tf-question-box">
+                    <div className="tf-guideline-badge">
+                      Thang điểm Bộ GD&ĐT 2026: Đúng 1 ý = 0.1đ · 2 ý = 0.25đ · 3 ý = 0.5đ · 4 ý = 1.0đ
+                    </div>
+
+                    <div className="tf-table">
+                      {q.options.map((stmt, k) => {
+                        const letter = ['a', 'b', 'c', 'd'][k] || String.fromCharCode(97 + k);
+                        const currentVal = answers[q.id]?.[k];
+                        const isFocused = activeTfItem[q.id] === k;
+
+                        return (
+                          <div
+                            key={k}
+                            className={`tf-row ${isFocused ? 'is-focused' : ''}`}
+                            onClick={() => setActiveTfItem((prev) => ({ ...prev, [q.id]: k }))}
+                          >
+                            <div className="tf-stmt-text">
+                              <span className="tf-letter-badge">{letter})</span>
+                              <span>{stmt}</span>
+                            </div>
+
+                            <div className="tf-actions-group">
+                              <button
+                                type="button"
+                                className={`tf-choice-btn btn-true ${currentVal === true ? 'selected' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveTfItem((prev) => ({ ...prev, [q.id]: k }));
+                                  const prev = answers[q.id] || {};
+                                  setA(q.id, { ...prev, [k]: true });
+                                }}
+                              >
+                                {currentVal === true ? '✓ Đúng' : 'Đúng'}
+                              </button>
+                              <button
+                                type="button"
+                                className={`tf-choice-btn btn-false ${currentVal === false ? 'selected' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveTfItem((prev) => ({ ...prev, [q.id]: k }));
+                                  const prev = answers[q.id] || {};
+                                  setA(q.id, { ...prev, [k]: false });
+                                }}
+                              >
+                                {currentVal === false ? '✕ Sai' : 'Sai'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* TRÍCH XUẤT KIẾN THỨC VỚI BÚT DẠ QUANG HỒNG CHO Ý ĐANG CHỌN */}
+                  {answers[q.id] && Object.keys(answers[q.id]).length > 0 && (() => {
+                    const ansObj = answers[q.id];
+                    const keys = Object.keys(ansObj);
+                    const focusedIdx = activeTfItem[q.id] !== undefined
+                      ? activeTfItem[q.id]
+                      : Number(keys[keys.length - 1]);
+
+                    const tfEvidence = extractEvidence({
+                      question: q,
+                      selectedAnswer: ansObj,
+                      selectedTfIndex: focusedIdx,
+                      lessonContent: lesson?.content || '',
+                      studyHint: explanations[q.id],
+                    });
+                    if (!tfEvidence) return null;
+
+                    return (
+                      <div className="quiz-evidence-card tf-evidence">
+                        <div className="quiz-evidence-header">
+                          <span className="quiz-evidence-icon">📖</span>
+                          <div className="quiz-evidence-title-wrap">
+                            <span className="quiz-evidence-title">
+                              Trích xuất dẫn chứng cho ý {tfEvidence.letter}) (Bút dạ quang hồng)
+                            </span>
+                            <span className="quiz-evidence-src">{tfEvidence.sourceTitle}</span>
+                          </div>
+                          <span className="quiz-evidence-badge">
+                            Ý {tfEvidence.letter.toUpperCase()}: {tfEvidence.userChoice ? 'Đã chọn: Đúng' : 'Đã chọn: Sai'}
+                          </span>
+                        </div>
+
+                        <div className="quiz-evidence-body">
+                          <div
+                            className="quiz-evidence-snippet"
+                            dangerouslySetInnerHTML={{ __html: tfEvidence.excerptHtml }}
+                          />
+                          {tfEvidence.noteHtml && (
+                            <div className="quiz-evidence-note">
+                              <span className="quiz-note-tag">💌 Lời dặn từ Anh:</span>
+                              <span
+                                className="quiz-note-content"
+                                dangerouslySetInnerHTML={{ __html: tfEvidence.noteHtml }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
               )}
 
               {/* PHẦN TỰ LUẬN (ESSAY) */}

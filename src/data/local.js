@@ -405,6 +405,19 @@ export const local = {
     return data;
   },
 
+  async getQuestionExplanations(assignmentId) {
+    const qs = (await allRows('questions')).filter((q) => q.assignment_id === assignmentId);
+    const out = {};
+    for (const q of qs) {
+      const k = await getRow('answer_keys', q.id);
+      out[q.id] = {
+        explanation: k?.explanation || q.explanation || '',
+        correct: k?.correct ?? null,
+      };
+    }
+    return out;
+  },
+
   async quizReview(assignmentId) {
     const qs = (await allRows('questions')).filter((q) => q.assignment_id === assignmentId);
     if (!isTeacher()) {

@@ -11,26 +11,27 @@ import { fmtDate, maxScoreOf, scoreText, sortByPos } from '../lib/format';
 
 export default function AssignmentPage() {
   const { id } = useParams();
-  const { isTeacher } = useAuth();
+  const { isTeacher, switchDemoRole } = useAuth();
   const [again, setAgain] = useState(false);
 
   const { data: d, loading, error } = useLive(async () => {
     const a = await data.get('assignments', id);
     if (!a) return { a: null };
-    const [chapter, lesson, questions, submissions] = await Promise.all([
+    const [chapter, lesson, questions, submissions, explanations] = await Promise.all([
       data.get('chapters', a.chapter_id),
       a.lesson_id ? data.get('lessons', a.lesson_id) : null,
       data.list('questions', { where: { assignment_id: id } }),
       data.list('submissions', { where: { assignment_id: id }, order: 'created_at', asc: false }),
+      data.getQuestionExplanations ? data.getQuestionExplanations(id) : Promise.resolve({}),
     ]);
-    return { a, chapter, lesson, questions: sortByPos(questions), submissions };
+    return { a, chapter, lesson, questions: sortByPos(questions), submissions, explanations: explanations || {} };
   }, [id]);
 
   if (loading && !d) return <Loading />;
   if (error && !d) return <ErrorBox error={error} />;
   if (!d.a) return <Empty>Không tìm thấy bài tập (hoặc bài chưa được mở).</Empty>;
 
-  const { a, chapter, lesson, questions, submissions } = d;
+  const { a, chapter, lesson, questions, submissions, explanations } = d;
   const max = maxScoreOf(a, questions);
   const latest = submissions[0];
   const inProgress = submissions.find((s) => s.status === 'in_progress');
@@ -41,7 +42,7 @@ export default function AssignmentPage() {
     const canStart = !latest || latest.status === 'redo' || latest.status === 'in_progress';
     if (a.kind === 'exam') {
       studentAction = canStart ? (
-        <QuizRunner assignment={a} questions={questions} inProgress={inProgress} />
+        <QuizRunner assignment={a} questions={questions} lesson={lesson} explanations={explanations} inProgress={inProgress} />
       ) : (
         <div className="ok">Em đã hoàn thành bài thi này. Xem kết quả chi tiết bên dưới.</div>
       );
@@ -50,7 +51,7 @@ export default function AssignmentPage() {
         a.kind === 'upload' ? (
           <UploadSubmit assignment={a} />
         ) : (
-          <QuizRunner assignment={a} questions={questions} inProgress={inProgress} />
+          <QuizRunner assignment={a} questions={questions} lesson={lesson} explanations={explanations} inProgress={inProgress} />
         );
     } else {
       studentAction = (
@@ -119,33 +120,87 @@ export default function AssignmentPage() {
           </section>
         )}
 
-        {/* Danh sách câu hỏi cho Quản lý */}
-        {isTeacher && a.kind !== 'upload' && (
+        {/* Khu vực làm bài & trải nghiệm tương tác */}
+        {isTeacher ? (
           <section style={{ marginBottom: '32px' }}>
-            <div className="row" style={{ marginBottom: '14px', gap: '10px' }}>
-              <span className="idx-badge">2</span>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#380718' }}>Danh sách câu hỏi kiểm tra</h3>
+            <div className="couple-assignment-banner" style={{ marginBottom: '20px' }}>
+              <div className="couple-banner-left">
+                <span className="couple-heart-badge">💌</span>
+                <div>
+                  <div className="couple-banner-title">Góc trải nghiệm của Anh (Xem trước & Làm thử đề)</div>
+                  <div className="couple-banner-sub">
+                    Anh đang ở vai Thầy giáo / Người yêu. Anh có thể trực tiếp làm thử để kiểm tra câu hỏi và tính năng trích xuất dạ quang hồng như khi Em làm bài.
+                  </div>
+                </div>
               </div>
+              <button
+                type="button"
+                className="ios-btn sm ios-btn-secondary role-swap-btn"
+                onClick={switchDemoRole}
+                title="Đổi sang vai Em để nộp bài thật"
+              >
+                🔄 Đổi sang vai Em (Làm bài)
+              </button>
             </div>
-            {questions.length === 0 ? (
-              <Empty>Chưa có câu hỏi trong đề. Nhấn "Soạn / Sửa bài tập" để tạo câu hỏi.</Empty>
+
+            {a.kind !== 'upload' ? (
+              <QuizRunner
+                assignment={a}
+                questions={questions}
+                lesson={lesson}
+                explanations={explanations}
+                isPreview={true}
+              />
             ) : (
-              <ol className="qpreview" style={{ paddingLeft: '20px' }}>
+              <Empty>Bài tập dạng nộp file đính kèm.</Empty>
+            )}
+
+            <details
+              style={{
+                marginTop: '22px',
+                padding: '12px 18px',
+                background: '#FFF9FA',
+                borderRadius: '12px',
+                border: '1px solid #FECDD6',
+              }}
+            >
+              <summary style={{ cursor: 'pointer', fontWeight: 650, color: '#9F1239' }}>
+                📋 Danh sách câu hỏi dạng văn bản thô ({questions.length} câu)
+              </summary>
+              <ol className="qpreview" style={{ paddingLeft: '20px', marginTop: '12px' }}>
                 {questions.map((q) => (
                   <li key={q.id} style={{ marginBottom: '10px' }}>
                     <span className="pre">{q.prompt || <i className="muted">(chưa có nội dung)</i>}</span>{' '}
-                    <small className="muted">· {q.type === 'mcq' ? `trắc nghiệm ${q.options.length} đáp án` : 'tự luận'} · {q.points}đ</small>
+                    <small className="muted">
+                      · {q.type === 'mcq' ? `trắc nghiệm ${q.options.length} đáp án` : 'tự luận'} · {q.points}đ
+                    </small>
                   </li>
                 ))}
               </ol>
-            )}
+            </details>
           </section>
-        )}
-
-        {/* Học sinh làm bài */}
-        {!isTeacher && (
+        ) : (
           <section style={{ marginBottom: '32px' }}>
+            <div className="couple-assignment-banner" style={{ marginBottom: '20px' }}>
+              <div className="couple-banner-left">
+                <span className="couple-heart-badge">💌</span>
+                <div>
+                  <div className="couple-banner-title">Bài tập Anh giao cho Em · Em làm bài nhé!</div>
+                  <div className="couple-banner-sub">
+                    Khi Em chọn từng đáp án, hệ thống sẽ tự động bóc tách dẫn chứng từ bài học với bút dạ quang hồng để Em vừa luyện đề vừa nhớ sâu kiến thức.
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="ios-btn sm ios-btn-secondary role-swap-btn"
+                onClick={switchDemoRole}
+                title="Đổi sang vai Anh để chỉnh sửa đề"
+              >
+                🔄 Đổi sang vai Anh (Ra đề)
+              </button>
+            </div>
+
             {studentAction}
           </section>
         )}

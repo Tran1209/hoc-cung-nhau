@@ -173,6 +173,19 @@ export const cloud = {
     return data;
   },
 
+  async getQuestionExplanations(assignmentId) {
+    try {
+      const qs = await this.list('questions', { where: { assignment_id: assignmentId } });
+      const out = {};
+      for (const q of qs) {
+        if (q.explanation) out[q.id] = { explanation: q.explanation };
+      }
+      return out;
+    } catch {
+      return {};
+    }
+  },
+
   async quizReview(assignmentId) {
     return check(await sb.rpc('quiz_review', { p_assignment_id: assignmentId })) || [];
   },

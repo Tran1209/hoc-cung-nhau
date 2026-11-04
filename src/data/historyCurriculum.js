@@ -492,6 +492,7 @@ export async function seedBtAssignmentsForLesson(dataApi, lessonId, chapterId) {
       options: q.options,
       points: q.points,
       position: idx + 1,
+      explanation: q.explanation,
     });
     await dataApi.upsert(
       'answer_keys',
@@ -561,6 +562,7 @@ export async function seedBtAssignmentsForLesson(dataApi, lessonId, chapterId) {
       options: q.options,
       points: q.points,
       position: 24 + idx + 1,
+      explanation: q.explanation,
     });
     await dataApi.upsert(
       'answer_keys',
